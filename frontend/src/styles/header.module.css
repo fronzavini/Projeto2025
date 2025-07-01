@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+}
+
+body{
+  font-family: 'Poppins', sans-serif;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f4f0ff;
+  padding: 0.75rem 1.5rem;
+  height: 3.5rem;
+  border: #3b1f54;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #3b1f54;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #3b1f54;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.icon_notificacao {
+  font-size: 1.5rem;
+  
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/*Para o modal do usuário*/
+
+.botao_modal{
+  all: unset;
+  cursor: pointer;
+}
+
+.avatar_container {
+  position: relative; /* contexto para o modal aparecer abaixo */
+  display: inline-block;
+}
+
+.modal {
+  position: absolute;
+  top: 6rem;
+  right: 10px;
+  background: white;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.116);
+  border-radius: 8px;
+  min-width: 150px;
+}
+
+.modal::before {
+  content: "";
+  position: absolute;
+  top: -8px; /* sobe para aparecer acima */
+  right: 16px; /* ajuste horizontal, depende de onde está o avatar */
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white; /* cor do modal */
+}
+
+.modal_conteudo button {
+  margin-top: 8px;
+}
+
