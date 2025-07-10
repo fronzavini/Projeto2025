@@ -1,0 +1,55 @@
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 250px;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: #383737;
+  margin-bottom: 4px;
+}
+
+.caixaInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  color: #383737;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.rightIcon {
+  position: absolute;
+  right: 0.6rem;
+  color: #959494;
+  pointer-events: none;
+}
+
+/* seta (v) */
+.dropdownPersonalizado :global(.p-dropdown-trigger) {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #959494;
+}
+
+/* X de limpar */
+.dropdownPersonalizado :global(.p-dropdown-clear-icon) {
+  position: absolute;
+  right: 1.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #959494;
+}

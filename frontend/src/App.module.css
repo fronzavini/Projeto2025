@@ -1,10 +1,41 @@
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-body{
+body {
   background-color: #f4f0ff;
-  
+}
+
+h1 {
+  text-align: center;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* ocupar a altura total da janela */
+}
+
+.conteudo {
+  display: flex; /* faz sidebar e conteúdo ficarem lado a lado */
+  flex: 1; /* ocupa o espaço restante após o Header */
+  overflow: hidden; /* evita scroll indesejado */
+}
+
+/* Seu sidebar já tem largura fixa, ex: 180px */
+.sidebar {
+  width: 180px;
+  background-color: #ede9fe;
+  /* outras propriedades */
+}
+
+/* Área principal de conteúdo */
+.mainContent {
+  flex: 1; /* ocupa todo o espaço disponível */
+  padding: 20px;
+  overflow-y: auto; /* scroll vertical se conteúdo maior que a tela */
+  background-color: #f4f0ff;
 }

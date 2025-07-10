@@ -1,0 +1,127 @@
+.filters-container {
+  display: flex;
+  gap: 16px; /* espaço entre os filtros */
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap; /* para quebrar em telas menores */
+  margin-top: 2.5rem;
+  margin-bottom: 5rem;
+}
+
+.filtro {
+  flex: 1 1 200px; /* cada filtro ocupa espaço proporcional, mínimo 200px */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container da tabela com sombra */
+.custom-table-container {
+  background-color: #ffffff;
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Cabeçalho da tabela */
+:global(.p-datatable .p-datatable-thead > tr > th) {
+  background-color: #f3f4f6; /* cinza claro */
+  color: #4b5563; /* cinza escuro */
+  font-weight: 600;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Linhas dos dados */
+:global(.p-datatable .p-datatable-tbody > tr > td) {
+  background-color: #ffffff;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+/* Última linha sem borda */
+:global(.p-datatable .p-datatable-tbody > tr:last-child > td) {
+  border-bottom: none;
+}
+
+/* Paginação */
+:global(.p-paginator) {
+  background-color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Badge de status */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 72px;
+  text-transform: capitalize;
+}
+
+.ativo {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.inativo {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+:global(.p-paginator) {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background-color: white;
+  border-top: 1px solid #ccc;
+}
+
+:global(.p-paginator-page) {
+  margin: 0 8px;
+  padding: 6px 12px;
+  color: #7a7a7a; /* cinza claro no texto */
+  background: none;
+  border: none;
+  font-weight: normal;
+  transition: color 0.3s;
+}
+
+:global(.p-paginator-page:hover) {
+  color: #4d4d4d; /* cinza médio no hover */
+  cursor: pointer;
+}
+
+:global(.p-paginator-page.p-highlight) {
+  color: #212121; /* cinza escuro para a página atual */
+  font-weight: bold;
+}
+
+.acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.acaoBotao {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #4b5563;
+  font-size: 1rem;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.acaoBotao:hover {
+  background-color: #f3f4f6;
+  color: #212121;
+}

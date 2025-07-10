@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
-*{
+* {
   margin: 0;
   padding: 0;
 }
 
-body{
-  font-family: 'Poppins', sans-serif;
+body {
+  font-family: "Poppins", sans-serif;
 }
 
 .nav {
@@ -17,7 +17,7 @@ body{
   padding: 0.75rem 1.5rem;
   height: 3.5rem;
   border: #3b1f54;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.116);
 }
 
 .left {
@@ -48,7 +48,6 @@ body{
 
 .icon_notificacao {
   font-size: 1.5rem;
-  
 }
 
 .avatar {
@@ -60,7 +59,7 @@ body{
 
 /*Para o modal do usuário*/
 
-.botao_modal{
+.botao_modal {
   all: unset;
   cursor: pointer;
 }
@@ -79,6 +78,7 @@ body{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.116);
   border-radius: 8px;
   min-width: 150px;
+  z-index: 999;
 }
 
 .modal::before {
@@ -95,3 +95,16 @@ body{
   margin-top: 8px;
 }
 
+.botao_simples {
+  all: unset;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.botao_simples:hover {
+  background-color: #f0f0f0;
+}
