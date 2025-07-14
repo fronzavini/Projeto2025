@@ -1,7 +1,7 @@
 import styles from "../styles/tabelas.module.css";
-import { Filtros } from "./filtros";
-import { FiltroDropdown } from "./filtrosDropdown";
-import type { Opcao } from "./filtrosDropdown";
+import { Filtros } from "./Filtros";
+import { FiltroDropdown } from "./FiltrosDropdown";
+import type { Opcao } from "./FiltrosDropdown";
 
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
@@ -10,7 +10,7 @@ import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-function Tabela_clientes() {
+function TabelaClientes() {
   const data = [
     {
       id: 1,
@@ -123,6 +123,7 @@ function Tabela_clientes() {
   const [filterCpf, setFilterCpf] = useState<string>("");
   const [filterNome, setFilterNome] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("");
+  const [filterTelefone, setFilterTelefone] = useState<string>("");
 
   const opcoes: Opcao[] = [
     { label: "Ativo", value: "ativo" },
@@ -135,6 +136,7 @@ function Tabela_clientes() {
       (!filterCpf || item.cpf.startsWith(filterCpf)) &&
       (!filterNome ||
         item.nome.toLowerCase().startsWith(filterNome.toLowerCase())) &&
+      (!filterTelefone || item.telefone.startsWith(filterTelefone)) &&
       (!filterStatus || filterStatus === "" || item.status === filterStatus)
     );
   });
@@ -204,6 +206,14 @@ function Tabela_clientes() {
           />
         </div>
         <div className={styles.filtro}>
+          <Filtros
+            value={filterTelefone}
+            onChange={setFilterTelefone}
+            placeholder="Filtre por telefone"
+            label="Telefone"
+          />
+        </div>
+        <div className={styles.filtro}>
           <FiltroDropdown
             value={filterStatus}
             onChange={setFilterStatus}
@@ -232,4 +242,4 @@ function Tabela_clientes() {
   );
 }
 
-export default Tabela_clientes;
+export default TabelaClientes;
