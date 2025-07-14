@@ -9,7 +9,7 @@ def conectar_banco():
             host="localhost",
             user="root",
             password="root",
-            database="trabalhoFinal"
+            database="bd_belladonna"
         )
         print("Conexao funcionando")
         return conexao
