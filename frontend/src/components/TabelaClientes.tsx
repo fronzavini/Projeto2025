@@ -1,9 +1,11 @@
 import styles from "../styles/tabelas.module.css";
+
 import { Filtros } from "./Filtros";
 import { FiltroDropdown } from "./FiltrosDropdown";
 import type { Opcao } from "./FiltrosDropdown";
 import VisualizarCliente from "./VisualizarCliente";
 import EditarCliente from "./EditarCliente";
+import DeletarCliente from "./DeletarCliente";
 
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
@@ -357,6 +359,11 @@ function TabelaClientes() {
     );
   };
 
+  function fecharModalExcluir() {
+    setIsDeleteModalOpen(false);
+    setClienteParaExcluir(null);
+  }
+
   return (
     <div>
       <div className={styles["filters-container"]}>
@@ -434,6 +441,14 @@ function TabelaClientes() {
               setIsEditModalOpen(false);
               setClienteParaEditar(null);
             }}
+          />
+        )}
+
+        {isDeleteModalOpen && clienteParaExcluir && (
+          <DeletarCliente
+            clienteId={clienteParaExcluir.id.toString()}
+            onClose={fecharModalExcluir}
+            onDelete={fecharModalExcluir} // só fecha o modal, não deleta
           />
         )}
       </div>
