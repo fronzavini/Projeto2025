@@ -68,43 +68,106 @@ body {
   position: relative; /* contexto para o modal aparecer abaixo */
   display: inline-block;
 }
-
 .modal {
   position: absolute;
   top: 6rem;
   right: 10px;
-  background: white;
-  padding: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.116);
-  border-radius: 8px;
-  min-width: 150px;
-  z-index: 999;
+  background: #fff;
+  padding: 20px 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  min-width: 180px;
+  z-index: 9999;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  user-select: none;
 }
 
 .modal::before {
   content: "";
   position: absolute;
-  top: -8px; /* sobe para aparecer acima */
-  right: 16px; /* ajuste horizontal, depende de onde está o avatar */
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid white; /* cor do modal */
+  top: -10px;
+  right: 24px; /* alinhado com o padding horizontal */
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #fff;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.07));
+}
+
+.modal_conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Container para título + botão fechar lado a lado */
+.modal_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal_header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #111;
+  flex-grow: 1; /* ocupa espaço para empurrar botão à direita */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal_conteudo span {
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
 }
 
 .modal_conteudo button {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .botao_simples {
   all: unset;
   cursor: pointer;
-  color: #333;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background 0.2s;
+  color: #444;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-align: center;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  user-select: none;
 }
 
 .botao_simples:hover {
-  background-color: #f0f0f0;
+  background-color: #eaeaea;
+  color: #222;
+}
+
+.botao_simples:active {
+  background-color: #d6d6d6;
+}
+
+.botao_fechar {
+  font-size: 0.9rem;
+  color: #888;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: color 0.2s, background-color 0.2s;
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-align: center;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  user-select: none;
+}
+
+.botao_fechar:hover {
+  color: #444;
 }

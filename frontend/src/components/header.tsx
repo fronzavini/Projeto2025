@@ -1,9 +1,7 @@
 import styles from "../styles/Header.module.css";
 
 import { useState } from "react";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-regular-svg-icons";
+import Notificacoes from "./Notificacoes";
 
 function Header() {
   const [modal, setModal] = useState(false);
@@ -19,10 +17,10 @@ function Header() {
       </div>
 
       <div className={styles.right}>
-        <FontAwesomeIcon
-          icon={faBell}
-          className={`${styles.icon_notificacao} ${styles.icon}`}
-        />
+        <div className={`${styles.icon_notificacao} ${styles.icon}`}>
+          <Notificacoes />
+        </div>
+
         <div className={styles.avatar}>
           <button onClick={abrirModal} className={styles.botao_modal}>
             <img
@@ -36,11 +34,16 @@ function Header() {
         {modal && (
           <div className={styles.modal}>
             <div className={styles.modal_conteudo}>
-              <button
-                onClick={abrirModal}
-                className={`${styles.botao_fechar} ${styles.botao_simples}`}
-              >Fechar</button>
-              <h3>Nome usuário</h3>
+              <div className={styles.modal_header}>
+                <h3>Nome usuário</h3>
+                <button
+                  onClick={abrirModal}
+                  className={`${styles.botao_fechar}`}
+                >
+                  X
+                </button>
+              </div>
+
               <span>Configurações</span>
               <button className={styles.botao_simples}>Sair</button>
             </div>

@@ -1,0 +1,121 @@
+.container {
+  position: relative;
+  display: inline-block;
+}
+
+.botao {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding: 6px;
+}
+
+.icone {
+  font-size: 1.4rem;
+  color: #3d2b5a;
+}
+
+.contador {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  font-weight: bold;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 120%;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+  padding: 10px 12px;
+}
+
+.header {
+  position: relative;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.titulo {
+  font-size: 1rem;
+  color: #3d2b5a;
+  margin: 0;
+  font-weight: 600;
+}
+
+.fechar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+}
+
+.notificacao {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f9f7ff;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.notificacao:hover {
+  background: #f1eeff;
+}
+
+.notificacao strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #2d1e4a;
+  margin-bottom: 4px;
+}
+
+.notificacao p {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 4px 0 0;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ede7f6;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.data {
+  font-size: 0.75rem;
+  color: #6d5f90;
+  font-weight: bold;
+}
+
+.lida {
+  opacity: 0.6;
+}
+
+.vazio {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+  font-size: 0.85rem;
+}
