@@ -11,6 +11,25 @@ export default function DeletarCliente({
   onDelete,
   clienteId,
 }: DeletarClienteProps) {
+  async function handleDelete() {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/deletar_cliente/${clienteId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Erro ao deletar cliente");
+
+      alert("Cliente deletado com sucesso!");
+      onDelete(); // atualiza os dados no componente pai
+      onClose(); // fecha o popup
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao deletar cliente.");
+    }
+  }
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
@@ -33,7 +52,7 @@ export default function DeletarCliente({
           <button
             type="button"
             className={styles.botaoDeletar}
-            onClick={onDelete}
+            onClick={handleDelete}
           >
             Deletar
           </button>

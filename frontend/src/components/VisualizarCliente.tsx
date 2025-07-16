@@ -10,7 +10,7 @@ type VisualizarClienteProps = {
     rg: string;
     email: string;
     telefone: string;
-    dataNascimento: string;
+    data_nascimento: string;
     cep: string;
     numero: string;
     cidade: string;
@@ -19,11 +19,11 @@ type VisualizarClienteProps = {
     complemento: string;
   };
 };
-
 export default function VisualizarCliente({
   onClose,
   cliente,
 }: VisualizarClienteProps) {
+  console.log(cliente);
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
@@ -137,15 +137,15 @@ export default function VisualizarCliente({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="dataNascimento" className={styles.label}>
+              <label htmlFor="data_nascimento" className={styles.label}>
                 Data de nascimento
               </label>
               <input
                 className={styles.inputDate}
-                id="dataNascimento"
-                name="dataNascimento"
+                id="data_nascimento"
+                name="data_nascimento"
                 type="date"
-                value={cliente.dataNascimento}
+                value={cliente.data_nascimento || ""}
                 disabled
               />
             </div>

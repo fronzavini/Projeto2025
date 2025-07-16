@@ -31,8 +31,11 @@ export default function CadastrarCliente({ onClose }: CadastrarClienteProps) {
     e.preventDefault();
 
     // Prepara dados para enviar conforme backend espera
+
     const dadosCompletos = {
       ...form,
+      data_nascimento: form.dataNascimento, // nome que o backend espera
+      cidade: form.cidade, // incluir explicitamente
       cnpj: form.tipo === "juridico" ? form.cpf : "",
       senha: "cliente123", // valor padrão temporário
       uf: "", // pode adicionar campo depois para uf

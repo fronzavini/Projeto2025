@@ -26,6 +26,8 @@ export default function EditarCliente({
   cliente,
 }: VisualizarClienteProps) {
   const [formData, setFormData] = useState(cliente);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -35,11 +37,45 @@ export default function EditarCliente({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Apenas fecha o modal por enquanto
-    console.log("Dados atualizados (local):", formData);
-    onClose();
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      // Prepare payload para enviar ao Flask
+      // Note que no Flask seu campo é "data_nascimento" (com _), então ajustamos aqui:
+      const payload = {
+        ...formData,
+        data_nascimento: formData.dataNascimento,
+      };
+      delete payload.dataNascimento; // remove chave antiga
+
+      const response = await fetch(
+        `http://localhost:5000/editar_cliente/${cliente.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.resultado === "ok") {
+        alert("Cliente atualizado com sucesso!");
+        onClose();
+      } else {
+        setErrorMsg(result.detalhes || "Erro ao atualizar cliente.");
+      }
+    } catch (error) {
+      setErrorMsg("Erro de rede ao atualizar cliente.");
+      console.error("Erro no fetch:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -254,8 +290,18 @@ export default function EditarCliente({
               />
             </div>
 
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
+            {errorMsg && (
+              <div style={{ color: "red", marginBottom: "1rem" }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className={styles.botaoEnviar}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar alterações"}
             </button>
           </form>
         </div>
