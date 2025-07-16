@@ -8,6 +8,7 @@ CREATE TABLE clientes (
     tipo ENUM('fisico', 'juridico') NOT NULL,
     estado BOOLEAN DEFAULT TRUE NOT NULL,
     nome VARCHAR(100) NOT NULL,
+	sexo ENUM('masculino', 'feminino', 'outro') NOT NULL,
     cpf VARCHAR(14),
     cnpj VARCHAR(18),
     rg VARCHAR(20),
@@ -15,12 +16,12 @@ CREATE TABLE clientes (
     senha varchar(100) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     data_nascimento DATE,
-    cep VARCHAR(10),
-    logradouro VARCHAR(100),
-    numero VARCHAR(10),
-    bairro VARCHAR(50),
-    complemento VARCHAR(50),
-    uf CHAR(2)
+    endCep VARCHAR(10) NOT NULL,
+    endRua VARCHAR(100) NOT NULL,
+    endNumero VARCHAR(10) NOT NULL,
+    endBairro VARCHAR(50) NOT NULL,
+    endComplemento VARCHAR(50) NOT NULL,
+    endUF CHAR(2) NOT NULL
 );
 
 -- Tabela: funcionarios
@@ -35,12 +36,12 @@ CREATE TABLE funcionarios (
 	senha varchar(100) NOT NULL,
     estado BOOLEAN DEFAULT TRUE NOT NULL,
     telefone VARCHAR(20) NOT NULL,
-    cep VARCHAR(10),
-    logradouro VARCHAR(100),
-    numero VARCHAR(10),
-    bairro VARCHAR(50),
-    complemento VARCHAR(50),
-    uf CHAR(2),
+    endCep VARCHAR(10) NOT NULL,
+    endRua VARCHAR(100) NOT NULL,
+    endNumero VARCHAR(10) NOT NULL,
+    endBairro VARCHAR(50) NOT NULL,
+    endComplemento VARCHAR(50) NOT NULL,
+    endUF CHAR(2) NOT NULL,
     funcao VARCHAR(50) NOT NULL
 );
 
@@ -51,12 +52,12 @@ CREATE TABLE fornecedores (
     cnpj VARCHAR(18) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    cep VARCHAR(10) NOT NULL,
-    logradouro VARCHAR(100) NOT NULL,
-    numero VARCHAR(10) NOT NULL,
-    bairro VARCHAR(50) NOT NULL,
-    complemento VARCHAR(50) NOT NULL,
-    uf CHAR(2) NOT NULL
+    endCep VARCHAR(10) NOT NULL,
+    endRua VARCHAR(100) NOT NULL,
+    endNumero VARCHAR(10) NOT NULL,
+    endBairro VARCHAR(50) NOT NULL,
+    endComplemento VARCHAR(50) NOT NULL,
+    endUF CHAR(2) NOT NULL
 );
 
 -- Tabela: produtos
@@ -118,7 +119,7 @@ CREATE TABLE cupons (
     codigo VARCHAR(20) UNIQUE,
     tipo ENUM('percentual', 'valor_fixo'),
     descontofixo DECIMAL(10,2),
-    descontoPorcentagem decimal(1,2),
+    descontoPorcentagem decimal(10,2),
     descontofrete decimal(10,2),
     validade DATE,
     usos_permitidos INT,
