@@ -349,3 +349,8 @@ class Fornecedor:
         self.produtos_fornecidos = []
 
 
+#Cliente.criarCliente(nome="João Silva",tipo="fisico",email="joao.silva@example.com",senha="senha123",telefone="47 999999999",endCep="89035470",endRua="regente feijo",endNumero="251",endBairro="vila nova",endComplemento="predio",endUF="SC",cpf='10690098901',rg='10690098901',sexo='masculino',dataNasc=date(2007, 7, 25),cnpj=None)
+#Cliente.editarCliente(1,nome="João Carlos")
+#Cliente.desativarCliente(1)
+#Cliente.excluirCliente(1)
+#Cliente.listarClientes()
