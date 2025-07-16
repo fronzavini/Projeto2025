@@ -30,6 +30,7 @@ class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tipo = db.Column(db.String(10), nullable=False)  # ENUM adaptado para string
     estado = db.Column(db.Boolean, default=True, nullable=False)
+    cidade = db.Column(db.String(50))
     nome = db.Column(db.String(100), nullable=False)
     cpf = db.Column(db.String(14))
     cnpj = db.Column(db.String(18))
@@ -50,6 +51,7 @@ class Cliente(db.Model):
             "id": self.id,
             "tipo": self.tipo,
             "estado": self.estado,
+            "cidade": self.cidade,
             "nome": self.nome,
             "cpf": self.cpf,
             "cnpj": self.cnpj,
@@ -83,7 +85,7 @@ def incluir_cliente():
         campos_validos = [
             "tipo", "estado", "nome", "cpf", "cnpj", "rg", "email", "senha",
             "telefone", "cep", "logradouro", "numero",
-            "bairro", "complemento", "uf"
+            "bairro", "complemento", "uf", "cidade", "data_nascimento"
         ]
 
         dados_filtrados = {k: dados.get(k) for k in campos_validos}
@@ -105,6 +107,15 @@ def incluir_cliente():
     except Exception as e:
         return jsonify({"resultado": "erro", "detalhes": str(e)}), 500
 
+@app.route("/deletar_cliente/<int:id>", methods=['DELETE'])
+def deletar_cliente(id):
+    try:
+        cliente = Cliente.query.get_or_404(id)
+        db.session.delete(cliente)
+        db.session.commit()
+        return jsonify({"resultado": "ok", "detalhes": "Cliente excluído com sucesso"})
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": str(e)}), 500
 
 
 @app.route("/listar_clientes")
@@ -115,16 +126,41 @@ def listar_clientes():
         return jsonify({"resultado": "ok", "detalhes": retorno})
     except Exception as e:
         return jsonify({"resultado": "erro", "detalhes": str(e)})
+    
+@app.route("/editar_cliente/<int:id>", methods=['PUT'])
+def editar_cliente(id):
+    dados = request.get_json(force=True)
+    try:
+        cliente = Cliente.query.get_or_404(id)
+
+        campos_editaveis = [
+            "tipo", "estado", "nome", "cpf", "cnpj", "rg", "email", "senha",
+            "telefone", "cep", "logradouro", "numero", "bairro", "complemento",
+            "uf", "cidade", "data_nascimento"
+        ]
+
+        for campo in campos_editaveis:
+            if campo in dados:
+                valor = dados[campo]
+                # Se for data_nascimento, converte para date
+                if campo == "data_nascimento" and valor:
+                    valor = datetime.strptime(valor, "%Y-%m-%d").date()
+                setattr(cliente, campo, valor)
+
+        db.session.commit()
+        return jsonify({"resultado": "ok", "detalhes": "Cliente atualizado com sucesso"})
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": str(e)}), 500
+
 
 #
 # INÍCIO DA APLICAÇÃO
 #
 
 with app.app_context():
-    db.create_all()  # Cria as tabelas
-    CORS(app)        # Ativa o CORS
+    db.create_all()
+    CORS(app)
 
-    '''
-    Para rodar:
-    $ flask run
-    '''
+if __name__ == "__main__":
+    app.run(debug=True)
+

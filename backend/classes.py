@@ -1,0 +1,356 @@
+from datetime import datetime, timedelta,date
+import mysql.connector
+
+
+#Ajeitar depois com as informçações corretas 
+def conectar_banco():
+    try:
+        conexao = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="root",
+            database="bd_belladonna"
+        )
+        print("Conexao funcionando")
+        return conexao
+    except mysql.connector.Error as erro:
+        print(f"Erro ao conectar ao banco de dados: {erro}")
+        return None
+
+class Pessoa:
+    def __init__(self, id, nome, status, dataCadastro, email, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF):
+        self.id = id
+        self.nome = nome
+        self.status = True
+        self.dataCadastro = dataCadastro
+        self.email = email
+        self.telefone = telefone
+        self.endCep = endCep
+        self.endRua = endRua
+        self.endNumero = endNumero
+        self.endBairro = endBairro
+        self.endComplemento = endComplemento
+        self.endUF = endUF
+
+class PessoaFisica(Pessoa):
+    def __init__(self, cpf, rg, sexo, dataNasc, **kwargs): #**kwargs é uma forma do Python permitir que você passe um número variável de argumentos nomeados (ou seja, com chave e valor) para uma função ou método.    
+        super().__init__(**kwargs)
+        self.cpf = cpf
+        self.rg = rg
+        self.sexo = sexo
+        self.dataNasc = dataNasc
+
+class PessoaJuridica(Pessoa):
+    def __init__(self, cnpj, **kwargs):
+        super().__init__(**kwargs)
+        self.cnpj = cnpj
+
+class Cliente(PessoaFisica, PessoaJuridica):
+    def __init__(self, senha, **kwargs):
+        super().__init__(**kwargs)
+        self.senha = senha
+
+    #Estrutura básica de metodos enquanto não implementamos o BD
+
+    #Podemos criar um cliente sem endereço?
+    @staticmethod
+    def criarCliente(nome, tipo, email, senha, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
+        conexao = conectar_banco()
+
+        cursor = conexao.cursor()
+        query = '''
+            INSERT INTO clientes (dataCadastro, nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
+                                dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+
+        dataHoje = date.today()
+        dataHoje = dataHoje.strftime('%Y-%m-%d')
+
+        cursor.execute(query, (dataHoje, nome, tipo, sexo, cpf, cnpj, rg,
+                               email, senha, telefone, dataNasc,
+                               endCep, endRua, endNumero, endBairro,
+                               endComplemento, endUF,))
+        conexao.commit()
+        #self.id = cursor.lastrowid
+        cursor.close()
+
+        
+        return 'Cliente adicionado com sucesso'
+        
+
+    def editarCliente(id, nome=None, email=None, senha=None, telefone=None,
+                    endCep=None, endRua=None, endNumero=None, endBairro=None, endComplemento=None, endUF=None,
+                    cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+
+            campos = []
+            valores = []
+
+            if nome:
+                campos.append("nome = %s")
+                valores.append(nome)
+            if email:
+                campos.append("email = %s")
+                valores.append(email)
+            if senha:
+                campos.append("senha = %s")
+                valores.append(senha)
+            if telefone:
+                campos.append("telefone = %s")
+                valores.append(telefone)
+            if endCep:
+                campos.append("endCep = %s")
+                valores.append(endCep)
+            if endRua:
+                campos.append("endRua = %s")
+                valores.append(endRua)
+            if endNumero:
+                campos.append("endNumero = %s")
+                valores.append(endNumero)
+            if endBairro:
+                campos.append("endBairro = %s")
+                valores.append(endBairro)
+            if endComplemento:
+                campos.append("endComplemento = %s")
+                valores.append(endComplemento)
+            if endUF:
+                campos.append("endUF = %s")
+                valores.append(endUF)
+            if cpf:
+                campos.append("cpf = %s")
+                valores.append(cpf)
+            if rg:
+                campos.append("rg = %s")
+                valores.append(rg)
+            if sexo:
+                campos.append("sexo = %s")
+                valores.append(sexo)
+            if dataNasc:
+                campos.append("dataNasc = %s")
+                valores.append(dataNasc)
+            if cnpj:
+                campos.append("cnpj = %s")
+                valores.append(cnpj)
+
+            if not campos:
+                print("Nenhuma informação fornecida para atualização.")
+                return
+
+            # Verifica se o cliente existe
+            cursor.execute("SELECT id FROM clientes WHERE id = %s", (id,))
+            if not cursor.fetchone():
+                print("Cliente não encontrado.")
+                return
+
+            # Atualiza os dados
+            query = f"UPDATE clientes SET {', '.join(campos)} WHERE id = %s"
+            valores.append(id)
+            cursor.execute(query, valores)
+            conexao.commit()
+
+            print(f"Cliente com ID {id} atualizado com sucesso!")
+
+        except mysql.connector.Error as e:
+            print(f"Erro ao editar cliente: {e}")
+            conexao.rollback()
+        finally:
+            cursor.close()
+            conexao.close()
+
+
+    def desativarCliente(id):
+        conexao = conectar_banco()
+
+        cursor = conexao.cursor()
+        cursor.execute("SELECT estado FROM clientes WHERE id = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado:
+            novo_estado = not resultado[0]
+            cursor.execute("UPDATE clientes SET estado = %s WHERE id = %s", (novo_estado,id))
+            conexao.commit()
+            #self.estado = novo_estado
+        cursor.close()
+        # Aqui você pode implementar a lógica para desativar o cliente com o ID fornecido
+        return f"Cliente com ID {id} desativado."
+
+    def excluirCliente(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM clientes WHERE id = %s", (id,))
+        conexao.commit()
+        cursor.close()
+
+        # Aqui você pode implementar a lógica para excluir o cliente com o ID fornecido
+        return f"Cliente com ID {id} excluído."
+
+    def listarClientes():
+
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            query = "SELECT nome FROM Clientes"
+            cursor.execute(query)
+            resultados = cursor.fetchall()
+            for row in resultados:
+                print(row)
+        except mysql.connector.Error as e:
+            print(f"Erro ao listar clientes: {e}")
+        finally:
+            cursor.close()
+            conexao.close()
+
+    
+    def json(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "sexo": self.sexo,
+            "estado": self.estado,
+            "cpf": self.cpf,
+            "cnpj": self.cnpj,
+            "rg": self.rg,
+            "email": self.email,
+            "senha": self.senha,
+            "telefone": self.telefone,
+            "data_nascimento": str(self.dataNasc) if self.dataNasc else None,
+            "data_cadastro": str(self.dataCadastro),
+            "cep": self.endCep,
+            "rua": self.endRua,
+            "numero": self.endNumero,
+            "bairro": self.endBairro,
+            "complemento": self.endComplemento,
+            "uf": self.endUF
+        }
+
+
+
+
+class Funcionario(PessoaFisica):
+    def __init__(self, funcao, salario, dataContratacao, senha, **kwargs):
+        super().__init__(**kwargs)
+        self.funcao = funcao
+        self.salario = salario
+        self.dataContratacao = dataContratacao
+        self.senha = senha
+
+    def criarFuncionario(self, nome, dataCadastro, email, telefone, endCep, endRua, endBairro, endComplemento, endUF, cpf, rg, sexo, dataNasc, funcao, salario, dataContratacao):
+        return Funcionario(nome=nome, dataCadastro=dataCadastro, email=email, telefone=telefone, endCep=endCep, endRua=endRua, endBairro=endBairro, endComplemento=endComplemento, endUF=endUF, cpf=cpf, rg=rg, sexo=sexo, dataNasc=dataNasc, funcao=funcao, salario=salario, dataContratacao=dataContratacao)   
+
+    def editarFuncionario(self, id, nome=None, dataCadastro=None, email=None, telefone=None, endCep=None, endRua=None, endBairro=None, endComplemento=None, endUF=None, cpf=None, rg=None, sexo=None, dataNasc=None, funcao=None, salario=None, dataContratacao=None):
+        funcionario = Funcionario(id=id, nome=nome, dataCadastro=dataCadastro, email=email, telefone=telefone, endCep=endCep, endRua=endRua, endBairro=endBairro, endComplemento=endComplemento, endUF=endUF, cpf=cpf, rg=rg, sexo=sexo, dataNasc=dataNasc, funcao=funcao, salario=salario, dataContratacao=dataContratacao)
+        return funcionario
+
+    def desativarFuncionario(self, id):
+        # Aqui você pode implementar a lógica para desativar o funcionário com o ID fornecido
+        return f"Funcionário com ID {id} desativado."
+    
+    def excluirFuncionario(self, id):
+
+
+
+        #exemplo de código para alterar depois de acordo com o banco
+        '''
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+
+            query_funcao = "SELECT funcao FROM Funcionario WHERE id = %s"
+            cursor.execute(query_funcao, (id_gerente,))
+            resultado = cursor.fetchone()
+
+            if not resultado:
+                print("Funcionário não encontrado.")
+                return
+        
+            funcao = resultado[0]
+
+            if funcao != "Gerente":
+                print("Apenas gerentes podem excluir funcionários.")
+                return
+
+            query_verificar = "SELECT id FROM Funcionario WHERE id = %s"
+            cursor.execute(query_verificar, (id_funcionario,))
+            if not cursor.fetchone():
+                print("Funcionário não encontrado.")
+                return
+
+            query_funcionario = "DELETE FROM Funcionario WHERE id = %s"
+            cursor.execute(query_funcionario, (id_funcionario,))
+
+            query_usuario = "DELETE FROM Usuario WHERE id = %s"
+            cursor.execute(query_usuario, (id_funcionario,))
+
+            conexao.commit()
+            print(f"Funcionário com ID {id_funcionario} excluído com sucesso!")
+        except mysql.connector.Error as e:
+            print(f"Erro ao excluir funcionário: {e}")
+            conexao.rollback()
+        finally:
+            cursor.close()
+            conexao.close()
+        '''
+        # Aqui você pode implementar a lógica para excluir o funcionário com o ID fornecido
+        return f"Funcionário com ID {id} excluído."
+
+class Produto:
+    def __init__(self, id, nome, categoria, marca, preco, quantidadeEstoque, status):
+        self.id = id
+        self.nome = nome
+        self.categoria = categoria
+        self.marca = marca
+        self.preco = preco
+        self.quantidadeEstoque = quantidadeEstoque
+        self.status = True
+
+class Cupom:
+    def __init__(self, id, nome, codigo, dataValidade, usosPermitidos, regrasAplicacao, status, descontoFixo, descontoPorcentagem):
+        self.id = id
+        self.nome = nome
+        self.codigo = codigo
+        self.dataValidade = dataValidade
+        self.usosPermitidos = usosPermitidos
+        self.regrasAplicacao = regrasAplicacao
+        self.status = True
+        self.descontoFixo = descontoFixo
+        self.descontoPorcentagem = descontoPorcentagem
+
+class ServicoPersonalizado:
+    def __init__(self, id, nome, produtos, preco, status):
+        self.id = id
+        self.nome = nome
+        self.produtos = produtos
+        self.preco = preco
+        self.status = True
+
+class Carrinho:
+    def __init__(self, id, idCliente):
+        self.id = id
+        self.idCliente = idCliente
+        self.produtos = []
+        self.valorTotal = 0.0
+
+class Venda:
+    def __init__(self, id, cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega):
+        self.id = id
+        self.cliente = cliente
+        self.funcionario = funcionario
+        self.produtos = produtos
+        self.valorTotal = valorTotal
+        self.dataVenda = dataVenda
+        self.entrega = entrega
+        self.dataEntrega = dataEntrega
+
+class Fornecedor:
+    def __init__(self, id):
+        self.id = id
+        self.produtos_fornecidos = []
+
+
+#Cliente.criarCliente(nome="João Silva",tipo="fisico",email="joao.silva@example.com",senha="senha123",telefone="47 999999999",endCep="89035470",endRua="regente feijo",endNumero="251",endBairro="vila nova",endComplemento="predio",endUF="SC",cpf='10690098901',rg='10690098901',sexo='masculino',dataNasc=date(2007, 7, 25),cnpj=None)
+#Cliente.editarCliente(1,nome="João Carlos")
+#Cliente.desativarCliente(1)
+#Cliente.excluirCliente(1)
+#Cliente.listarClientes()
