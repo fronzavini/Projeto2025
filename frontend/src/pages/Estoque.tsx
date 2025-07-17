@@ -1,5 +1,5 @@
-export default function Estoque(){
-    return (
-        <h1>Estoque</h1>
-    );
+import TabelaEstoque from "../components/TabelaEstoque";
+
+export default function Estoque() {
+  return <TabelaEstoque />;
 }

@@ -107,7 +107,7 @@ export default function TabelaProduto() {
   );
 
   // Função para renderizar o status com badge colorido
-  const statusTemplate = (rowData) => {
+  const statusTemplate = (rowData: any) => {
     const status = rowData.estado ? "ativo" : "inativo";
     return (
       <span className={`${styles["status-badge"]} ${styles[status]}`}>
@@ -140,7 +140,7 @@ export default function TabelaProduto() {
   const [produtoParaExcluir, setProdutoParaExcluir] = useState(null);
 
   // Template para ações (visualizar, editar, deletar)
-  const actionTemplate = (rowData) => (
+  const actionTemplate = (rowData: any) => (
     <div className={styles.acoes}>
       <button
         className={styles.acaoBotao}
@@ -227,13 +227,7 @@ export default function TabelaProduto() {
       </div>
 
       <div className={styles["custom-table-container"]}>
-        <DataTable
-          value={filteredData}
-          paginator
-          rows={5}
-          showGridlines
-          rowKey="id"
-        >
+        <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column
             field="imagem"
             header="Imagem"
@@ -284,7 +278,7 @@ export default function TabelaProduto() {
 
         {isDeleteModalOpen && produtoParaExcluir && (
           <DeletarProduto
-            produtoId={produtoParaExcluir.id.toString()}
+            produtoId={produtoParaExcluir}
             onClose={() => setIsDeleteModalOpen(false)}
             onDelete={() => setIsDeleteModalOpen(false)}
           />

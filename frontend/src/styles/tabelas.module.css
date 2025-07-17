@@ -66,14 +66,21 @@
   text-transform: capitalize;
 }
 
-.ativo {
+.ativo,
+.disponivel {
   background-color: #d1fae5;
   color: #065f46;
 }
 
-.inativo {
+.inativo,
+.esgotado {
   background-color: #fee2e2;
   color: #b91c1c;
+}
+
+.baixo {
+  background-color: #fee2e2;
+  color: #f8ae0e;
 }
 
 :global(.p-paginator) {
@@ -142,7 +149,7 @@
   background-color: white;
   padding: 24px;
   border-radius: 8px;
-  
+
   max-width: 90%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   position: relative;

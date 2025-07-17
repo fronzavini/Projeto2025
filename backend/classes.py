@@ -225,9 +225,6 @@ class Cliente(PessoaFisica, PessoaJuridica):
             "uf": self.endUF
         }
 
-
-
-
 class Funcionario(PessoaFisica):
     def __init__(self, funcao, salario, dataContratacao, senha, **kwargs):
         super().__init__(**kwargs)
