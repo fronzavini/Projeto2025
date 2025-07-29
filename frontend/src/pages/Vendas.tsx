@@ -1,5 +1,11 @@
-export default function Vendas(){
-    return (
-        <h1>Vendas</h1>
-    );
+import { Outlet } from "react-router-dom";
+import MenuVendas from "../components/MenuVendas";
+
+export default function Vendas() {
+  return (
+    <div>
+      <MenuVendas />
+      <Outlet />
+    </div>
+  );
 }

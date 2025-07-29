@@ -1,0 +1,152 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+  z-index: 9999;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  padding: 25px 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  color: #1e1e1e;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  font-size: 30px;
+  font-weight: bold;
+  color: #462e51;
+  margin-bottom: 20px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #777;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  color: #303030;
+  transition: 1s;
+}
+
+.infoLinha {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.infoLinha strong {
+  color: #545454;
+}
+
+.infoColuna {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 30%;
+}
+
+.infoColunaEsquerda {
+  text-align: left;
+  align-items: flex-start;
+}
+
+.infoColunaDireita {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.table th {
+  text-align: left;
+  color: #545454;
+  font-weight: 500;
+  padding-bottom: 6px;
+}
+
+.table td {
+  padding: 8px 0;
+  vertical-align: middle;
+}
+
+.itemIcon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #c084fc;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.totalLinha {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #383737;
+  text-align: right;
+}
+
+.totalDestaque {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #462e51;
+  text-align: right;
+}
+
+.footerLinha {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.footerLinha strong {
+  color: #545454;
+  font-weight: 500;
+  margin-right: 5px;
+}
+
+.linhaSeparadora {
+  border-top: 1px solid #ddd;
+  margin: 16px 0;
+}
