@@ -1,3 +1,5 @@
+import TabelaEncomendas from "../components/TabelaEncomendas";
+
 export default function Encomendas() {
-  return <h1>Encomendas</h1>;
+  return <TabelaEncomendas />;
 }

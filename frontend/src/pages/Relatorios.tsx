@@ -1,5 +1,3 @@
-export default function Relatorios(){
-    return (
-        <h1>Relatórios</h1>
-    );
+export default function Relatorios() {
+  return <h1>Relatorios</h1>;
 }

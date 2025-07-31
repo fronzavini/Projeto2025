@@ -1,23 +1,35 @@
+/* Container geral do filtro */
 .filtro {
   display: flex;
   flex-direction: column;
   gap: 4px;
   width: 100%;
   max-width: 250px;
+
+  /* Força overflow visível para evitar scroll duplo */
+  overflow: visible !important;
+  max-height: none !important;
 }
 
+/* Label do filtro */
 .label {
   font-size: 0.9rem;
   color: #383737;
   margin-bottom: 4px;
 }
 
+/* Caixa que envolve o input dropdown */
 .caixaInput {
   position: relative;
   display: flex;
   align-items: center;
+
+  /* Também força overflow visível */
+  overflow: visible !important;
+  max-height: none !important;
 }
 
+/* Estilo do input do dropdown */
 .input {
   width: 100%;
   padding: 0.5rem 2rem 0.5rem 0.75rem;
@@ -29,6 +41,7 @@
   box-sizing: border-box;
 }
 
+/* Ícone à direita dentro do input */
 .rightIcon {
   position: absolute;
   right: 0.6rem;
@@ -36,7 +49,7 @@
   pointer-events: none;
 }
 
-/* seta (v) */
+/* Seta (v) do dropdown */
 .dropdownPersonalizado :global(.p-dropdown-trigger) {
   position: absolute;
   right: 0.6rem;
@@ -45,11 +58,50 @@
   color: #959494;
 }
 
-/* X de limpar */
+/* Ícone X para limpar */
 .dropdownPersonalizado :global(.p-dropdown-clear-icon) {
   position: absolute;
   right: 1.8rem;
   top: 50%;
   transform: translateY(-50%);
   color: #959494;
+}
+
+/* Container do painel do dropdown */
+:global(.p-dropdown-panel) {
+  position: absolute !important;
+  overflow-y: auto !important;
+  padding: 0.25rem 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999 !important;
+}
+
+/* Cada item da lista */
+:global(.p-dropdown-item) {
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  color: #383737;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Item selecionado */
+:global(.p-dropdown-item.p-highlight) {
+  background-color: #d497f0;
+  color: white;
+}
+
+/* Hover do item */
+:global(.p-dropdown-item:hover) {
+  background-color: #f9e1ff;
+  color: #b072cd;
+}
+
+/* Container do dropdown */
+:global(.p-dropdown) {
+  overflow: visible !important;
+  max-height: none !important;
+  position: relative; /* essencial para o posicionamento absoluto do painel */
 }

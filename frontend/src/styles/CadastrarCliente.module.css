@@ -44,17 +44,16 @@
 }
 
 .botaoCancelar {
-  background: none;
+  background: transparent;
   border: none;
-  color: #d497f0;
-  font-size: 1rem;
-  font-weight: bold;
+  font-size: 17px;
+  color: #666;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .botaoCancelar:hover {
-  color: #c78be2;
+  color: #383838;
 }
 
 /* Campos do formulário */

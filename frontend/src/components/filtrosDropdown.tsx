@@ -33,6 +33,7 @@ export function FiltroDropdown({
           placeholder={placeholder}
           showClear={!!value}
           className={`${styles.input} ${styles.dropdownPersonalizado}`}
+          appendTo={document.body} // <<< aqui está a mágica para evitar scroll duplo
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
-import styles from "../styles/Estoque.module.css";
+import styles from "../styles/Entregue.module.css"; // mesmo style do ConfirmarEncomenda
 
-type SaidaEstoqueProps = {
+type EntradaEstoqueProps = {
   onClose: () => void;
   estoqueId: string;
 };
@@ -8,43 +8,31 @@ type SaidaEstoqueProps = {
 export default function EntradaEstoque({
   onClose,
   estoqueId,
-}: SaidaEstoqueProps) {
+}: EntradaEstoqueProps) {
   return (
     <div className={styles.overlay}>
-      <div className={styles.popupContent}>
-        <div className={styles.container}>
-          <div className={styles.header}>
-            <h2 className={styles.headerTitle}>Produto #{estoqueId}</h2>
-            <p className={styles.subtitulo}>Ajustar quantidade</p>
-          </div>
+      <div className={styles.modal}>
+        <h2>Registrar Entrada</h2>
+        <p>
+          Defina a quantidade de entrada para o produto{" "}
+          <strong>#{estoqueId}</strong>:
+        </p>
 
-          <label htmlFor="saida" className={styles.label}>
-            Quantidade de entrada
-          </label>
-          <input
-            className={styles.input}
-            id="saida"
-            name="saida"
-            type="text"
-            defaultValue="1"
-          />
+        <input
+          type="number"
+          min="1"
+          defaultValue="1"
+          className={styles.input}
+          style={{ width: "100%", margin: "10px 0", padding: "8px" }}
+        />
 
-          <div className={styles.botoes}>
-            <button
-              className={styles.botaoCancelar}
-              type="button"
-              onClick={onClose}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              className={styles.botaoEstoque}
-              onClick={onClose}
-            >
-              Registrar entrada
-            </button>
-          </div>
+        <div className={styles.actions}>
+          <button className={styles.cancel} onClick={onClose}>
+            Cancelar
+          </button>
+          <button className={styles.confirm} onClick={onClose}>
+            Registrar entrada
+          </button>
         </div>
       </div>
     </div>

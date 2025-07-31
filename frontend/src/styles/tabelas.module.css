@@ -11,7 +11,8 @@
 }
 
 .filtro {
-  flex: 1 1 200px; /* cada filtro ocupa espaço proporcional, mínimo 200px */
+  flex: 0 1 auto; /* permite encolher até o conteúdo */
+  min-width: 200px;
   display: flex;
   flex-direction: column;
 }
@@ -67,18 +68,23 @@
 }
 
 .ativo,
-.disponivel {
+.disponivel,
+.retirado,
+.recebido,
+.pago {
   background-color: #d1fae5;
   color: #065f46;
 }
 
 .inativo,
-.esgotado {
+.esgotado,
+.cancelado {
   background-color: #fee2e2;
   color: #b91c1c;
 }
 
-.baixo {
+.baixo,
+.pendente {
   background-color: #fee2e2;
   color: #f8ae0e;
 }
@@ -94,7 +100,7 @@
 :global(.p-paginator-page) {
   margin: 0 8px;
   padding: 6px 12px;
-  color: #7a7a7a; /* cinza claro no texto */
+  color: #7a7a7a;
   background: none;
   border: none;
   font-weight: normal;
@@ -102,12 +108,12 @@
 }
 
 :global(.p-paginator-page:hover) {
-  color: #4d4d4d; /* cinza médio no hover */
+  color: #4d4d4d;
   cursor: pointer;
 }
 
 :global(.p-paginator-page.p-highlight) {
-  color: #212121; /* cinza escuro para a página atual */
+  color: #212121;
   font-weight: bold;
 }
 
@@ -170,4 +176,11 @@
   padding: 10px 16px;
   font-size: 16px;
   cursor: pointer;
+}
+
+.financeiro {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
 }

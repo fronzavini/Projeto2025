@@ -93,7 +93,6 @@ h2 {
 }
 
 .header {
-  background-color: #fafafa;
   font-weight: 500;
   color: #666;
   border-top: none;
@@ -412,4 +411,34 @@ h2 {
 .removerCliente:hover {
   color: #d497f0;
   transition: color 0.3s;
+}
+
+/* Ajusta largura do modal de desconto */
+.modalDesconto {
+  max-width: 500px;
+}
+
+/* Campo de entrada somente leitura */
+.inputReadOnly {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.inputDesconto {
+  max-width: 380px;
+}
+
+/* Header exclusivo do modal de desconto */
+.headerDesconto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Título exclusivo do modal de desconto */
+.titleDesconto {
+  white-space: nowrap; /* não quebra em 2 linhas */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

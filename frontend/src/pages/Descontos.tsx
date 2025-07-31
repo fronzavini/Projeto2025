@@ -1,5 +1,11 @@
-export default function Descontos(){
-    return (
-        <h1>Descontos</h1>
-    );
+import MenuDescontos from "../components/MenuDescontos";
+import { Outlet } from "react-router-dom";
+
+export default function Descontos() {
+  return (
+    <div>
+      <MenuDescontos />
+      <Outlet />
+    </div>
+  );
 }

@@ -18,6 +18,9 @@ import Funcionarios from "./pages/Funcionarios";
 import Fornecedores from "./pages/Fornecedores";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
+import Cupom from "./pages/Cupom";
+import Frete from "./pages/Frete";
+import Desconto from "./pages/Desconto";
 
 export default function App() {
   return (
@@ -41,7 +44,14 @@ export default function App() {
             <Route path="/produtos" element={<Produtos />} />
             <Route path="/estoque" element={<Estoque />} />
             <Route path="/financeiro" element={<Financeiro />} />
-            <Route path="/descontos" element={<Descontos />} />
+
+            <Route path="/descontos" element={<Descontos />}>
+              <Route index element={<Navigate to="cupom" replace />} />
+              <Route path="cupom" element={<Cupom />} />
+              <Route path="frete" element={<Frete />} />
+              <Route path="desconto" element={<Desconto />} />
+            </Route>
+
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/funcionarios" element={<Funcionarios />} />
             <Route path="/fornecedores" element={<Fornecedores />} />
