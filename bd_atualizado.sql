@@ -125,5 +125,5 @@ CREATE TABLE cupons (
     usos_permitidos INT,
     usos_realizados INT DEFAULT 0,
     valor_minimo DECIMAL(10,2),
-    estado ENUM('ativo', 'inativo')
+    estado BOOLEAN DEFAULT TRUE NOT NULL
 );
