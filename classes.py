@@ -225,9 +225,6 @@ class Cliente(PessoaFisica, PessoaJuridica):
             "uf": self.endUF
         }
 
-
-
-
 class Funcionario(PessoaFisica):
     def __init__(self, funcao, salario, dataContratacao, senha, **kwargs):
         super().__init__(**kwargs)
@@ -296,26 +293,265 @@ class Funcionario(PessoaFisica):
         return f"Funcionário com ID {id} excluído."
 
 class Produto:
-    def __init__(self, id, nome, categoria, marca, preco, quantidadeEstoque, status):
+    def __init__(self, id=None, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, status=True):
         self.id = id
         self.nome = nome
         self.categoria = categoria
         self.marca = marca
         self.preco = preco
         self.quantidadeEstoque = quantidadeEstoque
-        self.status = True
+        self.status = status
+
+    @staticmethod
+    def criarProduto(nome, categoria, marca, preco, quantidadeEstoque):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        query = '''
+            INSERT INTO produtos (nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        '''
+        cursor.execute(query, (nome, categoria, marca, preco, quantidadeEstoque, 0, True))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return 'Produto adicionado com sucesso'
+
+    @staticmethod
+    def editarProduto(id, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        campos = []
+        valores = []
+        if nome:
+            campos.append("nome = %s")
+            valores.append(nome)
+        if categoria:
+            campos.append("categoria = %s")
+            valores.append(categoria)
+        if marca:
+            campos.append("marca = %s")
+            valores.append(marca)
+        if preco:
+            campos.append("preco = %s")
+            valores.append(preco)
+        if quantidadeEstoque:
+            campos.append("quantidade_estoque = %s")
+            valores.append(quantidadeEstoque)
+
+        if not campos:
+            print("Nenhuma informacao para atualizar")
+            return
+
+        cursor.execute(f"UPDATE produtos SET {', '.join(campos)} WHERE id = %s", valores + [id])
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Produto com ID {id} atualizado com sucesso"
+
+    @staticmethod
+    def desativarProduto(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT estado FROM produtos WHERE id = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado:
+            novo_estado = not resultado[0]
+            cursor.execute("UPDATE produtos SET estado = %s WHERE id = %s", (novo_estado, id))
+            conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Produto com ID {id} teve estado alterado."
+
+    @staticmethod
+    def excluirProduto(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM produtos WHERE id = %s", (id,))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Produto com ID {id} excluido."
+
+class Fornecedor:
+    def __init__(self, id=None, nome_empresa=None, cnpj=None, telefone=None, email=None, endCep=None, endRua=None,
+                 endNumero=None, endBairro=None, endComplemento=None, endUF=None):
+        self.id = id
+        self.nome_empresa = nome_empresa
+        self.cnpj = cnpj
+        self.telefone = telefone
+        self.email = email
+        self.endCep = endCep
+        self.endRua = endRua
+        self.endNumero = endNumero
+        self.endBairro = endBairro
+        self.endComplemento = endComplemento
+        self.endUF = endUF
+
+    @staticmethod
+    def criarFornecedor(nome_empresa, cnpj, telefone, email, endCep, endRua, endNumero, endBairro, endComplemento, endUF):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        query = '''
+            INSERT INTO fornecedores (nome_empresa, cnpj, telefone, email, endCep, endRua, endNumero, endBairro, endComplemento, endUF)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+        cursor.execute(query, (nome_empresa, cnpj, telefone, email, endCep, endRua, endNumero, endBairro, endComplemento, endUF))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return "Fornecedor adicionado com sucesso"
+
+    @staticmethod
+    def editarFornecedor(id, nome_empresa=None, cnpj=None, telefone=None, email=None, endCep=None, endRua=None,
+                         endNumero=None, endBairro=None, endComplemento=None, endUF=None):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        campos = []
+        valores = []
+        if nome_empresa:
+            campos.append("nome_empresa = %s")
+            valores.append(nome_empresa)
+        if cnpj:
+            campos.append("cnpj = %s")
+            valores.append(cnpj)
+        if telefone:
+            campos.append("telefone = %s")
+            valores.append(telefone)
+        if email:
+            campos.append("email = %s")
+            valores.append(email)
+        if endCep:
+            campos.append("endCep = %s")
+            valores.append(endCep)
+        if endRua:
+            campos.append("endRua = %s")
+            valores.append(endRua)
+        if endNumero:
+            campos.append("endNumero = %s")
+            valores.append(endNumero)
+        if endBairro:
+            campos.append("endBairro = %s")
+            valores.append(endBairro)
+        if endComplemento:
+            campos.append("endComplemento = %s")
+            valores.append(endComplemento)
+        if endUF:
+            campos.append("endUF = %s")
+            valores.append(endUF)
+
+        if not campos:
+            return "Nenhuma informacao para atualizar"
+
+        cursor.execute(f"UPDATE fornecedores SET {', '.join(campos)} WHERE id = %s", valores + [id])
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Fornecedor com ID {id} atualizado com sucesso"
+
+    @staticmethod
+    def excluirFornecedor(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM fornecedores WHERE id = %s", (id,))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Fornecedor com ID {id} excluido."
 
 class Cupom:
-    def __init__(self, id, nome, codigo, dataValidade, usosPermitidos, regrasAplicacao, status, descontoFixo, descontoPorcentagem):
+    def __init__(self, id=None, codigo=None, tipo=None, descontofixo=0.0, descontoPorcentagem=0.0, descontofrete=0.0,
+                 validade=None, usos_permitidos=0, usos_realizados=0, valor_minimo=0.0, estado='ativo'):
         self.id = id
-        self.nome = nome
         self.codigo = codigo
-        self.dataValidade = dataValidade
-        self.usosPermitidos = usosPermitidos
-        self.regrasAplicacao = regrasAplicacao
-        self.status = True
-        self.descontoFixo = descontoFixo
+        self.tipo = tipo
+        self.descontofixo = descontofixo
         self.descontoPorcentagem = descontoPorcentagem
+        self.descontofrete = descontofrete
+        self.validade = validade
+        self.usos_permitidos = usos_permitidos
+        self.usos_realizados = usos_realizados
+        self.valor_minimo = valor_minimo
+        self.estado = estado
+
+    @staticmethod
+    def criarCupom(codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        query = '''
+            INSERT INTO cupons (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'ativo')
+        '''
+        cursor.execute(query, (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return "Cupom criado com sucesso"
+
+    @staticmethod
+    def editarCupom(id, codigo=None, tipo=None, descontofixo=None, descontoPorcentagem=None, descontofrete=None,
+                    validade=None, usos_permitidos=None, valor_minimo=None):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        campos = []
+        valores = []
+        if codigo:
+            campos.append("codigo = %s")
+            valores.append(codigo)
+        if tipo:
+            campos.append("tipo = %s")
+            valores.append(tipo)
+        if descontofixo is not None:
+            campos.append("descontofixo = %s")
+            valores.append(descontofixo)
+        if descontoPorcentagem is not None:
+            campos.append("descontoPorcentagem = %s")
+            valores.append(descontoPorcentagem)
+        if descontofrete is not None:
+            campos.append("descontofrete = %s")
+            valores.append(descontofrete)
+        if validade:
+            campos.append("validade = %s")
+            valores.append(validade)
+        if usos_permitidos is not None:
+            campos.append("usos_permitidos = %s")
+            valores.append(usos_permitidos)
+        if valor_minimo is not None:
+            campos.append("valor_minimo = %s")
+            valores.append(valor_minimo)
+
+        if not campos:
+            return "Nenhuma informacao para atualizar"
+
+        cursor.execute(f"UPDATE cupons SET {', '.join(campos)} WHERE id = %s", valores + [id])
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Cupom com ID {id} atualizado com sucesso"
+
+    @staticmethod
+    def alternarEstado(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT estado FROM cupons WHERE id = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado:
+            novo_estado = 'inativo' if resultado[0] == 'ativo' else 'ativo'
+            cursor.execute("UPDATE cupons SET estado = %s WHERE id = %s", (novo_estado, id))
+            conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Cupom com ID {id} teve estado alterado para {novo_estado}"
+
+    @staticmethod
+    def excluirCupom(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM cupons WHERE id = %s", (id,))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+        return f"Cupom com ID {id} excluido."
+
 
 class ServicoPersonalizado:
     def __init__(self, id, nome, produtos, preco, status):
@@ -343,10 +579,6 @@ class Venda:
         self.entrega = entrega
         self.dataEntrega = dataEntrega
 
-class Fornecedor:
-    def __init__(self, id):
-        self.id = id
-        self.produtos_fornecidos = []
 
 
 #Cliente.criarCliente(nome="João Silva",tipo="fisico",email="joao.silva@example.com",senha="senha123",telefone="47 999999999",endCep="89035470",endRua="regente feijo",endNumero="251",endBairro="vila nova",endComplemento="predio",endUF="SC",cpf='10690098901',rg='10690098901',sexo='masculino',dataNasc=date(2007, 7, 25),cnpj=None)
