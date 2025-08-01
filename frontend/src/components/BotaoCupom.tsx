@@ -2,16 +2,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/botao.module.css";
 
-// Define o tipo das props que o componente aceita
-// Aqui: uma função "onClick" que será executada quando o botão for clicado
-type BotaoClienteProps = {
+type BotaoCupomProps = {
   onClick: () => void;
 };
 
-export default function BotaoCliente({ onClick }: BotaoClienteProps) {
+export default function BotaoCupom({ onClick }: BotaoCupomProps) {
   return (
     <button className={styles.botao} onClick={onClick}>
-      <FontAwesomeIcon icon={faPlus} /> Cadastrar Cliente
+      <FontAwesomeIcon icon={faPlus} /> Cadastrar Cupom
     </button>
   );
 }
