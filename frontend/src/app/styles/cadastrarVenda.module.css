@@ -1,0 +1,444 @@
+.botaoRoxo {
+  background-color: #d497f0;
+  border: none;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.botaoRoxo:hover,
+.confirmarVenda:hover {
+  background-color: #c78be2;
+  transition: 0.5s;
+}
+
+.cancelar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 17px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-top: 24px;
+}
+
+.cancelar:hover {
+  color: #000;
+  transition: 0.2s;
+}
+
+.titulo {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.inlineSearch {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* espaçamento entre input e botão */
+}
+
+.inputIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  right: 10px;
+  color: #aaa;
+  pointer-events: none;
+}
+
+.input {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #aaa;
+}
+
+.title {
+  color: #462e51;
+}
+
+.produtoContainer {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+  width: 100%;
+}
+
+.header,
+.produtoItem,
+.totalRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 100px 100px 40px;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid #eee;
+}
+
+.header {
+  font-weight: 500;
+  color: #666;
+  border-top: none;
+}
+
+.produtoItem span,
+.header span {
+  text-align: left;
+}
+
+.headerProdutos span {
+  color: #666;
+  padding: 28px;
+}
+
+.quantidadeControls {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 70px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.quantidadeControls button {
+  width: 24px;
+  height: 100%;
+  border: none;
+  background: none;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.quantidadeControls span {
+  width: 22px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.quantidadeControls button:first-of-type {
+  border-right: 1px solid #ccc;
+}
+
+.quantidadeControls button:last-of-type {
+  border-left: 1px solid #ccc;
+}
+
+.trashButton {
+  background: none;
+  border: none;
+  color: #4b006e; /* roxo escuro */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+
+.totalRow {
+  justify-content: end;
+  font-weight: bold;
+  border-top: 1px solid #ddd;
+}
+
+.totalLabel {
+  grid-column: 1 / 4;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.totalValue {
+  grid-column: 4 / 5;
+  text-align: left;
+}
+
+.novoProdutoForm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.novoProdutoForm input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 160px;
+  outline: none;
+}
+
+.novoProdutoForm input[type="number"]::-webkit-inner-spin-button,
+.novoProdutoForm input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.novoProdutoForm button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: none;
+  background-color: #d59ce3;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.novoProdutoForm button:hover {
+  background-color: #c785dc;
+}
+
+.titulo {
+  font-weight: bold;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.inlineSearch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inputIconWrapper {
+  position: relative;
+  flex-grow: 1;
+}
+
+.inputIcon {
+  position: absolute;
+  top: 50%;
+  right: 0.8rem;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.input {
+  width: 100%;
+  padding: 0.6rem 2.5rem 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.resumo {
+  margin: 1rem 0;
+}
+
+.resumoItem {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold; /* mantém o texto à esquerda em negrito */
+}
+
+.resumoItem span:last-child {
+  font-weight: normal; /* remove o negrito do valor */
+}
+
+.valorDireita {
+  text-align: right;
+}
+
+.select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.entregaContainer {
+  margin-top: 1rem;
+}
+
+.camposEntrega {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  max-width: 100%; /* impede que ultrapasse */
+  padding-right: 8px; /* um pequeno respiro à direita */
+  box-sizing: border-box;
+}
+
+.camposEntrega input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.confirmarVenda {
+  margin-top: 1rem;
+  width: 100%;
+  background-color: #d497f0;
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem;
+  font-size: 19px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.container {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto; /* rolagem vertical */
+  overflow-x: hidden; /* impede rolagem horizontal */
+  position: relative;
+  box-sizing: border-box;
+}
+
+.entregaBox {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+  background-color: #fff;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.entregaCampos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.labelCinza {
+  color: #383737;
+  width: 140px;
+  font-size: 15px;
+}
+
+.inputEntrega {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+.valorDireita {
+  color: #383737;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.clienteSelecionado {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #4a4a4a;
+  background-color: #f7f7f7;
+  padding: 6px 10px;
+  border-left: 4px solid #d497f0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.removerCliente {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+.removerCliente:hover {
+  color: #d497f0;
+  transition: color 0.3s;
+}
+
+/* Ajusta largura do modal de desconto */
+.modalDesconto {
+  max-width: 500px;
+}
+
+/* Campo de entrada somente leitura */
+.inputReadOnly {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.inputDesconto {
+  max-width: 380px;
+}
+
+/* Header exclusivo do modal de desconto */
+.headerDesconto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Título exclusivo do modal de desconto */
+.titleDesconto {
+  white-space: nowrap; /* não quebra em 2 linhas */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
