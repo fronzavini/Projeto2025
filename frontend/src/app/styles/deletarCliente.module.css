@@ -110,7 +110,7 @@
 .botaoCancelar {
   background: none;
   border: none;
-  color: #d497f0;
+  color: --cor-roxo-claro;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
@@ -118,5 +118,5 @@
 }
 
 .botaoCancelar:hover {
-  color: #c78be2;
+  color: --cor-roxo-claro-hoover;
 }

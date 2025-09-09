@@ -1,13 +1,76 @@
 :root {
-  --background: #f4f0ff;
-  --foreground: #171717;
+  /* Cores primárias */
+  --cor-roxo-claro: #d497f0;
+  --cor-roxo-claro-hoover: #c78be2;
+  --cor-roxo-escuro: #462e51;
+  --cor-roxo-fundo-icone: #d9d9d9;
+
+  /* Cores neutras / texto */
+  --cor-preto: #111111;
+  --cor-cinza-escuro: #383737;
+  --cor-cinza-claro: #ddd;
+  --cor-cinza-super-claro: #f5f5f5;
+  --cor-cinza-mediano: #666666;
+  --cor-cinza-borda: #ccc;
+
+  /* Cores de fundo */
+  --cor-fundo-branco: #ffffff;
+  --cor-fundo-overlay: rgba(0, 0, 0, 0.3);
+  --cor-fundo-overlay-escuro: rgba(0, 0, 0, 0.5);
+
+  /* Cores de status */
+  --cor-status-positivo-fundo: #d1fae5;
+  --cor-status-positivo-texto: #065f46;
+  --cor-status-negativo-fundo: #fee2e2;
+  --cor-status-negativo-texto: #b91c1c;
+  --cor-status-pendente-fundo: #fee2e2;
+  --cor-status-pendente-texto: #f8ae0e;
+
+  /* Botões */
+  --cor-botao-principal: #d497f0;
+  --cor-botao-principal-hover: #c78be2;
+  --cor-botao-confirmar: #4caf50;
+  --cor-botao-confirmar-hover: #43a047;
+  --cor-botao-cancelar: #ccc;
+  --cor-botao-cancelar-hover: #b3b3b3;
+  --cor-botao-deletar: #e74c3c;
+  --cor-botao-deletar-hover: #c0392b;
+
+  /* Outros */
+  --cor-sombra: rgba(0, 0, 0, 0.15);
+  --cor-sombra-forte: rgba(0, 0, 0, 0.3);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+[data-theme="dark"] {
+  --fundo-overlay: rgba(0, 0, 0, 0.7);
+  --fundo-popup: #2a2a2a;
+  --fundo-tabela: #1f1f1f;
+  --fundo-tabela-cabecalho: #3a3a3a;
+  --fundo-paginacao: #2a2a2a;
+  --fundo-badge-ativo: #065f46;
+  --fundo-badge-inativo: #b91c1c;
+  --fundo-badge-baixo: #f8ae0e;
+
+  --texto-principal: #f0f0f0;
+  --texto-cabecalho: #e0d0ff;
+  --texto-badge-ativo: #d1fae5;
+  --texto-badge-inativo: #fee2e2;
+  --texto-badge-baixo: #fee2e2;
+  --texto-botoes: #ccc;
+  --texto-botoes-hover: #fff;
+
+  --borda-tabela: #555;
+  --borda-paginacao: #666;
+  --borda-input: #555;
+
+  --botao-bg: #5c2ea6;
+  --botao-bg-hover: #814fd3;
+  --botao-texto: #fff;
+  --botao-sombra: 0 6px 16px rgba(0, 0, 0, 0.3);
+
+  --sombra-popup: 0 2px 10px rgba(0, 0, 0, 0.6);
+  --sombra-tabela: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 html,

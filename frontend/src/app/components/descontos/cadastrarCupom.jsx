@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "../styles/CadastrarCliente.module.css";
+import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function CadastrarCupom({ onClose }) {
   const [form, setForm] = useState({

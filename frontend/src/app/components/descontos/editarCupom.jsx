@@ -1,12 +1,29 @@
-import styles from "../../styles/CadastrarCliente.module.css";
+import { useState } from "react";
+import styles from "../../styles/cadastrarCliente.module.css";
 
-export default function VisualizarCupom({ onClose, cupom }) {
+export default function EditarCupom({ onClose, cupom }) {
+  const [formData, setFormData] = useState(cupom);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Dados atualizados (local):", formData);
+    onClose();
+  };
+
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h2 className={styles.headerTitle}>Cupom: {cupom.id}</h2>
+            <h2 className={styles.headerTitle}>Editar Cupom: {cupom.id}</h2>
             <button
               className={styles.botaoCancelar}
               type="button"
@@ -16,27 +33,45 @@ export default function VisualizarCupom({ onClose, cupom }) {
             </button>
           </div>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             {/* Nome */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Nome do cupom</label>
               <input
                 className={styles.input}
+                name="nome"
                 type="text"
-                value={cupom.nome}
-                disabled
+                value={formData.nome}
+                onChange={handleChange}
+                required
               />
             </div>
 
             {/* Tipo */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Tipo de desconto</label>
-              <input
-                className={styles.input}
-                type="text"
-                value={cupom.tipo}
-                disabled
-              />
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    name="tipo"
+                    value="valor"
+                    checked={formData.tipo === "valor"}
+                    onChange={handleChange}
+                  />{" "}
+                  Valor fixo
+                </label>{" "}
+                <label>
+                  <input
+                    type="radio"
+                    name="tipo"
+                    value="percentual"
+                    checked={formData.tipo === "percentual"}
+                    onChange={handleChange}
+                  />{" "}
+                  Porcentagem
+                </label>
+              </div>
             </div>
 
             {/* Valores */}
@@ -45,18 +80,20 @@ export default function VisualizarCupom({ onClose, cupom }) {
                 <label className={styles.label}>Valor do desconto</label>
                 <input
                   className={styles.input}
+                  name="valorDesconto"
                   type="number"
-                  value={cupom.valorDesconto}
-                  disabled
+                  value={formData.valorDesconto}
+                  onChange={handleChange}
                 />
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Valor máximo de desconto</label>
                 <input
                   className={styles.input}
+                  name="valorMaximoDesconto"
                   type="number"
-                  value={cupom.valorMaximoDesconto}
-                  disabled
+                  value={formData.valorMaximoDesconto}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -65,9 +102,10 @@ export default function VisualizarCupom({ onClose, cupom }) {
               <label className={styles.label}>Valor mínimo da compra</label>
               <input
                 className={styles.input}
+                name="valorMinimoCompra"
                 type="number"
-                value={cupom.valorMinimoCompra}
-                disabled
+                value={formData.valorMinimoCompra}
+                onChange={handleChange}
               />
             </div>
 
@@ -76,9 +114,10 @@ export default function VisualizarCupom({ onClose, cupom }) {
               <label className={styles.label}>Categoria</label>
               <input
                 className={styles.input}
+                name="categoria"
                 type="text"
-                value={cupom.categoria}
-                disabled
+                value={formData.categoria}
+                onChange={handleChange}
               />
             </div>
 
@@ -88,18 +127,20 @@ export default function VisualizarCupom({ onClose, cupom }) {
                 <label className={styles.label}>Data de início</label>
                 <input
                   className={styles.input}
+                  name="dataInicio"
                   type="date"
-                  value={cupom.dataInicio}
-                  disabled
+                  value={formData.dataInicio}
+                  onChange={handleChange}
                 />
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Data de fim</label>
                 <input
                   className={styles.input}
+                  name="dataTermino"
                   type="date"
-                  value={cupom.dataTermino}
-                  disabled
+                  value={formData.dataTermino}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -109,20 +150,24 @@ export default function VisualizarCupom({ onClose, cupom }) {
               <label className={styles.label}>Descrição</label>
               <textarea
                 className={styles.input}
-                value={cupom.descricao}
-                disabled
+                name="descricao"
+                value={formData.descricao}
+                onChange={handleChange}
               />
             </div>
 
             {/* Status */}
             <div className={styles.formGroup}>
               <label className={styles.label}>Status</label>
-              <input
+              <select
                 className={styles.input}
-                type="text"
-                value={cupom.status}
-                disabled
-              />
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+              >
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
             </div>
 
             {/* Usos */}
@@ -131,21 +176,27 @@ export default function VisualizarCupom({ onClose, cupom }) {
                 <label className={styles.label}>Usos permitidos</label>
                 <input
                   className={styles.input}
+                  name="usos_permitidos"
                   type="number"
-                  value={cupom.usos_permitidos}
-                  disabled
+                  value={formData.usos_permitidos}
+                  onChange={handleChange}
                 />
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Usos realizados</label>
                 <input
                   className={styles.input}
+                  name="usos_realizados"
                   type="number"
-                  value={cupom.usos_realizados}
-                  disabled
+                  value={formData.usos_realizados}
+                  onChange={handleChange}
                 />
               </div>
             </div>
+
+            <button type="submit" className={styles.botaoEnviar}>
+              Salvar alterações
+            </button>
           </form>
         </div>
       </div>

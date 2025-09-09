@@ -1,16 +1,16 @@
-import styles from "../styles/tabelas.module.css";
+import styles from "../../styles/tabelas.module.css";
 
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { Filtros } from "./Filtros";
-import { FiltroDropdown } from "./FiltrosDropdown";
+import { Filtros } from "../filtros";
+import { FiltroDropdown } from "../filtrosDropdown";
 
-import CancelarCupom from "./CancelarCupom";
-import VisualizarCupom from "./VisualizarCupom";
-import EditarCupom from "./EditarCupom";
+import { deletarItem } from "../deletar";
+import VisualizarCupom from "./visualizarCupom";
+import EditarCupom from "./editarCupom";
 
 export default function TabelaCupom() {
   const data = [
@@ -188,16 +188,17 @@ export default function TabelaCupom() {
           />
         </DataTable>
 
-        {isDeleteModalOpen && cupomParaExcluir && (
-          <CancelarCupom
-            cupomId={cupomParaExcluir.id}
-            onClose={() => setIsDeleteModalOpen(false)}
-            onConfirm={() => {
+        {isDeleteModalOpen &&
+          cupomParaExcluir &&
+          deletarItem({
+            itemId: cupomParaExcluir.id,
+            itemTipo: "cupom",
+            onDelete: () => {
               console.log("Cancelar cupom:", cupomParaExcluir.id);
-              setIsDeleteModalOpen(false);
-            }}
-          />
-        )}
+              // Aqui você pode adicionar a lógica real para remover o cupom
+            },
+            onClose: () => setIsDeleteModalOpen(false),
+          })}
 
         {isVisualizarModalOpen && cupomParaVisualizar && (
           <VisualizarCupom
