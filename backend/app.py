@@ -4,7 +4,6 @@ import mysql.connector
 from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 CORS(app)  # permite todas as origens
 
@@ -24,7 +23,6 @@ def conectar_banco():
         return None
 
 
-app = Flask(__name__)
 
 
 @app.route('/')
