@@ -25,8 +25,6 @@ def home():
     return jsonify({"message": "Bem-vindo ao Flask!"})
 
 
-# ...existing code...
-
 # Rotas para Cliente
 @app.route('/criar_cliente', methods=['POST'])
 def criar_cliente():
