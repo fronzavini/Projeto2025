@@ -11,22 +11,30 @@
   height: 10.188rem;
   padding: 1.5rem;
   border-radius: 12px;
-  background: var(--fundo-branco); /* variável existente */
-  box-shadow: var(--resumo-card-shadow); /* reutilizando sombra do root */
+  background-color: var(--fundo-branco); /* fundo do card do root */
+  box-shadow: var(--resumo-card-shadow); /* sombra definida no root */
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin: 0.5rem;
+  transition: background-color 0.3s, color 0.3s; /* suave ao mudar tema */
+}
+
+.card.principal {
+  background-color: var(
+    --botao-novo-produto-bg
+  ); /* destaque para card principal */
+  color: var(--botao-text-color);
 }
 
 .title {
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
-  color: var(--table-text); /* usando variável existente */
+  color: var(--table-text); /* texto usando variável do root */
 }
 
 .value {
   font-size: 1.8rem;
   font-weight: bold;
-  color: var(--table-text); /* usando variável existente */
+  color: var(--table-text); /* texto usando variável do root */
 }
