@@ -1,5 +1,8 @@
+from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
 import mysql.connector
+from flask_cors import CORS
+
 
 def conectar_banco():
     try:

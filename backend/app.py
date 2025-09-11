@@ -2,8 +2,11 @@ from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
 import mysql.connector
 from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira
+from flask_cors import CORS
 
 
+app = Flask(__name__)
+CORS(app)  # permite todas as origens
 
 
 def conectar_banco():
@@ -39,7 +42,7 @@ def criar_cliente():
         "nome": dados.get("nome"),
         "tipo": dados.get("tipo"),
         "email": dados.get("email"),
-        "senha": dados.get("senha", "cliente123"),
+        "senha": dados.get("senha", "cliente123") if dados.get("senha") else None,
         "telefone": dados.get("telefone"),
         "endCep": dados.get("cep"),
         "endRua": dados.get("logradouro"),
@@ -106,285 +109,382 @@ def listar_clientes():
     clientes = Cliente.listarClientes()
     return jsonify(clientes)
 
-
-# Funcionario
-@app.route('/criar_funcionario', methods=['GET','POST'])
+#Rotas de Funcionario
+#curl -X POST http://127.0.0.1:5000/criar_funcionario -H "Content-Type: application/json" -d "{\"nome\":\"Maria Souza\",\"cpf\":\"12345678901\",\"rg\":\"1234567\",\"data_nascimento\":\"1990-05-10\",\"sexo\":\"feminino\",\"email\":\"maria.souza@email.com\",\"senha\":\"senha123\",\"telefone\":\"11988887777\",\"cep\":\"12345678\",\"logradouro\":\"Rua X\",\"numero\":\"200\",\"bairro\":\"Centro\",\"complemento\":\"Apto 5\",\"uf\":\"SP\",\"cidade\":\"São Paulo\",\"funcao\":\"vendedora\",\"salario\":2500.00,\"dataContratacao\":\"2023-01-15\"}"
+@app.route('/criar_funcionario', methods=['POST'])
 def criar_funcionario():
     dados = request.json
-    Funcionario.criarFuncionario(**dados)
-    return jsonify({"message": "Funcionario criado com sucesso"})
+
+    funcionario_data = {
+        "nome": dados.get("nome"),
+        "email": dados.get("email"),
+        "senha": dados.get("senha", "func123"),
+        "telefone": dados.get("telefone"),
+        "endCep": dados.get("cep"),
+        "endRua": dados.get("logradouro"),
+        "endNumero": dados.get("numero"),
+        "endBairro": dados.get("bairro"),
+        "endComplemento": dados.get("complemento"),
+        "endUF": dados.get("uf"),
+        "endMunicipio": dados.get("cidade"),
+        "cpf": dados.get("cpf"),
+        "rg": dados.get("rg"),
+        "sexo": dados.get("sexo"),
+        "dataNasc": dados.get("data_nascimento"),
+        "funcao": dados.get("funcao"),
+        "salario": dados.get("salario"),
+        "dataContratacao": dados.get("dataContratacao"),
+    }
+
+    resultado = Funcionario.criarFuncionario(**funcionario_data)
+    return jsonify({"message": resultado})
 
 
-@app.route('/editar_funcionario', methods=['GET', 'POST'])
-def editar_funcionario():
+#curl -X PUT http://127.0.0.1:5000/editar_funcionario/1 -H "Content-Type: application/json" -d "{\"nome\":\"Maria Souza\",\"email\":\"maria.nova@email.com\",\"telefone\":\"11988887777\",\"cep\":\"98765432\",\"logradouro\":\"Rua Y\",\"funcao\":\"gerente\",\"salario\":3500.00}"
+@app.route('/editar_funcionario/<int:id>', methods=['PUT'])
+def editar_funcionario(id):
     dados = request.json
-    Funcionario.editarFuncionario(**dados)
-    return jsonify({"message": "Funcionario atualizado com sucesso"})
+
+    resultado = Funcionario.editarFuncionario(
+        id=id,
+        nome=dados.get("nome"),
+        email=dados.get("email"),
+        senha=dados.get("senha"),
+        telefone=dados.get("telefone"),
+        endCep=dados.get("cep"),
+        endRua=dados.get("logradouro"),
+        endNumero=dados.get("numero"),
+        endBairro=dados.get("bairro"),
+        endComplemento=dados.get("complemento"),
+        endUF=dados.get("uf"),
+        endMunicipio=dados.get("cidade"),
+        cpf=dados.get("cpf"),
+        rg=dados.get("rg"),
+        sexo=dados.get("sexo"),
+        dataNasc=dados.get("data_nascimento"),
+        funcao=dados.get("funcao"),
+        salario=dados.get("salario"),
+        dataContratacao=dados.get("dataContratacao"),
+    )
+    return jsonify({"message": "Funcionário atualizado com sucesso."})
 
 
-@app.route('/desativar_funcionario', methods=['GET', 'POST'])
-def desativar_funcionario():
-    dados = request.json
-    Funcionario.desativarFuncionario(**dados)
-    return jsonify({"message": "Funcionario desativado com sucesso"})
+#curl -X PATCH http://127.0.0.1:5000/desativar_funcionario/1
+@app.route('/desativar_funcionario/<int:id>', methods=['PATCH'])
+def desativar_funcionario(id):
+    resultado = Funcionario.desativarFuncionario(id)
+    return jsonify({"message": resultado})
 
 
-@app.route('/deletar_funcionario', methods=['GET', 'POST'])
-def deletar_funcionario():
-    dados = request.json
-    Funcionario.deletarFuncionario(**dados)
-    return jsonify({"message": "Funcionario deletado com sucesso"})
+#curl -X DELETE http://127.0.0.1:5000/deletar_funcionario/1
+@app.route('/deletar_funcionario/<int:id>', methods=['DELETE'])
+def deletar_funcionario(id):
+    resultado = Funcionario.excluirFuncionario(id)
+    return jsonify({"message": resultado})
 
 
-@app.route('/listar_funcionario', methods=['GET', 'POST'])
-def listar_funcionario():
+#curl -X GET http://127.0.0.1:5000/listar_funcionarios
+@app.route('/listar_funcionarios', methods=['GET'])
+def listar_funcionarios():
     funcionarios = Funcionario.listarFuncionarios()
     return jsonify(funcionarios)
 
 
+
 # Produto
-@app.route('/criar_produto', methods=['GET', 'POST'])
+#curl -X POST http://127.0.0.1:5000/criar_produto -H "Content-Type: application/json" -d "{\"nome\":\"Rosa Vermelha\",\"categoria\":\"Flores\",\"marca\":\"BellaDonna\",\"preco\":15.50,\"quantidadeEstoque\":100}"
+@app.route('/criar_produto', methods=['POST'])
 def criar_produto():
     dados = request.json
-    Produto.criarProduto(**dados)
-    return jsonify({"message": "Produto criado com sucesso"})
+    resultado = Produto.criarProduto(
+        nome=dados.get("nome"),
+        categoria=dados.get("categoria"),
+        marca=dados.get("marca"),
+        preco=dados.get("preco"),
+        quantidadeEstoque=dados.get("quantidadeEstoque")
+    )
+    return jsonify({"message": resultado})
 
 
-@app.route('/editar_produto', methods=['GET', 'POST'])
-def editar_produto():
+#curl -X PUT http://127.0.0.1:5000/editar_produto/1 -H "Content-Type: application/json" -d "{\"nome\":\"Rosa Branca\",\"preco\":18.00,\"quantidadeEstoque\":80}"
+@app.route('/editar_produto/<int:id>', methods=['PUT'])
+def editar_produto(id):
     dados = request.json
-    Produto.editarProduto(**dados)
-    return jsonify({"message": "Produto atualizado com sucesso"})
+    resultado = Produto.editarProduto(
+        id=id,
+        nome=dados.get("nome"),
+        categoria=dados.get("categoria"),
+        marca=dados.get("marca"),
+        preco=dados.get("preco"),
+        quantidadeEstoque=dados.get("quantidadeEstoque")
+    )
+    return jsonify({"message": "Produto atualizado com sucesso."})
 
 
-@app.route('/desativar_produto', methods=['GET', 'POST'])
-def desativar_produto():
-    dados = request.json
-    Produto.desativarProduto(**dados)
-    return jsonify({"message": "Produto desativado com sucesso"})
+#curl -X PATCH http://127.0.0.1:5000/desativar_produto/1
+@app.route('/desativar_produto/<int:id>', methods=['PATCH'])
+def desativar_produto(id):
+    resultado = Produto.desativarProduto(id)
+    return jsonify({"message": resultado})
 
 
-@app.route('/deletar_produto', methods=['GET', 'POST'])
-def deletar_produto():
-    dados = request.json
-    Produto.deletarProduto(**dados)
-    return jsonify({"message": "Produto deletado com sucesso"})
+#curl -X DELETE http://127.0.0.1:5000/deletar_produto/1
+@app.route('/deletar_produto/<int:id>', methods=['DELETE'])
+def deletar_produto(id):
+    resultado = Produto.excluirProduto(id)
+    return jsonify({"message": resultado})
 
 
-@app.route('/listar_produto', methods=['GET', 'POST'])
-def listar_produto():
+#curl -X GET http://127.0.0.1:5000/listar_produtos
+@app.route('/listar_produtos', methods=['GET'])
+def listar_produtos():
     produtos = Produto.listarProdutos()
     return jsonify(produtos)
 
-
-# Fornecedor
-@app.route('/criar_fornecedor', methods=['GET', 'POST'])
+#curl -X POST http://127.0.0.1:5000/criar_fornecedor -H "Content-Type: application/json" -d '{"nome_empresa":"Fornecedora X","cnpj":"12345678000199","telefone":"11977776666","email":"fornecedor@email.com","cep":"12345678","logradouro":"Rua Z","numero":"50","bairro":"Centro","complemento":"Sala 2","uf":"SP","cidade":"São Paulo"}'
+@app.route('/criar_fornecedor', methods=['POST'])
 def criar_fornecedor():
     dados = request.json
-    Fornecedor.criarFornecedor(**dados)
-    return jsonify({"message": "Fornecedor criado com sucesso"})
+    # nome_empresa ou nome
+    nome_empresa = dados.get("nome_empresa") or dados.get("nome")
+    resultado = Fornecedor.criarFornecedor(
+        nome_empresa=nome_empresa,
+        cnpj=dados.get("cnpj"),
+        telefone=dados.get("telefone"),
+        email=dados.get("email"),
+        endCep=dados.get("cep"),
+        endRua=dados.get("logradouro"),
+        endNumero=dados.get("numero"),
+        endBairro=dados.get("bairro"),
+        endComplemento=dados.get("complemento"),
+        endUF=dados.get("uf"),
+        endMunicipio=dados.get("cidade")
+    )
+    return jsonify({"message": resultado})
 
 
-@app.route('/editar_fornecedor', methods=['GET', 'POST'])
-def editar_fornecedor():
+#curl -X PUT http://127.0.0.1:5000/editar_fornecedor/1 -H "Content-Type: application/json" -d '{"nome_empresa":"Fornecedora Y","cnpj":"12345678000199","telefone":"11977776666","email":"fornecedor@email.com","cep":"87654321","logradouro":"Rua W","numero":"60","bairro":"Centro","complemento":"Sala 3","uf":"SP","cidade":"São Paulo"}'
+@app.route('/editar_fornecedor/<int:id>', methods=['PUT'])
+def editar_fornecedor(id):
     dados = request.json
-    Fornecedor.editarFornecedor(**dados)
-    return jsonify({"message": "Fornecedor atualizado com sucesso"})
+    # a função editarFornecedor já aceita kwargs
+    resultado = Fornecedor.editarFornecedor(
+        id=id,
+        nome_empresa=dados.get("nome_empresa") or dados.get("nome"),
+        cnpj=dados.get("cnpj"),
+        telefone=dados.get("telefone"),
+        email=dados.get("email"),
+        endCep=dados.get("cep"),
+        endRua=dados.get("logradouro"),
+        endNumero=dados.get("numero"),
+        endBairro=dados.get("bairro"),
+        endComplemento=dados.get("complemento"),
+        endUF=dados.get("uf"),
+        endMunicipio=dados.get("cidade")
+    )
+    return jsonify({"message": "Fornecedor atualizado com sucesso."})
 
+#curl -X DELETE http://127.0.0.1:5000/deletar_fornecedor/1
+@app.route('/deletar_fornecedor/<int:id>', methods=['DELETE'])
+def deletar_fornecedor(id):
+    resultado = Fornecedor.excluirFornecedor(id)
+    return jsonify({"message": resultado})
 
-@app.route('/desativar_fornecedor', methods=['GET', 'POST'])
-def desativar_fornecedor():
-    dados = request.json
-    Fornecedor.desativarFornecedor(**dados)
-    return jsonify({"message": "Fornecedor desativado com sucesso"})
-
-
-@app.route('/deletar_fornecedor', methods=['GET', 'POST'])
-def deletar_fornecedor():
-    dados = request.json
-    Fornecedor.deletarFornecedor(**dados)
-    return jsonify({"message": "Fornecedor deletado com sucesso"})
-
-
-@app.route('/listar_fornecedor', methods=['GET', 'POST'])
-def listar_fornecedor():
+#curl -X GET http://127.0.0.1:5000/listar_fornecedores
+@app.route('/listar_fornecedores', methods=['GET'])
+def listar_fornecedores():
     fornecedores = Fornecedor.listarFornecedores()
     return jsonify(fornecedores)
 
 
-# Cupom
-@app.route('/criar_cupom', methods=['GET', 'POST'])
+# ROTAS DE CUPOM
+#curl -X POST http://127.0.0.1:5000/criar_cupom -H "Content-Type: application/json" -d '{"codigo":"PROMO10","tipo":"percentual","descontofixo":null,"descontoPorcentagem":10,"descontofrete":null,"validade":"2025-12-31","usos_permitidos":100,"valor_minimo":50}'
+@app.route('/criar_cupom', methods=['POST'])
 def criar_cupom():
     dados = request.json
-    Cupom.criarCupom(**dados)
-    return jsonify({"message": "Cupom criado com sucesso"})
+    resultado = Cupom.criarCupom(
+        codigo=dados.get("codigo"),
+        tipo=dados.get("tipo"),
+        descontofixo=dados.get("descontofixo"),
+        descontoPorcentagem=dados.get("descontoPorcentagem"),
+        descontofrete=dados.get("descontofrete"),
+        validade=dados.get("validade"),
+        usos_permitidos=dados.get("usos_permitidos"),
+        valor_minimo=dados.get("valor_minimo")
+    )
+    return jsonify({"message": resultado})
 
-
-@app.route('/editar_cupom', methods=['GET', 'POST'])
-def editar_cupom():
+#curl -X PUT http://127.0.0.1:5000/editar_cupom/1 -H "Content-Type: application/json" -d '{"codigo":"PROMO20","tipo":"percentual","descontofixo":null,"descontoPorcentagem":20,"descontofrete":null,"validade":"2025-12-31","usos_permitidos":50,"valor_minimo":100}'
+@app.route('/editar_cupom/<int:id>', methods=['PUT'])
+def editar_cupom(id):
     dados = request.json
-    Cupom.editarCupom(**dados)
-    return jsonify({"message": "Cupom atualizado com sucesso"})
+    resultado = Cupom.editarCupom(
+        id=id,
+        codigo=dados.get("codigo"),
+        tipo=dados.get("tipo"),
+        descontofixo=dados.get("descontofixo"),
+        descontoPorcentagem=dados.get("descontoPorcentagem"),
+        descontofrete=dados.get("descontofrete"),
+        validade=dados.get("validade"),
+        usos_permitidos=dados.get("usos_permitidos"),
+        valor_minimo=dados.get("valor_minimo")
+    )
+    return jsonify({"message": "Cupom atualizado com sucesso."})
 
+#curl -X PATCH http://127.0.0.1:5000/desativar_cupom/1
+@app.route('/desativar_cupom/<int:id>', methods=['PATCH'])
+def desativar_cupom(id):
+    resultado = Cupom.desativarCupom(id)
+    return jsonify({"message": resultado})
 
-@app.route('/desativar_cupom', methods=['GET', 'POST'])
-def desativar_cupom():
-    dados = request.json
-    Cupom.desativarCupom(**dados)
-    return jsonify({"message": "Cupom desativado com sucesso"})
+#curl -X DELETE http://127.0.0.1:5000/deletar_cupom/1
+@app.route('/deletar_cupom/<int:id>', methods=['DELETE'])
+def deletar_cupom(id):
+    resultado = Cupom.excluirCupom(id)
+    return jsonify({"message": resultado})
 
-
-@app.route('/deletar_cupom', methods=['GET', 'POST'])
-def deletar_cupom():
-    dados = request.json
-    Cupom.deletarCupom(**dados)
-    return jsonify({"message": "Cupom deletado com sucesso"})
-
-
-@app.route('/listar_cupom', methods=['GET', 'POST'])
-def listar_cupom():
+#curl -X GET http://127.0.0.1:5000/listar_cupons
+@app.route('/listar_cupons', methods=['GET'])
+def listar_cupons():
     cupons = Cupom.listarCupons()
     return jsonify(cupons)
 
 
-# ServicoPersonalizado
-@app.route('/criar_servicopersonalizado', methods=['GET', 'POST'])
+# ROTAS DE SERVIÇO PERSONALIZADO
+
+#curl -X POST http://127.0.0.1:5000/criar_servicopersonalizado -H "Content-Type: application/json" -d '{"nome":"Buquê Especial","produtos":["Rosa Vermelha","Lírio"],"preco":120.00}'
+@app.route('/criar_servicopersonalizado', methods=['POST'])
 def criar_servicopersonalizado():
     dados = request.json
-    ServicoPersonalizado.criarServicoPersonalizado(**dados)
-    return jsonify({"message": "Serviço personalizado criado com sucesso"})
+    resultado = ServicoPersonalizado.criarServicoPersonalizado(
+        nome=dados.get("nome"),
+        produtos=dados.get("produtos"),
+        preco=dados.get("preco")
+    )
+    return jsonify({"message": resultado})
 
-
-@app.route('/editar_servicopersonalizado', methods=['GET', 'POST'])
-def editar_servicopersonalizado():
+#curl -X PUT http://127.0.0.1:5000/editar_servicopersonalizado/1 -H "Content-Type: application/json" -d '{"nome":"Buquê Deluxe","produtos":["Rosa Branca","Tulipa"],"preco":150.00,"status":"ativo"}'
+@app.route('/editar_servicopersonalizado/<int:id>', methods=['PUT'])
+def editar_servicopersonalizado(id):
     dados = request.json
-    ServicoPersonalizado.editarServicoPersonalizado(**dados)
-    return jsonify({"message": "Serviço personalizado atualizado com sucesso"})
+    resultado = ServicoPersonalizado.editarServicoPersonalizado(
+        id=id,
+        nome=dados.get("nome"),
+        produtos=dados.get("produtos"),
+        preco=dados.get("preco"),
+        status=dados.get("status")
+    )
+    return jsonify({"message": "Serviço atualizado com sucesso."})
 
+#curl -X PATCH http://127.0.0.1:5000/desativar_servicopersonalizado/1
+@app.route('/desativar_servicopersonalizado/<int:id>', methods=['PATCH'])
+def desativar_servicopersonalizado(id):
+    resultado = ServicoPersonalizado.desativarServicoPersonalizado(id)
+    return jsonify({"message": resultado})
 
-@app.route('/desativar_servicopersonalizado', methods=['GET', 'POST'])
-def desativar_servicopersonalizado():
-    dados = request.json
-    ServicoPersonalizado.desativarServicoPersonalizado(**dados)
-    return jsonify({"message": "Serviço personalizado desativado com sucesso"})
+#curl -X DELETE http://127.0.0.1:5000/deletar_servicopersonalizado/1
+@app.route('/deletar_servicopersonalizado/<int:id>', methods=['DELETE'])
+def deletar_servicopersonalizado(id):
+    resultado = ServicoPersonalizado.excluirServicoPersonalizado(id)
+    return jsonify({"message": resultado})
 
-
-@app.route('/deletar_servicopersonalizado', methods=['GET', 'POST'])
-def deletar_servicopersonalizado():
-    dados = request.json
-    ServicoPersonalizado.deletarServicoPersonalizado(**dados)
-    return jsonify({"message": "Serviço personalizado deletado com sucesso"})
-
-
-@app.route('/listar_servicopersonalizado', methods=['GET', 'POST'])
+#curl -X GET http://127.0.0.1:5000/listar_servicopersonalizado
+@app.route('/listar_servicopersonalizado', methods=['GET'])
 def listar_servicopersonalizado():
     servicos = ServicoPersonalizado.listarServicosPersonalizados()
     return jsonify(servicos)
 
 
-# Carrinho
-@app.route('/criar_carrinho', methods=['GET', 'POST'])
+# ROTAS DE CARRINHO
+#curl -X POST http://127.0.0.1:5000/criar_carrinho -H "Content-Type: application/json" -d '{"idCliente":1}'
+@app.route('/criar_carrinho', methods=['POST'])
 def criar_carrinho():
     dados = request.json
-    Carrinho.criarCarrinho(**dados)
-    return jsonify({"message": "Carrinho criado com sucesso"})
+    id_cliente = dados.get("idCliente") or dados.get("id_cliente")
+    resultado = Carrinho.criarCarrinho(id_cliente)
+    return jsonify({"message": resultado})
 
+#curl -X DELETE http://127.0.0.1:5000/deletar_carrinho/1
+@app.route('/deletar_carrinho/<int:id>', methods=['DELETE'])
+def deletar_carrinho(id):
+    resultado = Carrinho.excluirCarrinho(id)
+    return jsonify({"message": resultado})
 
-@app.route('/editar_carrinho', methods=['GET', 'POST'])
-def editar_carrinho():
-    dados = request.json
-    Carrinho.editarCarrinho(**dados)
-    return jsonify({"message": "Carrinho atualizado com sucesso"})
-
-
-@app.route('/desativar_carrinho', methods=['GET', 'POST'])
-def desativar_carrinho():
-    dados = request.json
-    Carrinho.desativarCarrinho(**dados)
-    return jsonify({"message": "Carrinho desativado com sucesso"})
-
-
-@app.route('/deletar_carrinho', methods=['GET', 'POST'])
-def deletar_carrinho():
-    dados = request.json
-    Carrinho.deletarCarrinho(**dados)
-    return jsonify({"message": "Carrinho deletado com sucesso"})
-
-
-@app.route('/listar_carrinho', methods=['GET', 'POST'])
-def listar_carrinho():
+#curl -X GET http://127.0.0.1:5000/listar_carrinhos
+@app.route('/listar_carrinhos', methods=['GET'])
+def listar_carrinhos():
     carrinhos = Carrinho.listarCarrinhos()
     return jsonify(carrinhos)
 
 
-# Venda
-@app.route('/criar_venda', methods=['GET', 'POST'])
+# ROTAS DE VENDA
+#curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
+@app.route('/criar_venda', methods=['POST'])
 def criar_venda():
     dados = request.json
-    Venda.criarVenda(**dados)
-    return jsonify({"message": "Venda criada com sucesso"})
+    resultado = Venda.criarVenda(
+        cliente=dados.get("cliente"),
+        funcionario=dados.get("funcionario"),
+        produtos=dados.get("produtos"),
+        valorTotal=dados.get("valorTotal"),
+        dataVenda=dados.get("dataVenda"),
+        entrega=dados.get("entrega"),
+        dataEntrega=dados.get("dataEntrega")
+    )
+    return jsonify({"message": resultado})
 
+#curl -X DELETE http://127.0.0.1:5000/deletar_venda/1
+@app.route('/deletar_venda/<int:id>', methods=['DELETE'])
+def deletar_venda(id):
+    resultado = Venda.excluirVenda(id)
+    return jsonify({"message": resultado})
 
-@app.route('/editar_venda', methods=['GET', 'POST'])
-def editar_venda():
-    dados = request.json
-    Venda.editarVenda(**dados)
-    return jsonify({"message": "Venda atualizada com sucesso"})
-
-
-@app.route('/desativar_venda', methods=['GET', 'POST'])
-def desativar_venda():
-    dados = request.json
-    Venda.desativarVenda(**dados)
-    return jsonify({"message": "Venda desativada com sucesso"})
-
-
-@app.route('/deletar_venda', methods=['GET', 'POST'])
-def deletar_venda():
-    dados = request.json
-    Venda.deletarVenda(**dados)
-    return jsonify({"message": "Venda deletada com sucesso"})
-
-
-@app.route('/listar_venda', methods=['GET', 'POST'])
-def listar_venda():
+#curl -X GET http://127.0.0.1:5000/listar_vendas
+@app.route('/listar_vendas', methods=['GET'])
+def listar_vendas():
     vendas = Venda.listarVendas()
     return jsonify(vendas)
 
-
-# TransacaoFinanceira
-@app.route('/criar_transacaofinanceira', methods=['GET', 'POST'])
+# ROTAS DE TRANSAÇÃO FINANCEIRA
+#curl -X POST http://127.0.0.1:5000/criar_transacaofinanceira -H "Content-Type: application/json" -d '{"tipo":"entrada","categoria":"venda","descricao":"Venda de produtos","valor":100.00,"data":"2025-09-11"}'
+@app.route('/criar_transacaofinanceira', methods=['POST'])
 def criar_transacaofinanceira():
     dados = request.json
-    TransacaoFinanceira.criarTransacaoFinanceira(**dados)
-    return jsonify({"message": "Transação financeira criada com sucesso"})
+    resultado = TransacaoFinanceira.criarTransacao(
+        tipo=dados.get("tipo"),
+        categoria=dados.get("categoria"),
+        descricao=dados.get("descricao"),
+        valor=dados.get("valor"),
+        data=dados.get("data")
+    )
+    return jsonify({"message": resultado})
 
-
-@app.route('/editar_transacaofinanceira', methods=['GET', 'POST'])
-def editar_transacaofinanceira():
+#curl -X PUT http://127.0.0.1:5000/editar_transacaofinanceira/1 -H "Content-Type: application/json" -d '{"tipo":"entrada","categoria":"venda","descricao":"Venda atualizada","valor":120.00,"data":"2025-09-11"}'
+@app.route('/editar_transacaofinanceira/<int:id>', methods=['PUT'])
+def editar_transacaofinanceira(id):
     dados = request.json
-    TransacaoFinanceira.editarTransacaoFinanceira(**dados)
-    return jsonify({"message": "Transação financeira atualizada com sucesso"})
+    resultado = TransacaoFinanceira.editarTransacao(
+        id=id,
+        tipo=dados.get("tipo"),
+        categoria=dados.get("categoria"),
+        descricao=dados.get("descricao"),
+        valor=dados.get("valor"),
+        data=dados.get("data")
+    )
+    return jsonify({"message": "Transação atualizada com sucesso."})
 
+#curl -X DELETE http://127.0.0.1:5000/deletar_transacaofinanceira/1
+@app.route('/deletar_transacaofinanceira/<int:id>', methods=['DELETE'])
+def deletar_transacaofinanceira(id):
+    resultado = TransacaoFinanceira.excluirTransacao(id)
+    return jsonify({"message": resultado})
 
-@app.route('/desativar_transacaofinanceira', methods=['GET', 'POST'])
-def desativar_transacaofinanceira():
-    dados = request.json
-    TransacaoFinanceira.desativarTransacaoFinanceira(**dados)
-    return jsonify({"message": "Transação financeira desativada com sucesso"})
-
-
-@app.route('/deletar_transacaofinanceira', methods=['GET', 'POST'])
-def deletar_transacaofinanceira():
-    dados = request.json
-    TransacaoFinanceira.deletarTransacaoFinanceira(**dados)
-    return jsonify({"message": "Transação financeira deletada com sucesso"})
-
-
-@app.route('/listar_transacaofinanceira', methods=['GET', 'POST'])
+#curl -X GET http://127.0.0.1:5000/listar_transacaofinanceira
+@app.route('/listar_transacaofinanceira', methods=['GET'])
 def listar_transacaofinanceira():
-    transacoes = TransacaoFinanceira.listarTransacoesFinanceiras()
+    transacoes = TransacaoFinanceira.listarTransacoes()
     return jsonify(transacoes)
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
