@@ -47,17 +47,17 @@
 }
 
 .cancel {
-  padding: 8px 14px;
+  padding: 0;
   border: none;
-  background: var(--botao-cancel-bg);
-  border-radius: 6px;
+  background: none;
+  color: #888;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s;
+  font-size: 1rem;
+  transition: color 0.2s;
 }
 
 .cancel:hover {
-  background: var(--botao-cancel-hover-bg);
+  color: #555;
 }
 
 .confirm {
@@ -93,5 +93,86 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* =========================
+   RESPONSIVIDADE DO MODAL
+========================= */
+@media (max-width: 1024px) {
+  .modal {
+    max-width: 380px;
+    padding: 20px;
+  }
+
+  .modal h2 {
+    font-size: 1.3rem;
+  }
+
+  .modal p {
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .cancel,
+  .confirm {
+    font-size: 0.9rem;
+    padding: 7px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal {
+    max-width: 320px;
+    padding: 18px;
+  }
+
+  .modal h2 {
+    font-size: 1.2rem;
+  }
+
+  .modal p {
+    font-size: 0.9rem;
+  }
+
+  .cancel,
+  .confirm {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    width: 95%;
+    padding: 16px;
+  }
+
+  .modal h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal p {
+    font-size: 0.85rem;
+  }
+
+  .cancel,
+  .confirm {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 4px;
   }
 }

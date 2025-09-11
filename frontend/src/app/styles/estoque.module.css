@@ -100,3 +100,97 @@
   background-color: var(--botao-hover-bg);
   transition: 0.5s;
 }
+
+/* =========================
+   RESPONSIVIDADE DO MODAL/POPUP
+========================= */
+@media (max-width: 1024px) {
+  .popupContent,
+  .container {
+    width: 280px;
+    padding: 20px;
+  }
+
+  .headerTitle {
+    font-size: 1.4rem;
+  }
+
+  .subtitulo {
+    font-size: 0.95rem;
+  }
+
+  .input {
+    font-size: 0.95rem;
+    padding: 0.45rem;
+  }
+
+  .botaoEstoque {
+    font-size: 0.9rem;
+    padding: 0.45rem 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .popupContent,
+  .container {
+    width: 95%;
+    padding: 18px;
+  }
+
+  .headerTitle {
+    font-size: 1.3rem;
+  }
+
+  .subtitulo {
+    font-size: 0.9rem;
+  }
+
+  .input {
+    font-size: 0.9rem;
+    padding: 0.4rem;
+  }
+
+  .botoes {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .botaoEstoque,
+  .botaoCancelar {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .popupContent,
+  .container {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .headerTitle {
+    font-size: 1.2rem;
+  }
+
+  .subtitulo {
+    font-size: 0.85rem;
+  }
+
+  .input {
+    font-size: 0.85rem;
+    padding: 0.35rem;
+  }
+
+  .botoes {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .botaoEstoque,
+  .botaoCancelar {
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 0.4rem;
+  }
+}

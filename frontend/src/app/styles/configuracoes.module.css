@@ -12,6 +12,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 /* Seções */
@@ -31,6 +32,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .icone {
@@ -66,7 +68,7 @@
   width: 100%;
   border-radius: 10px;
   overflow: hidden;
-  font-size: 0.95rem;
+  font-size: 1rem; /* aumento do tamanho da fonte */
   color: var(--cinza-texto);
   border: 1px solid var(--cinza-borda-clara);
 }
@@ -75,8 +77,8 @@
   background-color: var(--header-bg);
   color: var(--cinza-texto);
   font-weight: 600;
-  font-size: 1rem;
-  padding: 0.8rem 1rem;
+  font-size: 1.05rem; /* ligeiro aumento */
+  padding: 1rem 1.2rem; /* mais espaço */
   border-bottom: 1px solid var(--cinza-borda);
 }
 
@@ -84,7 +86,7 @@
   background-color: var(--header-bg);
   color: var(--cinza-texto);
   font-weight: 500;
-  padding: 0.8rem 1rem;
+  padding: 1rem 1.2rem; /* mais espaço nas colunas */
 }
 
 .p-datatable-tbody > tr {
@@ -96,15 +98,14 @@
 }
 
 .p-datatable-tbody > tr > td {
-  padding: 0.8rem 1rem;
+  padding: 1rem 1.2rem; /* células maiores */
   border-top: 1px solid var(--cinza-borda-clara);
 }
 
-/* Footer */
 .p-datatable-tfoot > tr > td {
   background-color: var(--datatable-footer-bg);
   font-weight: 500;
-  padding: 0.8rem 1rem;
+  padding: 1rem 1.2rem;
 }
 
 /* Botões */
@@ -136,6 +137,7 @@
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
 /* Colunas com ações */
@@ -152,4 +154,98 @@
 
 .acao-botao:hover {
   color: var(--acaoBotao-hover-color);
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .titulo {
+    font-size: 1.3rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .select,
+  .checkbox input[type="checkbox"] {
+    font-size: 0.9rem;
+  }
+
+  .botao,
+  .botaoSalvar {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .p-datatable-thead > tr > th,
+  .p-datatable-tbody > tr > td {
+    padding: 0.9rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .titulo {
+    font-size: 1.2rem;
+  }
+
+  .section h3 {
+    font-size: 1rem;
+  }
+
+  .p-datatable {
+    font-size: 0.95rem; /* mantém legível em tablets */
+  }
+
+  .p-datatable-thead > tr > th,
+  .p-datatable-tbody > tr > td {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .botoes {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .botao,
+  .botaoSalvar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo {
+    font-size: 1.1rem;
+  }
+
+  .section {
+    padding: 0.8rem;
+  }
+
+  .select {
+    padding: 0.5rem 0.6rem;
+  }
+
+  .botao,
+  .botaoSalvar {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .p-datatable {
+    font-size: 0.9rem;
+  }
+
+  .p-datatable-thead > tr > th,
+  .p-datatable-tbody > tr > td {
+    padding: 0.7rem 0.8rem;
+  }
 }

@@ -14,17 +14,19 @@ export default function MenuDescontos() {
   ];
 
   return (
-    <nav className={styles.menuvendas}>
+    <div className={styles.menuvendas}>
       <ul className={styles.menuLista}>
-        {itens.map((item) => {
-          const isAtivo = pathname.startsWith(item.href);
-          return (
-            <li key={item.href} className={isAtivo ? styles.ativo : ""}>
-              <Link href={item.href}>{item.label}</Link>
-            </li>
-          );
-        })}
+        {itens.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className={pathname.startsWith(item.href) ? styles.ativo : ""}
+            >
+              {item.label}
+            </Link>
+          </li>
+        ))}
       </ul>
-    </nav>
+    </div>
   );
 }

@@ -1,3 +1,14 @@
+.radioGroup {
+  background-color: var(--fundo-branco);
+  color: var(--fundo-branco);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.radioGroup {
+  background-color: var(--fundo-branco);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
 .botaoRoxo {
   background-color: var(--botao-bg);
   border: none;
@@ -62,6 +73,7 @@
   border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   font-size: 14px;
+  background-color: var(--fundo-branco);
   width: 200px;
   outline: none;
 }
@@ -243,6 +255,22 @@
   border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   font-size: 0.9rem;
+  background-color: var(--fundo-branco);
+}
+
+.produtoInput {
+  background-color: var(--fundo-branco);
+}
+
+.radioInput {
+  accent-color: var(--fundo-branco); /* muda a cor do círculo selecionado */
+  margin-right: 8px; /* espaço entre bolinha e texto */
+  vertical-align: middle;
+  color: var(--foreground);
+}
+
+.spanRadio {
+  color: var(--foreground);
 }
 
 .resumo {
@@ -269,6 +297,8 @@
   border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   margin-top: 0.5rem;
+  background-color: var(--fundo-branco);
+  color: var(--foreground);
 }
 
 .radioGroup {
@@ -378,6 +408,7 @@
   border: 1px solid var(--cinza-input-borda);
   border-radius: 4px;
   font-size: 15px;
+  background-color: var(--fundo-branco);
 }
 
 .valorDireita {
@@ -437,4 +468,182 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 1024px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .container {
+    padding: 20px;
+    max-width: 550px;
+  }
+
+  .titulo {
+    font-size: 1.1rem;
+  }
+
+  .input,
+  .inputEntrega,
+  .novoProdutoForm input,
+  .select {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .botaoRoxo,
+  .confirmarVenda,
+  .novoProdutoForm button {
+    font-size: 16px;
+    padding: 5px 10px;
+  }
+
+  .quantidadeControls {
+    width: 60px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .quantidadeControls button {
+    width: 20px;
+  }
+
+  .resumoItem {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+    max-width: 95%;
+  }
+
+  .row,
+  .camposEntrega,
+  .novoProdutoForm {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header,
+  .produtoItem,
+  .totalRow {
+    grid-template-columns: 1fr 80px 80px 80px 40px;
+    padding: 6px 8px;
+  }
+
+  .input,
+  .inputEntrega,
+  .novoProdutoForm input,
+  .select {
+    width: 100%;
+  }
+
+  .botaoRoxo,
+  .confirmarVenda,
+  .novoProdutoForm button {
+    width: 100%;
+  }
+
+  .inlineSearch {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .inputIcon {
+    right: 0.5rem;
+  }
+
+  .quantidadeControls {
+    width: 55px;
+    height: 26px;
+  }
+
+  .quantidadeControls span {
+    width: 18px;
+    font-size: 12px;
+  }
+
+  .valorDireita {
+    font-size: 14px;
+  }
+
+  .clienteSelecionado {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .removerCliente {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo {
+    font-size: 1rem;
+  }
+
+  .overlay {
+    padding: 8px;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .header,
+  .produtoItem,
+  .totalRow {
+    grid-template-columns: 1fr 60px 60px 60px 30px;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+
+  .input,
+  .inputEntrega,
+  .novoProdutoForm input,
+  .select {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+  }
+
+  .botaoRoxo,
+  .confirmarVenda,
+  .novoProdutoForm button {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  .quantidadeControls {
+    width: 50px;
+    height: 24px;
+  }
+
+  .quantidadeControls span {
+    width: 16px;
+    font-size: 11px;
+  }
+
+  .inlineSearch {
+    gap: 6px;
+  }
+
+  .clienteSelecionado {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+
+  .valorDireita {
+    font-size: 13px;
+  }
+
+  .modalDesconto {
+    max-width: 90%;
+  }
 }

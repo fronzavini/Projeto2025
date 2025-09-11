@@ -1,28 +1,19 @@
-/* Overlay para o modal */
+/* Overlay do modal */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--overlay-bg-30);
+  background: var(--overlay-bg-30, rgba(0, 0, 0, 0.3));
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.25s ease-out;
 }
 
-/* Caixa do modal */
-.modal {
-  background: var(--fundo-branco);
-  border-radius: 12px;
-  box-shadow: var(--resumo-card-shadow);
-  width: 500px;
-  max-width: 95%;
-  padding: 24px;
-  animation: slideDown 0.3s ease-out;
-}
-
+/* Animações */
 @keyframes slideDown {
   from {
     transform: translateY(-20px);
@@ -34,21 +25,60 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Caixa do modal */
+.modal {
+  width: 90%;
+  max-width: 500px;
+  background: var(--fundo-branco);
+  border-radius: 12px;
+  box-shadow: var(--resumo-card-shadow, 0 4px 12px rgba(0, 0, 0, 0.15));
+  padding: 24px;
+  animation: slideDown 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
 /* Header do modal */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .header h2 {
   margin: 0;
   font-size: 1.4rem;
-  color: var(--botao-azul-bg); /* azul do sistema */
+  color: var(--botao-bg); /* título roxo */
 }
 
-/* Campos */
+/* Fechar modal (X) */
+.header button {
+  background: none;
+  color: var(--cinza-texto);
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.header button:hover {
+  background: none;
+  color: var(--cinza-texto-hover);
+}
+/* Campos do formulário */
 .formGroup {
   display: flex;
   flex-direction: column;
@@ -64,10 +94,12 @@
 .formGroup input,
 .formGroup textarea,
 .formGroup select {
-  padding: 8px 10px;
+  width: 100%;
+  padding: 10px 12px;
   border: 1px solid var(--cinza-borda);
   border-radius: 8px;
   font-size: 0.95rem;
+  box-sizing: border-box;
 }
 
 /* Botões */
@@ -76,21 +108,11 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .botaoCancelar {
-  background: var(--botao-cancel-bg);
   color: var(--cinza-texto);
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.botaoSalvar {
-  background: var(--botao-azul-bg);
-  color: var(--botao-text-color);
   border: none;
   padding: 8px 14px;
   border-radius: 8px;
@@ -99,6 +121,65 @@
   transition: background 0.2s;
 }
 
+.botaoSalvar {
+  background: var(--botao-bg);
+  color: var(--botao-text-color);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  opacity: 1 !important; /* garante visibilidade */
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
 .botaoSalvar:hover {
-  background: var(--botao-azul-hover-bg);
+  background: var(--botao-roxo);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .modal {
+    padding: 16px;
+  }
+
+  .header h2 {
+    font-size: 1.2rem;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+
+  .actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: 12px;
+  }
+
+  .header h2 {
+    font-size: 1rem;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 6px;
+  }
 }

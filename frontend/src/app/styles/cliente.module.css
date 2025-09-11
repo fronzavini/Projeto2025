@@ -15,3 +15,46 @@
   display: flex;
   flex-direction: column;
 }
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 1024px) {
+  .filters-container {
+    gap: 12px;
+    padding: 10px 14px;
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .filtro {
+    flex: 1 1 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-container {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .filtro {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-container {
+    gap: 8px;
+    padding: 8px 10px;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .filtro {
+    flex: 1 1 100%;
+  }
+}

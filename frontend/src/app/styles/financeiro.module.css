@@ -72,3 +72,105 @@
   background-color: var(--cinza-borda-clara);
   font-weight: bold;
 }
+
+/* =========================
+   RESPONSIVIDADE GERAL
+========================= */
+@media (max-width: 1024px) {
+  .filtros {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .input,
+  .select {
+    min-width: 140px;
+    padding: 7px;
+  }
+
+  .resumo {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .card {
+    font-size: 0.95rem;
+    padding: 14px;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .titulo {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .filtros {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input,
+  .select {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .resumo {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card {
+    font-size: 0.9rem;
+    padding: 12px;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 6px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .input,
+  .select {
+    font-size: 0.85rem;
+    padding: 6px;
+  }
+
+  .resumo {
+    gap: 8px;
+  }
+
+  .card {
+    font-size: 0.85rem;
+    padding: 10px;
+  }
+
+  .tabela th,
+  .tabela td {
+    padding: 4px;
+    font-size: 0.8rem;
+  }
+
+  .botao {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+}

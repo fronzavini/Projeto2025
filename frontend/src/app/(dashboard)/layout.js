@@ -13,21 +13,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "BellaDonna",
-  description: "Gestão de floriculturas",
-};
-
-export default function RootLayout({ children }) {
+export default function DashboardLayout({ children }) {
   return (
-    <html lang="pt-br">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Header />
-        <div style={{ display: "flex", minHeight: "100vh" }}>
-          <Sidebar />
-          <main style={{ flex: 1, padding: "20px" }}>{children}</main>
-        </div>
-      </body>
-    </html>
+    <div className={`${geistSans.variable} ${geistMono.variable}`}>
+      <Header />
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        <Sidebar />
+        <main style={{ flex: 1, padding: "20px" }}>{children}</main>
+      </div>
+    </div>
   );
 }

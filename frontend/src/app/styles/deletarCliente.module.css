@@ -109,3 +109,81 @@
 .botaoCancelar:hover {
   color: var(--botao-hover-bg);
 }
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 1024px) {
+  .popupContent,
+  .container {
+    padding: 20px;
+    max-width: 450px;
+  }
+
+  .headerTitle {
+    font-size: 1.4rem;
+  }
+
+  .botaoDeletar {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .closeButton {
+    font-size: 20px;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .popupContent,
+  .container {
+    padding: 16px;
+    max-width: 95%;
+  }
+
+  .headerTitle {
+    font-size: 1.3rem;
+  }
+
+  .botaoDeletar {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .closeButton {
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popupContent,
+  .container {
+    padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .headerTitle {
+    font-size: 1.2rem;
+  }
+
+  .botaoDeletar {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .botaoCancelar {
+    font-size: 0.95rem;
+  }
+
+  .closeButton {
+    font-size: 16px;
+    top: 6px;
+    right: 6px;
+  }
+}

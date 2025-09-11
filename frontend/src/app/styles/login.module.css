@@ -43,6 +43,12 @@
   padding: 0.6rem 2.2rem 0.6rem 0.5rem;
   font-size: 1rem;
   background: transparent;
+  color: var(--foreground);
+}
+
+.input::placeholder {
+  color: var(--cinza-placeholder);
+  opacity: 1; /* para garantir visibilidade */
 }
 
 .input:focus {

@@ -25,9 +25,7 @@ export default function CadastrarPerfil({ onClose, onCreate }) {
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2>Novo Perfil</h2>
-          <button className={styles.botaoCancelar} onClick={onClose}>
-            Fechar
-          </button>
+          <button onClick={onClose}>Fechar</button>
         </div>
 
         <form onSubmit={handleSubmit}>
