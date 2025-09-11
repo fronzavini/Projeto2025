@@ -164,3 +164,10 @@ body {
 .botao_fechar:hover {
   color: var(--botao-fechar-hover-color);
 }
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.6rem;
+    margin-left: 2rem;
+  }
+}

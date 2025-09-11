@@ -1,31 +1,31 @@
 "use client";
 import { useState } from "react";
-import TabelaCupom from "@/app/components/descontos/tabelaCupons";
-import CadastrarCupom from "@/app/components/descontos/cadastrarCupom";
-import BotaoGenerico from "../../components/botao";
+import TabelaOrcamentos from "@/app/components/vendas/tabelaOrcamentos";
+import CadastrarOrcamento from "@/app/components/vendas/cadastrarOrcamento";
+import BotaoGenerico from "../../../components/botao";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import styles from "../../styles/tabelas.module.css";
+import styles from "../../../styles/tabelas.module.css";
 
-export default function Cupom() {
+export default function Orcamentos() {
   const [showPopup, setShowPopup] = useState(false);
 
   return (
     <div>
       <BotaoGenerico
         onClick={() => setShowPopup(true)}
-        texto="Novo Cupom"
+        texto="Novo Orçamento"
         icone={faPlus}
       />
 
       {showPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
-            <CadastrarCupom onClose={() => setShowPopup(false)} />
+            <CadastrarOrcamento onClose={() => setShowPopup(false)} />
           </div>
         </div>
       )}
 
-      <TabelaCupom />
+      <TabelaOrcamentos />
     </div>
   );
 }

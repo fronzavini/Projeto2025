@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import styles from "../styles/sidebar.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,12 +15,15 @@ import {
   faTruck,
   faChartLine,
   faGear,
+  faBars,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 function Sidebar() {
-  const pathname = usePathname(); // pega a rota atual
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
     { href: "/", icon: faHome, label: "Home" },
@@ -36,24 +40,33 @@ function Sidebar() {
   ];
 
   return (
-    <aside className={styles.sidebar}>
-      <nav>
-        <ul>
-          {menuItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`${styles.link} ${
-                  pathname === item.href ? styles.active : ""
-                }`}
-              >
-                <FontAwesomeIcon icon={item.icon} /> {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
+    <>
+      {/* Botão hambúrguer */}
+      <button className={styles.hamburguer} onClick={() => setIsOpen(!isOpen)}>
+        <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
+      </button>
+
+      {/* Sidebar */}
+      <aside className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
+        <nav>
+          <ul>
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`${styles.link} ${
+                    pathname === item.href ? styles.active : ""
+                  }`}
+                  onClick={() => setIsOpen(false)} // fecha ao clicar
+                >
+                  <FontAwesomeIcon icon={item.icon} /> {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+    </>
   );
 }
 

@@ -1,31 +1,32 @@
 "use client";
-import { useState } from "react";
-import TabelaProduto from "../components/produtos/tabelaProdutos";
-import CadastrarProduto from "../components/produtos/cadastrarProduto";
-import BotaoGenerico from "../components/botao";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import styles from "../styles/tabelas.module.css";
 
-export default function Produto() {
+import { useState } from "react";
+import TabelaFuncionario from "@/app/components/funcionarios/tabelaFuncionarios";
+import CadastrarFuncionario from "@/app/components/funcionarios/cadastrarFuncionario";
+import BotaoGenerico from "@/app/components/botao";
+import styles from "../../styles/tabelas.module.css";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+
+export default function Funcionarios() {
   const [showPopup, setShowPopup] = useState(false);
 
   return (
     <div>
       <BotaoGenerico
         onClick={() => setShowPopup(true)}
-        texto="Novo Produto"
+        texto="Novo Funcionário"
         icone={faPlus}
       />
 
       {showPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
-            <CadastrarProduto onClose={() => setShowPopup(false)} />
+            <CadastrarFuncionario onClose={() => setShowPopup(false)} />
           </div>
         </div>
       )}
 
-      <TabelaProduto />
+      <TabelaFuncionario />
     </div>
   );
 }

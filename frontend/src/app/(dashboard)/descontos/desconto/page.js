@@ -1,32 +1,31 @@
 "use client";
-
 import { useState } from "react";
-import TabelaFuncionario from "../components/funcionarios/tabelaFuncionarios";
-import CadastrarFuncionario from "../components/funcionarios/cadastrarFuncionario";
-import BotaoGenerico from "../components/botao";
-import styles from "../styles/tabelas.module.css";
+import TabelaDesconto from "@/app/components/descontos/tabelaDescontos";
+import CadastrarDesconto from "@/app/components/descontos/cadastrarDesconto";
+import BotaoGenerico from "@/app/components/botao";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import styles from "../../../styles/tabelas.module.css";
 
-export default function Funcionarios() {
+export default function Desconto() {
   const [showPopup, setShowPopup] = useState(false);
 
   return (
     <div>
       <BotaoGenerico
         onClick={() => setShowPopup(true)}
-        texto="Novo Funcionário"
+        texto="Novo Desconto"
         icone={faPlus}
       />
 
       {showPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
-            <CadastrarFuncionario onClose={() => setShowPopup(false)} />
+            <CadastrarDesconto onClose={() => setShowPopup(false)} />
           </div>
         </div>
       )}
 
-      <TabelaFuncionario />
+      <TabelaDesconto />
     </div>
   );
 }

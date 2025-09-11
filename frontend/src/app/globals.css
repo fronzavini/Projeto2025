@@ -32,6 +32,7 @@
   --header-bg: #f4f0ff;
   --header-border: #3b1f54;
   --header-logo-color: #3b1f54;
+  --header-logo-color-hover: #462861;
   --header-icon-color: #3b1f54;
   --modal-bg: #fff;
   --modal-color: #222;
@@ -152,6 +153,7 @@
   --header-bg: #2a2438;
   --header-border: #4b3f71;
   --header-logo-color: #f0e7ff;
+  --header-logo-color-hover: #dfd2f6;
   --header-icon-color: #f0e7ff;
   --modal-bg: #2a2438;
   --modal-color: #e0dff0;

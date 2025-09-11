@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import styles from "../styles/configuracoes.module.css";
+import styles from "../../styles/configuracoes.module.css";
 
-import IdiomaCard from "../components/configuracoes/idiomaCard";
-import VersaoCard from "../components/configuracoes/versaoCard";
-import PerfisCard from "../components/configuracoes/perfisCard";
-import InicializacaoCard from "../components/configuracoes/inicializacaoCard";
-import InterfaceCard from "../components/configuracoes/interfaceCard";
-import SegurancaCard from "../components/configuracoes/segurancaCard";
+import IdiomaCard from "@/app/components/configuracoes/idiomaCard";
+import VersaoCard from "@/app/components/configuracoes/versaoCard";
+import PerfisCard from "@/app/components/configuracoes/perfisCard";
+import InicializacaoCard from "@/app/components/configuracoes/inicializacaoCard";
+import InterfaceCard from "@/app/components/configuracoes/interfaceCard";
+import SegurancaCard from "@/app/components/configuracoes/segurancaCard";
 
 export default function Configuracoes() {
   const [idioma, setIdioma] = useState("pt-BR");

@@ -1,14 +1,20 @@
 "use client";
 
 import styles from "../styles/header.module.css";
-
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // <- useRouter no App Router
 
 function Header() {
   const [modal, setModal] = useState(false);
+  const router = useRouter(); // <- inicializa o router
 
   const abrirModal = () => {
     setModal(!modal);
+  };
+
+  const sair = () => {
+    // Aqui você pode limpar cookies, localStorage, ou token de autenticação se houver
+    router.push("/login"); // <- redireciona para a página de login
   };
 
   return (
@@ -32,13 +38,15 @@ function Header() {
           <div className={styles.modal_conteudo}>
             <div className={styles.modal_header}>
               <h3>Nome usuário</h3>
-              <button onClick={abrirModal} className={`${styles.botao_fechar}`}>
+              <button onClick={abrirModal} className={styles.botao_fechar}>
                 X
               </button>
             </div>
 
             <span>Configurações</span>
-            <button className={styles.botao_simples}>Sair</button>
+            <button onClick={sair} className={styles.botao_simples}>
+              Sair
+            </button>
           </div>
         </div>
       )}

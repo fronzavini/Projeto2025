@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import BotaoGenerico from "../components/botao";
-import CadastrarFinanceiro from "../components/financeiro/cadastrarFinanceiro";
-import CardFinanceiro from "../components/financeiro/cardFinanceiro";
-import TabelaFinanceiro from "../components/financeiro/tabelaFinanceiro";
+import BotaoGenerico from "@/app/components/botao";
+import CadastrarFinanceiro from "@/app/components/financeiro/cadastrarFinanceiro";
+import CardFinanceiro from "@/app/components/financeiro/cardFinanceiro";
+import TabelaFinanceiro from "@/app/components/financeiro/tabelaFinanceiro";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import styles from "../styles/tabelas.module.css";
+import styles from "../../styles/tabelas.module.css";
 
 export default function Financeiro() {
   const [showPopup, setShowPopup] = useState(false);

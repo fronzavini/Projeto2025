@@ -1,7 +1,7 @@
 "use client";
 
-import MenuVendas from "../components/vendas/menuVendas";
-import styles from "../styles/vendasLayout.module.css";
+import MenuVendas from "../../components/vendas/menuVendas";
+import styles from "../../styles/menuVendas.module.css";
 
 export default function VendasLayout({ children }) {
   return (

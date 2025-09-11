@@ -1,7 +1,7 @@
 "use client";
 
-import MenuDescontos from "../components/descontos/menuDescontos";
-import styles from "../styles/vendasLayout.module.css";
+import MenuDescontos from "@/app/components/descontos/menuDescontos";
+import styles from "../../styles/vendasLayout.module.css";
 
 export default function DescontosLayout({ children }) {
   return (
