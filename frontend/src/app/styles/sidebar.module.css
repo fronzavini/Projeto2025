@@ -3,7 +3,7 @@
 .sidebar {
   min-height: 100vh; /* acompanha o conteúdo */
   width: 180px;
-  background-color: #ede9fe;
+  background-color: var(--sidebar-bg);
   padding: 20px;
   font-family: "Inter", sans-serif;
 }
@@ -24,7 +24,7 @@
   width: 100%; /* ocupa toda largura do li */
   padding: 10px;
   border-radius: 4px;
-  color: #4b5563;
+  color: var(--sidebar-link);
   text-decoration: none;
   font-weight: 500;
   box-sizing: border-box; /* inclui padding na largura */
@@ -32,12 +32,12 @@
 }
 
 .link:hover {
-  background-color: #e0dbf9;
-  color: #1e1b4b;
+  background-color: var(--sidebar-link-hover-bg);
+  color: var(--sidebar-link-hover-color);
 }
 
 .active {
-  background-color: #ddd6fe;
-  color: #3b0764;
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-active-color);
   font-weight: 600;
 }

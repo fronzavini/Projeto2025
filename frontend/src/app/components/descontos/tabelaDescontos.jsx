@@ -1,16 +1,16 @@
-import styles from "../styles/tabelas.module.css";
-
-import { Filtros } from "./Filtros";
-import { FiltroDropdown } from "./FiltrosDropdown";
+import styles from "../../styles/tabelas.module.css";
 
 import { useState } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import CancelarDesconto from "./CancelarDesconto";
-import EditarDesconto from "./EditarDesconto";
+
+import { Filtros } from "../filtros";
+import { FiltroDropdown } from "../filtrosDropdown";
+
+import { deletarItem } from "../deletar"; // função
+import EditarDesconto from "./editarDesconto";
 
 export default function TabelaDesconto() {
   const data = [
@@ -21,6 +21,7 @@ export default function TabelaDesconto() {
       desconto: 10,
       precoComDesconto: 108,
       categoria: "flores",
+      data: "2025-09-11",
     },
     {
       id: 2,
@@ -29,6 +30,7 @@ export default function TabelaDesconto() {
       desconto: 15,
       precoComDesconto: 72.25,
       categoria: "flores",
+      data: "2025-09-10",
     },
     {
       id: 3,
@@ -37,6 +39,7 @@ export default function TabelaDesconto() {
       desconto: 20,
       precoComDesconto: 48,
       categoria: "flores",
+      data: "2025-09-09",
     },
     {
       id: 4,
@@ -45,6 +48,7 @@ export default function TabelaDesconto() {
       desconto: 5,
       precoComDesconto: 90.25,
       categoria: "flores",
+      data: "2025-09-08",
     },
     {
       id: 5,
@@ -53,6 +57,7 @@ export default function TabelaDesconto() {
       desconto: 12,
       precoComDesconto: 96.8,
       categoria: "flores",
+      data: "2025-09-07",
     },
     {
       id: 6,
@@ -61,6 +66,7 @@ export default function TabelaDesconto() {
       desconto: 8,
       precoComDesconto: 46,
       categoria: "flores",
+      data: "2025-09-06",
     },
     {
       id: 7,
@@ -69,6 +75,7 @@ export default function TabelaDesconto() {
       desconto: 18,
       precoComDesconto: 123,
       categoria: "arranjos",
+      data: "2025-09-05",
     },
     {
       id: 8,
@@ -77,6 +84,7 @@ export default function TabelaDesconto() {
       desconto: 25,
       precoComDesconto: 30,
       categoria: "vasos",
+      data: "2025-09-04",
     },
   ];
 
@@ -99,11 +107,22 @@ export default function TabelaDesconto() {
       (!filterCategoria || item.categoria === filterCategoria)
   );
 
+  // Modal de edição
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [descontoParaEditar, setDescontoParaEditar] = useState(null);
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [descontoParaExcluir, setDescontoParaExcluir] = useState(null);
+  // Função para deletar desconto
+  const handleDeleteDesconto = (desconto) => {
+    deletarItem({
+      itemId: desconto.id,
+      itemTipo: "desconto",
+      onDelete: () => {
+        console.log("Desconto removido:", desconto.id);
+        // Aqui você pode atualizar o estado ou recarregar os dados
+      },
+      onClose: () => console.log("Modal de exclusão fechado"),
+    });
+  };
 
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
@@ -122,8 +141,7 @@ export default function TabelaDesconto() {
         className={styles.acaoBotao}
         onClick={(e) => {
           e.stopPropagation();
-          setDescontoParaExcluir(rowData);
-          setIsDeleteModalOpen(true);
+          handleDeleteDesconto(rowData);
         }}
         title="Excluir"
       >
@@ -134,6 +152,7 @@ export default function TabelaDesconto() {
 
   return (
     <div>
+      {/* Filtros */}
       <div className={styles["filters-container"]}>
         <div className={styles.filtro}>
           <Filtros
@@ -162,13 +181,15 @@ export default function TabelaDesconto() {
         </div>
       </div>
 
+      {/* Tabela */}
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column field="produto" header="Produto" />
-          <Column field="precoOriginal" header="Preço original" />
-          <Column field="desconto" header="Desconto" />
-          <Column field="precoComDesconto" header="Preço com desconto" />
+          <Column field="precoOriginal" header="Preço Original" />
+          <Column field="desconto" header="Desconto (%)" />
+          <Column field="precoComDesconto" header="Preço com Desconto" />
           <Column field="categoria" header="Categoria" />
+          <Column field="data" header="Data" />
           <Column
             body={actionTemplate}
             header="Ações"
@@ -176,17 +197,7 @@ export default function TabelaDesconto() {
           />
         </DataTable>
 
-        {isDeleteModalOpen && descontoParaExcluir && (
-          <CancelarDesconto
-            descontoId={descontoParaExcluir.id}
-            onClose={() => setIsDeleteModalOpen(false)}
-            onConfirm={() => {
-              console.log("Cancelar desconto:", descontoParaExcluir.id);
-              setIsDeleteModalOpen(false);
-            }}
-          />
-        )}
-
+        {/* Modal de edição */}
         {isEditModalOpen && descontoParaEditar && (
           <EditarDesconto
             descontoInicial={descontoParaEditar}

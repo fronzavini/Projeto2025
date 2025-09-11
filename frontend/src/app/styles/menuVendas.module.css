@@ -15,14 +15,14 @@
 .menuLista li a {
   font-weight: 600;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--cinza-texto); /* cor do texto padrão */
   position: relative;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .ativo {
-  color: #462e51 !important;
+  color: var(--header-title-color) !important; /* roxo característico */
 }
 
 .ativo::after {
@@ -32,5 +32,5 @@
   bottom: -4px;
   width: 100%;
   height: 2px;
-  background-color: #d497f0;
+  background-color: var(--botao-bg); /* roxo característico */
 }

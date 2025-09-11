@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay-bg-30);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,9 +14,9 @@
 
 /* Caixa do modal */
 .modal {
-  background: #fff;
+  background: var(--fundo-branco);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--resumo-card-shadow);
   width: 500px;
   max-width: 95%;
   padding: 24px;
@@ -45,7 +45,7 @@
 .header h2 {
   margin: 0;
   font-size: 1.4rem;
-  color: #2a6ac9; /* azul do sistema */
+  color: var(--botao-azul-bg); /* azul do sistema */
 }
 
 /* Campos */
@@ -57,7 +57,7 @@
 
 .formGroup label {
   font-size: 0.85rem;
-  color: #555;
+  color: var(--label-cinza);
   margin-bottom: 4px;
 }
 
@@ -65,7 +65,7 @@
 .formGroup textarea,
 .formGroup select {
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cinza-borda);
   border-radius: 8px;
   font-size: 0.95rem;
 }
@@ -79,8 +79,8 @@
 }
 
 .botaoCancelar {
-  background: #e0e0e0;
-  color: #333;
+  background: var(--botao-cancel-bg);
+  color: var(--cinza-texto);
   border: none;
   padding: 8px 14px;
   border-radius: 8px;
@@ -89,11 +89,16 @@
 }
 
 .botaoSalvar {
-  background: #2a6ac9;
-  color: #fff;
+  background: var(--botao-azul-bg);
+  color: var(--botao-text-color);
   border: none;
   padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.botaoSalvar:hover {
+  background: var(--botao-azul-hover-bg);
 }

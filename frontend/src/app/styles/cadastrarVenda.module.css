@@ -1,5 +1,5 @@
 .botaoRoxo {
-  background-color: #d497f0;
+  background-color: var(--botao-bg);
   border: none;
   color: white;
   padding: 5px;
@@ -10,7 +10,7 @@
 
 .botaoRoxo:hover,
 .confirmarVenda:hover {
-  background-color: #c78be2;
+  background-color: var(--botao-hover-bg);
   transition: 0.5s;
 }
 
@@ -21,14 +21,14 @@
   background: transparent;
   border: none;
   font-size: 17px;
-  color: #666;
+  color: var(--cinza-texto);
   cursor: pointer;
   transition: color 0.2s ease;
   margin-top: 24px;
 }
 
 .cancelar:hover {
-  color: #000;
+  color: black;
   transition: 0.2s;
 }
 
@@ -53,13 +53,13 @@
 .inputIcon {
   position: absolute;
   right: 10px;
-  color: #aaa;
+  color: var(--cinza-placeholder);
   pointer-events: none;
 }
 
 .input {
   padding: 8px 32px 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   font-size: 14px;
   width: 200px;
@@ -67,15 +67,15 @@
 }
 
 .input::placeholder {
-  color: #aaa;
+  color: var(--cinza-placeholder);
 }
 
 .title {
-  color: #462e51;
+  color: var(--header-title-color);
 }
 
 .produtoContainer {
-  border: 1px solid #ddd;
+  border: 1px solid var(--cinza-borda);
   border-radius: 8px;
   overflow: hidden;
   font-size: 14px;
@@ -89,12 +89,12 @@
   grid-template-columns: 1fr 120px 100px 100px 40px;
   align-items: center;
   padding: 8px 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--cinza-borda-clara);
 }
 
 .header {
   font-weight: 500;
-  color: #666;
+  color: var(--cinza-texto);
   border-top: none;
 }
 
@@ -104,14 +104,14 @@
 }
 
 .headerProdutos span {
-  color: #666;
+  color: var(--cinza-texto);
   padding: 28px;
 }
 
 .quantidadeControls {
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cinza-input-borda);
   border-radius: 6px;
   overflow: hidden;
   width: 70px;
@@ -139,17 +139,17 @@
 }
 
 .quantidadeControls button:first-of-type {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--cinza-input-borda);
 }
 
 .quantidadeControls button:last-of-type {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid var(--cinza-input-borda);
 }
 
 .trashButton {
   background: none;
   border: none;
-  color: #4b006e; /* roxo escuro */
+  color: var(--roxo-escuro-icon); /* roxo escuro */
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -158,7 +158,7 @@
 .totalRow {
   justify-content: end;
   font-weight: bold;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--cinza-borda);
 }
 
 .totalLabel {
@@ -183,7 +183,7 @@
 
 .novoProdutoForm input {
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cinza-input-borda);
   border-radius: 6px;
   font-size: 14px;
   width: 160px;
@@ -201,14 +201,14 @@
   border-radius: 6px;
   font-size: 14px;
   border: none;
-  background-color: #d59ce3;
+  background-color: var(--botao-novo-produto-bg);
   color: white;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .novoProdutoForm button:hover {
-  background-color: #c785dc;
+  background-color: var(--botao-novo-produto-hover-bg);
 }
 
 .titulo {
@@ -234,13 +234,13 @@
   top: 50%;
   right: 0.8rem;
   transform: translateY(-50%);
-  color: #999;
+  color: var(--cinza-input-icon);
 }
 
 .input {
   width: 100%;
   padding: 0.6rem 2.5rem 0.6rem 0.8rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   font-size: 0.9rem;
 }
@@ -266,7 +266,7 @@
 .select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   margin-top: 0.5rem;
 }
@@ -287,8 +287,8 @@
   flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  max-width: 100%; /* impede que ultrapasse */
-  padding-right: 8px; /* um pequeno respiro à direita */
+  max-width: 100%;
+  padding-right: 8px;
   box-sizing: border-box;
 }
 
@@ -301,7 +301,7 @@
 .confirmarVenda {
   margin-top: 1rem;
   width: 100%;
-  background-color: #d497f0;
+  background-color: var(--botao-bg);
   color: white;
   font-weight: 500;
   padding: 0.6rem;
@@ -317,7 +317,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--overlay-bg-30);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -327,24 +327,24 @@
 }
 
 .container {
-  background-color: white;
+  background-color: var(--fundo-branco);
   padding: 24px;
   border-radius: 8px;
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto; /* rolagem vertical */
-  overflow-x: hidden; /* impede rolagem horizontal */
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
   box-sizing: border-box;
 }
 
 .entregaBox {
-  border: 1px solid #ddd;
+  border: 1px solid var(--cinza-borda);
   padding: 15px;
   border-radius: 8px;
   margin-top: 10px;
-  background-color: #fff;
+  background-color: var(--fundo-branco);
 }
 
 .radioGroup {
@@ -367,7 +367,7 @@
 }
 
 .labelCinza {
-  color: #383737;
+  color: var(--label-cinza);
   width: 140px;
   font-size: 15px;
 }
@@ -375,13 +375,13 @@
 .inputEntrega {
   flex: 1;
   padding: 6px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cinza-input-borda);
   border-radius: 4px;
   font-size: 15px;
 }
 
 .valorDireita {
-  color: #383737;
+  color: var(--label-cinza);
   font-weight: bold;
   font-size: 15px;
 }
@@ -390,9 +390,9 @@
   margin-top: 8px;
   font-size: 16px;
   color: #4a4a4a;
-  background-color: #f7f7f7;
+  background-color: var(--cliente-bg);
   padding: 6px 10px;
-  border-left: 4px solid #d497f0;
+  border-left: 4px solid var(--botao-bg);
   border-radius: 4px;
   display: flex;
   justify-content: space-between;
@@ -409,18 +409,16 @@
 }
 
 .removerCliente:hover {
-  color: #d497f0;
+  color: var(--remover-hover);
   transition: color 0.3s;
 }
 
-/* Ajusta largura do modal de desconto */
 .modalDesconto {
   max-width: 500px;
 }
 
-/* Campo de entrada somente leitura */
 .inputReadOnly {
-  background-color: #f5f5f5;
+  background-color: var(--input-readonly-bg);
   cursor: not-allowed;
 }
 
@@ -428,7 +426,6 @@
   max-width: 380px;
 }
 
-/* Header exclusivo do modal de desconto */
 .headerDesconto {
   display: flex;
   justify-content: space-between;
@@ -436,9 +433,8 @@
   gap: 12px;
 }
 
-/* Título exclusivo do modal de desconto */
 .titleDesconto {
-  white-space: nowrap; /* não quebra em 2 linhas */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

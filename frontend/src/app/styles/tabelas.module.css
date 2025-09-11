@@ -1,7 +1,7 @@
 .filters-container {
   display: flex;
   gap: 16px; /* espaço entre os filtros */
-  background: white;
+  background: var(--table-bg);
   padding: 12px 16px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -17,45 +17,39 @@
   flex-direction: column;
 }
 
-/* Container da tabela com sombra */
 .custom-table-container {
-  background-color: #ffffff;
+  background-color: var(--table-bg);
   padding: 0;
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
-/* Cabeçalho da tabela */
 :global(.p-datatable .p-datatable-thead > tr > th) {
-  background-color: #f3f4f6; /* cinza claro */
-  color: #4b5563; /* cinza escuro */
+  background-color: var(--table-header-bg); /* cinza claro */
+  color: var(--table-header-color); /* cinza escuro */
   font-weight: 600;
   padding: 14px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--table-border);
 }
 
-/* Linhas dos dados */
 :global(.p-datatable .p-datatable-tbody > tr > td) {
-  background-color: #ffffff;
+  background-color: var(--table-bg);
   padding: 14px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  color: #111827;
+  border-bottom: 1px solid var(--table-border);
+  color: var(--table-text);
 }
 
-/* Última linha sem borda */
 :global(.p-datatable .p-datatable-tbody > tr:last-child > td) {
   border-bottom: none;
 }
 
-/* Paginação */
 :global(.p-paginator) {
-  background-color: #ffffff;
+  background-color: var(--table-bg);
   padding: 0.75rem 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--paginator-border-top);
 }
 
-/* Badge de status */
 .status-badge {
   display: inline-block;
   padding: 4px 12px;
@@ -72,35 +66,35 @@
 .retirado,
 .recebido,
 .pago {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--status-ativo-bg);
+  color: var(--status-ativo-color);
 }
 
 .inativo,
 .esgotado,
 .cancelado {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background-color: var(--status-inativo-bg);
+  color: var(--status-inativo-color);
 }
 
 .baixo,
 .pendente {
-  background-color: #fee2e2;
-  color: #f8ae0e;
+  background-color: var(--status-baixo-bg);
+  color: var(--status-baixo-color);
 }
 
 :global(.p-paginator) {
   display: flex;
   justify-content: center;
   padding: 1rem;
-  background-color: white;
+  background-color: var(--table-bg);
   border-top: 1px solid #ccc;
 }
 
 :global(.p-paginator-page) {
   margin: 0 8px;
   padding: 6px 12px;
-  color: #7a7a7a;
+  color: var(--paginator-page-color);
   background: none;
   border: none;
   font-weight: normal;
@@ -108,12 +102,12 @@
 }
 
 :global(.p-paginator-page:hover) {
-  color: #4d4d4d;
+  color: var(--paginator-page-hover-color);
   cursor: pointer;
 }
 
 :global(.p-paginator-page.p-highlight) {
-  color: #212121;
+  color: var(--paginator-page-active-color);
   font-weight: bold;
 }
 
@@ -127,7 +121,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #4b5563;
+  color: var(--acaoBotao-color);
   font-size: 1rem;
   padding: 6px;
   border-radius: 6px;
@@ -135,7 +129,7 @@
 }
 
 .acaoBotao:hover {
-  color: #212121;
+  color: var(--acaoBotao-hover-color);
 }
 
 .popupOverlay {
@@ -144,7 +138,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--popup-overlay-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -152,10 +146,9 @@
 }
 
 .popupContent {
-  background-color: white;
+  background-color: var(--popup-content-bg);
   padding: 24px;
   border-radius: 8px;
-
   max-width: 90%;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   position: relative;

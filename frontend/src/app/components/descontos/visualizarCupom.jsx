@@ -1,4 +1,4 @@
-import styles from "../../styles/CadastrarCliente.module.css";
+import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function VisualizarCupom({ onClose, cupom }) {
   return (

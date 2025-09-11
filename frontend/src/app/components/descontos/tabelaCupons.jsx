@@ -8,7 +8,7 @@ import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Filtros } from "../filtros";
 import { FiltroDropdown } from "../filtrosDropdown";
 
-import { deletarItem } from "../deletar";
+import { deletarItem } from "../deletar"; // função
 import VisualizarCupom from "./visualizarCupom";
 import EditarCupom from "./editarCupom";
 
@@ -43,12 +43,14 @@ export default function TabelaCupom() {
     // ... outros cupons
   ];
 
+  // Estados dos filtros
   const [filterID, setFilterID] = useState("");
   const [filterNome, setFilterNome] = useState("");
   const [filterTipo, setFilterTipo] = useState("");
   const [filterCategoria, setFilterCategoria] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
+  // Filtros aplicados
   const filteredData = data.filter(
     (item) =>
       (!filterID || item.id.toString().includes(filterID)) &&
@@ -59,6 +61,7 @@ export default function TabelaCupom() {
       (!filterStatus || item.status === filterStatus)
   );
 
+  // Opções para dropdowns
   const opcoesCategoria = [
     { label: "Flores", value: "Flores" },
     { label: "Arranjos", value: "Arranjos" },
@@ -75,15 +78,29 @@ export default function TabelaCupom() {
     { label: "Fixo", value: "valor" },
   ];
 
+  // Estados para modais
   const [isVisualizarModalOpen, setIsVisualizarModalOpen] = useState(false);
   const [cupomParaVisualizar, setCupomParaVisualizar] = useState(null);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [cupomParaEditar, setCupomParaEditar] = useState(null);
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [cupomParaExcluir, setCupomParaExcluir] = useState(null);
+  // Função para deletar (chama a função de exclusão)
+  const handleDeleteCupom = (cupom) => {
+    deletarItem({
+      itemId: cupom.id,
+      itemTipo: "cupom",
+      onDelete: () => {
+        console.log("Cupom removido:", cupom.id);
+        // Aqui você pode atualizar o estado ou recarregar os dados
+      },
+      onClose: () => {
+        console.log("Modal de exclusão fechado");
+      },
+    });
+  };
 
+  // Template das ações do DataTable
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
       <button
@@ -97,6 +114,7 @@ export default function TabelaCupom() {
       >
         <FontAwesomeIcon icon={faSearch} />
       </button>
+
       <button
         className={styles.acaoBotao}
         onClick={(e) => {
@@ -108,12 +126,12 @@ export default function TabelaCupom() {
       >
         <FontAwesomeIcon icon={faEdit} />
       </button>
+
       <button
         className={styles.acaoBotao}
         onClick={(e) => {
           e.stopPropagation();
-          setCupomParaExcluir(rowData);
-          setIsDeleteModalOpen(true);
+          handleDeleteCupom(rowData);
         }}
         title="Excluir"
       >
@@ -124,6 +142,7 @@ export default function TabelaCupom() {
 
   return (
     <div>
+      {/* Filtros */}
       <div className={styles["filters-container"]}>
         <div className={styles.filtro}>
           <Filtros
@@ -170,6 +189,7 @@ export default function TabelaCupom() {
         </div>
       </div>
 
+      {/* Tabela */}
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column field="id" header="ID" />
@@ -177,7 +197,8 @@ export default function TabelaCupom() {
           <Column field="tipo" header="Tipo" />
           <Column field="valorDesconto" header="Valor do Desconto" />
           <Column field="categoria" header="Categoria" />
-          <Column field="dataTermino" header="Data de término" />
+          <Column field="dataInicio" header="Data Início" />
+          <Column field="dataTermino" header="Data Término" />
           <Column field="descricao" header="Descrição" />
           <Column field="usos_permitidos" header="Usos Permitidos" />
           <Column field="usos_realizados" header="Usos Realizados" />
@@ -188,18 +209,7 @@ export default function TabelaCupom() {
           />
         </DataTable>
 
-        {isDeleteModalOpen &&
-          cupomParaExcluir &&
-          deletarItem({
-            itemId: cupomParaExcluir.id,
-            itemTipo: "cupom",
-            onDelete: () => {
-              console.log("Cancelar cupom:", cupomParaExcluir.id);
-              // Aqui você pode adicionar a lógica real para remover o cupom
-            },
-            onClose: () => setIsDeleteModalOpen(false),
-          })}
-
+        {/* Modal Visualizar */}
         {isVisualizarModalOpen && cupomParaVisualizar && (
           <VisualizarCupom
             cupom={cupomParaVisualizar}
@@ -210,6 +220,7 @@ export default function TabelaCupom() {
           />
         )}
 
+        {/* Modal Editar */}
         {isEditModalOpen && cupomParaEditar && (
           <EditarCupom
             cupom={cupomParaEditar}

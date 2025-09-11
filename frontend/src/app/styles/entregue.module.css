@@ -5,7 +5,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--overlay-bg-55);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,12 +15,12 @@
 
 /* Caixa do modal */
 .modal {
-  background: #fff;
+  background: var(--fundo-branco);
   padding: 24px;
   border-radius: 14px;
   max-width: 420px;
   width: 90%;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--modal-shadow-strong);
   animation: slideUp 0.3s ease-in-out;
 }
 
@@ -29,13 +29,14 @@
   margin: 0 0 10px;
   font-size: 1.4rem;
   font-weight: 600;
+  color: var(--modal-title-color);
 }
 
 /* Texto */
 .modal p {
   font-size: 1rem;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--cinza-texto-escuro);
 }
 
 /* Botões */
@@ -48,7 +49,7 @@
 .cancel {
   padding: 8px 14px;
   border: none;
-  background: #ccc;
+  background: var(--botao-cancel-bg);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
@@ -56,14 +57,14 @@
 }
 
 .cancel:hover {
-  background: #b3b3b3;
+  background: var(--botao-cancel-hover-bg);
 }
 
 .confirm {
   padding: 8px 14px;
   border: none;
-  background: #4caf50;
-  color: white;
+  background: var(--botao-confirm-bg);
+  color: var(--botao-text-color);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
@@ -71,7 +72,7 @@
 }
 
 .confirm:hover {
-  background: #43a047;
+  background: var(--botao-confirm-hover-bg);
 }
 
 /* Animações */

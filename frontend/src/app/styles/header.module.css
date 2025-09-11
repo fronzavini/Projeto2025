@@ -8,10 +8,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f4f0ff;
+  background-color: var(--header-bg);
   padding: 0.75rem 1.5rem;
   height: 4.5rem;
-  border: #3b1f54;
+  border: var(--header-border);
 }
 
 .left {
@@ -22,7 +22,7 @@ body {
 .logo {
   font-size: 1.9rem;
   font-weight: 600;
-  color: #3b1f54;
+  color: var(--header-logo-color);
 }
 
 .right {
@@ -35,7 +35,7 @@ body {
   background: none;
   border: none;
   font-size: 1.2rem;
-  color: #3b1f54;
+  color: var(--header-icon-color);
   cursor: pointer;
   margin-left: 0.5rem;
 }
@@ -52,7 +52,6 @@ body {
 }
 
 /*Para o modal do usuário*/
-
 .botao_modal {
   all: unset;
   cursor: pointer;
@@ -62,18 +61,19 @@ body {
   position: relative; /* contexto para o modal aparecer abaixo */
   display: inline-block;
 }
+
 .modal {
   position: absolute;
   top: 6rem;
   right: 10px;
-  background: #fff;
+  background: var(--modal-bg);
   padding: 20px 24px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   min-width: 180px;
   z-index: 9999;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #222;
+  color: var(--modal-color);
   user-select: none;
 }
 
@@ -86,7 +86,7 @@ body {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 10px solid #fff;
+  border-bottom: 10px solid var(--modal-arrow-border);
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.07));
 }
 
@@ -96,7 +96,6 @@ body {
   gap: 12px;
 }
 
-/* Container para título + botão fechar lado a lado */
 .modal_header {
   display: flex;
   justify-content: space-between;
@@ -108,8 +107,8 @@ body {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #111;
-  flex-grow: 1; /* ocupa espaço para empurrar botão à direita */
+  color: var(--modal-title-color);
+  flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -117,7 +116,7 @@ body {
 
 .modal_conteudo span {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--modal-subtext-color);
   font-style: italic;
 }
 
@@ -128,7 +127,7 @@ body {
 .botao_simples {
   all: unset;
   cursor: pointer;
-  color: #444;
+  color: var(--botao-simples-color);
   font-weight: 600;
   padding: 8px 14px;
   border-radius: 6px;
@@ -138,17 +137,17 @@ body {
 }
 
 .botao_simples:hover {
-  background-color: #eaeaea;
-  color: #222;
+  background-color: var(--botao-simples-hover-bg);
+  color: var(--botao-simples-hover-color);
 }
 
 .botao_simples:active {
-  background-color: #d6d6d6;
+  background-color: var(--botao-simples-active-bg);
 }
 
 .botao_fechar {
   font-size: 0.9rem;
-  color: #888;
+  color: var(--botao-fechar-color);
   padding: 6px 10px;
   border-radius: 4px;
   transition: color 0.2s, background-color 0.2s;
@@ -163,5 +162,5 @@ body {
 }
 
 .botao_fechar:hover {
-  color: #444;
+  color: var(--botao-fechar-hover-color);
 }

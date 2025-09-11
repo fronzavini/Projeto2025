@@ -3,12 +3,20 @@ import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function CadastrarDesconto({ onClose, onConfirm }) {
-  const [produto, setProduto] = useState("");
-  const [precoOriginal, setPrecoOriginal] = useState("");
-  const [desconto, setDesconto] = useState("");
-  const [categoria, setCategoria] = useState("flores");
-  const [precoComDesconto, setPrecoComDesconto] = useState(0);
+export default function EditarDesconto({
+  descontoInicial,
+  onClose,
+  onConfirm,
+}) {
+  const [produto, setProduto] = useState(descontoInicial.produto);
+  const [precoOriginal, setPrecoOriginal] = useState(
+    descontoInicial.precoOriginal
+  );
+  const [desconto, setDesconto] = useState(descontoInicial.desconto);
+  const [categoria, setCategoria] = useState(descontoInicial.categoria);
+  const [precoComDesconto, setPrecoComDesconto] = useState(
+    descontoInicial.precoComDesconto
+  );
 
   useEffect(() => {
     if (
@@ -50,9 +58,8 @@ export default function CadastrarDesconto({ onClose, onConfirm }) {
       <div className={`${styles.container} ${styles.modalDesconto}`}>
         <div className={`${styles.header} ${styles.headerDesconto}`}>
           <h2 className={`${styles.title} ${styles.titleDesconto}`}>
-            Cadastrar Desconto
+            Editar Desconto
           </h2>
-
           <button className={styles.cancelar} onClick={onClose}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
@@ -126,7 +133,7 @@ export default function CadastrarDesconto({ onClose, onConfirm }) {
         />
 
         <button className={styles.confirmarVenda} onClick={handleConfirmar}>
-          Confirmar Desconto
+          Salvar Alterações
         </button>
       </div>
     </div>
