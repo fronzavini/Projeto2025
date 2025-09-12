@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     cnpj VARCHAR(18),
     rg VARCHAR(20),
     email VARCHAR(100) NOT NULL,
-    senha VARCHAR(100) NOT NULL,
+    senha VARCHAR(100),
     telefone VARCHAR(20) NOT NULL,
     dataNasc DATE,
     estado BOOLEAN DEFAULT TRUE NOT NULL,
@@ -159,3 +159,4 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     categoria VARCHAR(50),
     descricao TEXT,
     valor DECIMAL(10,2),
+)

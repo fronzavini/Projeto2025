@@ -1,5 +1,8 @@
+from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
 import mysql.connector
+from flask_cors import CORS
+
 
 def conectar_banco():
     try:
@@ -52,21 +55,29 @@ class Cliente(PessoaFisica, PessoaJuridica):
     @staticmethod
     def criarCliente(nome, tipo, email, senha, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
         conexao = conectar_banco()
-        cursor = conexao.cursor()
-        query = '''
-            INSERT INTO clientes (dataCadastro, nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
-                                dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        '''
-        dataHoje = date.today().strftime('%Y-%m-%d')
-        cursor.execute(query, (dataHoje, nome, tipo, sexo, cpf, cnpj, rg,
-                               email, senha, telefone, dataNasc,
-                               endCep, endRua, endNumero, endBairro,
-                               endComplemento, endUF, endMunicipio))
-        conexao.commit()
-        cursor.close()
-        conexao.close()
-        return 'Cliente adicionado com sucesso'
+        if not conexao:
+            return {"error": "Não foi possível conectar ao banco de dados."}
+
+        try:
+            cursor = conexao.cursor()
+            query = '''
+                INSERT INTO clientes (dataCadastro, nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
+                                      dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            '''
+            valores = (
+                datetime.now(), nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
+                dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio
+            )
+            cursor.execute(query, valores)
+            conexao.commit()
+            return {"message": "Cliente criado com sucesso."}
+        except mysql.connector.Error as erro:
+            print(f"Erro ao inserir cliente no banco de dados: {erro}")
+            return {"error": "Erro ao criar cliente no banco de dados."}
+        finally:
+            cursor.close()
+            conexao.close()
 
     @staticmethod
     def editarCliente(id, nome=None, email=None, senha=None, telefone=None,
@@ -178,6 +189,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar clientes: {e}")
         finally:
@@ -343,6 +355,7 @@ class Funcionario(PessoaFisica):
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar funcionários: {e}")
         finally:
@@ -462,6 +475,7 @@ class Produto:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar produtos: {e}")
         finally:
@@ -577,6 +591,8 @@ class Fornecedor:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar fornecedores: {e}")
         finally:
@@ -701,6 +717,8 @@ class Cupom:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar cupons: {e}")
         finally:
@@ -804,6 +822,8 @@ class ServicoPersonalizado:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar serviços personalizados: {e}")
         finally:
@@ -861,6 +881,8 @@ class Carrinho:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar carrinhos: {e}")
         finally:
@@ -921,6 +943,8 @@ class Venda:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar vendas: {e}")
         finally:
@@ -1013,6 +1037,8 @@ class TransacaoFinanceira:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar transações financeiras: {e}")
         finally:
@@ -1029,4 +1055,3 @@ class TransacaoFinanceira:
             "data": str(self.data) if self.data else None
         }
 
-# ...restante do
