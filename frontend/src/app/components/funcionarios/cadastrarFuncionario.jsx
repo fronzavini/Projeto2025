@@ -1,5 +1,6 @@
+"use client";
 import { useState } from "react";
-import styles from "../../styles/cadastrarCliente.module.css"; // Renomeie o CSS se quiser
+import styles from "../../styles/cadastrarCliente.module.css"; // CSS existente
 
 export default function CadastrarFuncionario({ onClose }) {
   const [form, setForm] = useState({
@@ -19,7 +20,11 @@ export default function CadastrarFuncionario({ onClose }) {
     complemento: "",
     uf: "",
     funcao: "",
+    salario: "",
+    dataContratacao: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -28,28 +33,24 @@ export default function CadastrarFuncionario({ onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const dadosCompletos = {
-      ...form,
-      estado: true,
-    };
+    const dadosCompletos = { ...form, estado: true };
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/incluir_funcionario",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dadosCompletos),
-        }
-      );
+      const response = await fetch("http://127.0.0.1:5000/criar_funcionario", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dadosCompletos),
+      });
 
       if (!response.ok) throw new Error("Erro ao cadastrar funcionário.");
 
-      alert("Funcionário cadastrado com sucesso!");
+      const resultado = await response.json();
+      alert(resultado.message || "Funcionário cadastrado com sucesso!");
       onClose();
 
       setForm({
@@ -69,10 +70,14 @@ export default function CadastrarFuncionario({ onClose }) {
         complemento: "",
         uf: "",
         funcao: "",
+        salario: "",
+        dataContratacao: "",
       });
     } catch (error) {
       console.error(error);
-      alert("Erro ao cadastrar funcionário.");
+      alert("Erro ao cadastrar funcionário. Verifique se o servidor está rodando.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -90,10 +95,9 @@ export default function CadastrarFuncionario({ onClose }) {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome" className={styles.label}>
-            Nome
-          </label>
+          <label htmlFor="nome" className={styles.label}>Nome</label>
           <input
             className={styles.input}
             id="nome"
@@ -104,11 +108,10 @@ export default function CadastrarFuncionario({ onClose }) {
           />
         </div>
 
+        {/* CPF e RG */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cpf" className={styles.label}>
-              CPF
-            </label>
+            <label htmlFor="cpf" className={styles.label}>CPF</label>
             <input
               className={styles.input}
               id="cpf"
@@ -119,9 +122,7 @@ export default function CadastrarFuncionario({ onClose }) {
             />
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor="rg" className={styles.label}>
-              RG
-            </label>
+            <label htmlFor="rg" className={styles.label}>RG</label>
             <input
               className={styles.input}
               id="rg"
@@ -133,10 +134,9 @@ export default function CadastrarFuncionario({ onClose }) {
           </div>
         </div>
 
+        {/* Data de Nascimento e Sexo */}
         <div className={styles.formGroup}>
-          <label htmlFor="data_nascimento" className={styles.label}>
-            Data de Nascimento
-          </label>
+          <label htmlFor="data_nascimento" className={styles.label}>Data de Nascimento</label>
           <input
             className={styles.inputDate}
             id="data_nascimento"
@@ -147,11 +147,8 @@ export default function CadastrarFuncionario({ onClose }) {
             required
           />
         </div>
-
         <div className={styles.formGroup}>
-          <label htmlFor="sexo" className={styles.label}>
-            Sexo
-          </label>
+          <label htmlFor="sexo" className={styles.label}>Sexo</label>
           <select
             className={styles.input}
             id="sexo"
@@ -165,10 +162,9 @@ export default function CadastrarFuncionario({ onClose }) {
           </select>
         </div>
 
+        {/* Função, Email e Senha */}
         <div className={styles.formGroup}>
-          <label htmlFor="funcao" className={styles.label}>
-            Função
-          </label>
+          <label htmlFor="funcao" className={styles.label}>Função</label>
           <input
             className={styles.input}
             id="funcao"
@@ -178,11 +174,8 @@ export default function CadastrarFuncionario({ onClose }) {
             required
           />
         </div>
-
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>
-            Email
-          </label>
+          <label htmlFor="email" className={styles.label}>Email</label>
           <input
             className={styles.input}
             id="email"
@@ -193,11 +186,8 @@ export default function CadastrarFuncionario({ onClose }) {
             required
           />
         </div>
-
         <div className={styles.formGroup}>
-          <label htmlFor="senha" className={styles.label}>
-            Senha
-          </label>
+          <label htmlFor="senha" className={styles.label}>Senha</label>
           <input
             className={styles.input}
             id="senha"
@@ -209,10 +199,9 @@ export default function CadastrarFuncionario({ onClose }) {
           />
         </div>
 
+        {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>
-            Telefone
-          </label>
+          <label htmlFor="telefone" className={styles.label}>Telefone</label>
           <input
             className={styles.input}
             id="telefone"
@@ -223,11 +212,10 @@ export default function CadastrarFuncionario({ onClose }) {
           />
         </div>
 
+        {/* Endereço */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cep" className={styles.label}>
-              CEP
-            </label>
+            <label htmlFor="cep" className={styles.label}>CEP</label>
             <input
               className={styles.input}
               id="cep"
@@ -237,9 +225,7 @@ export default function CadastrarFuncionario({ onClose }) {
             />
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor="numero" className={styles.label}>
-              Número
-            </label>
+            <label htmlFor="numero" className={styles.label}>Número</label>
             <input
               className={styles.input}
               id="numero"
@@ -252,9 +238,7 @@ export default function CadastrarFuncionario({ onClose }) {
 
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="bairro" className={styles.label}>
-              Bairro
-            </label>
+            <label htmlFor="bairro" className={styles.label}>Bairro</label>
             <input
               className={styles.input}
               id="bairro"
@@ -264,9 +248,7 @@ export default function CadastrarFuncionario({ onClose }) {
             />
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor="cidade" className={styles.label}>
-              Cidade
-            </label>
+            <label htmlFor="cidade" className={styles.label}>Cidade</label>
             <input
               className={styles.input}
               id="cidade"
@@ -278,9 +260,7 @@ export default function CadastrarFuncionario({ onClose }) {
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="logradouro" className={styles.label}>
-            Logradouro
-          </label>
+          <label htmlFor="logradouro" className={styles.label}>Logradouro</label>
           <input
             className={styles.input}
             id="logradouro"
@@ -289,11 +269,8 @@ export default function CadastrarFuncionario({ onClose }) {
             onChange={handleChange}
           />
         </div>
-
         <div className={styles.formGroup}>
-          <label htmlFor="complemento" className={styles.label}>
-            Complemento
-          </label>
+          <label htmlFor="complemento" className={styles.label}>Complemento</label>
           <input
             className={styles.input}
             id="complemento"
@@ -302,11 +279,8 @@ export default function CadastrarFuncionario({ onClose }) {
             onChange={handleChange}
           />
         </div>
-
         <div className={styles.formGroup}>
-          <label htmlFor="uf" className={styles.label}>
-            UF
-          </label>
+          <label htmlFor="uf" className={styles.label}>UF</label>
           <input
             className={styles.input}
             id="uf"
@@ -317,8 +291,33 @@ export default function CadastrarFuncionario({ onClose }) {
           />
         </div>
 
-        <button type="submit" className={styles.botaoEnviar}>
-          Cadastrar funcionário
+        {/* Salário e Data de Contratação */}
+        <div className={styles.formGroup}>
+          <label htmlFor="salario" className={styles.label}>Salário</label>
+          <input
+            className={styles.input}
+            id="salario"
+            name="salario"
+            type="number"
+            step="0.01"
+            value={form.salario}
+            onChange={handleChange}
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label htmlFor="dataContratacao" className={styles.label}>Data de Contratação</label>
+          <input
+            className={styles.inputDate}
+            id="dataContratacao"
+            name="dataContratacao"
+            type="date"
+            value={form.dataContratacao}
+            onChange={handleChange}
+          />
+        </div>
+
+        <button type="submit" className={styles.botaoEnviar} disabled={isSubmitting}>
+          {isSubmitting ? "Cadastrando..." : "Cadastrar funcionário"}
         </button>
       </form>
     </div>

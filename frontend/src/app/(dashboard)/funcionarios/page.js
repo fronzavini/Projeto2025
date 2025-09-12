@@ -6,6 +6,7 @@ import CadastrarFuncionario from "@/app/components/funcionarios/cadastrarFuncion
 import BotaoGenerico from "@/app/components/botao";
 import styles from "../../styles/tabelas.module.css";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import carregarFuncionarios from "@/app/components/produtos/tabelaFuncionarios";
 
 export default function Funcionarios() {
   const [showPopup, setShowPopup] = useState(false);
@@ -21,7 +22,7 @@ export default function Funcionarios() {
       {showPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
-            <CadastrarFuncionario onClose={() => setShowPopup(false)} />
+            <CadastrarFuncionario onClose={() => {setShowPopup(false); carregarFuncionarios();}} />
           </div>
         </div>
       )}
