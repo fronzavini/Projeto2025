@@ -189,6 +189,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar clientes: {e}")
         finally:

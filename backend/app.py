@@ -65,26 +65,30 @@ def criar_cliente():
 def editar_cliente(id):
     dados = request.json
 
-    resultado = Cliente.editarCliente(
-        id=id,
-        nome=dados.get("nome"),
-        email=dados.get("email"),
-        senha=dados.get("senha"),
-        telefone=dados.get("telefone"),
-        endCep=dados.get("cep"),
-        endRua=dados.get("logradouro"),
-        endNumero=dados.get("numero"),
-        endBairro=dados.get("bairro"),
-        endComplemento=dados.get("complemento"),
-        endUF=dados.get("uf"),
-        endMunicipio=dados.get("cidade"),
-        cpf=dados.get("cpf"),
-        rg=dados.get("rg"),
-        sexo=dados.get("sexo"),
-        dataNasc=dados.get("data_nascimento"),
-        cnpj=dados.get("cnpj")
-    )
-    return jsonify({"message": "Cliente atualizado com sucesso."})
+    cliente_data = {
+        "id": id,
+        "nome": dados.get("nome"),
+        "email": dados.get("email"),
+        "senha": dados.get("senha"),
+        "telefone": dados.get("telefone"),
+        "endCep": dados.get("cep"),
+        "endRua": dados.get("logradouro"),
+        "endNumero": dados.get("numero"),
+        "endBairro": dados.get("bairro"),
+        "endComplemento": dados.get("complemento"),
+        "endUF": dados.get("uf"),
+        "endMunicipio": dados.get("cidade"),
+        "cpf": dados.get("cpf"),
+        "rg": dados.get("rg"),
+        "sexo": dados.get("sexo"),
+        "dataNasc": dados.get("data_nascimento"),
+        "cnpj": dados.get("cnpj"),
+    }
+
+    editado = Cliente.editarCliente(**cliente_data)
+    return jsonify({'resultado': 'ok'
+                    , 'detalhes': editado})
+
 
 #lembre de trocar o id caso esteja errado
 #curl -X PATCH http://127.0.0.1:5000/desativar_cliente/1
@@ -104,8 +108,18 @@ def deletar_cliente(id):
 #curl -X GET http://127.0.0.1:5000/listar_cliente
 @app.route('/listar_clientes', methods=['GET'])
 def listar_clientes():
-    clientes = Cliente.listarClientes()
-    return jsonify(clientes)
+    try:
+        clientes = Cliente.listarClientes()  # supondo que retorne lista de dicts
+        return jsonify({
+            "resultado": "ok",
+            "detalhes": clientes
+        })
+    except Exception as e:
+        return jsonify({
+            "resultado": "erro",
+            "detalhes": str(e)
+        }), 500
+
 
 #Rotas de Funcionario
 #curl -X POST http://127.0.0.1:5000/criar_funcionario -H "Content-Type: application/json" -d "{\"nome\":\"Maria Souza\",\"cpf\":\"12345678901\",\"rg\":\"1234567\",\"data_nascimento\":\"1990-05-10\",\"sexo\":\"feminino\",\"email\":\"maria.souza@email.com\",\"senha\":\"senha123\",\"telefone\":\"11988887777\",\"cep\":\"12345678\",\"logradouro\":\"Rua X\",\"numero\":\"200\",\"bairro\":\"Centro\",\"complemento\":\"Apto 5\",\"uf\":\"SP\",\"cidade\":\"São Paulo\",\"funcao\":\"vendedora\",\"salario\":2500.00,\"dataContratacao\":\"2023-01-15\"}"
