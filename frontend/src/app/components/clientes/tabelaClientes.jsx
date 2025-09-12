@@ -136,16 +136,26 @@ export default function TabelaClientes() {
 
       <button
         className={styles.acaoBotao}
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          // Chama função de deletar com SweetAlert
-          deletarItem({
-            itemId: rowData.id,
-            itemTipo: "Cliente",
-            onDelete: () => {
-              setClientes((prev) => prev.filter((c) => c.id !== rowData.id));
-            },
-          });
+          if (!confirm(`Deseja realmente deletar o cliente "${rowData.nome}"?`)) return;
+
+          try {
+            const response = await fetch(
+              `http://127.0.0.1:5000/deletar_cliente/${rowData.id}`,
+              { method: "DELETE" }
+            );
+
+            if (!response.ok) throw new Error("Erro ao deletar cliente.");
+
+            const result = await response.json();
+            alert(result.message || "Produto deletado com sucesso!");
+            // Atualiza a lista de produtos
+            setClientes((prev) => prev.filter((c) => c.id !== rowData.id));
+          } catch (error) {
+            console.error("Erro ao deletar cliente:", error);
+            alert("Erro ao deletar cliente.");
+          }
         }}
         title="Excluir"
       >

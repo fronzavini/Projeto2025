@@ -72,7 +72,7 @@ export default function VisualizarProduto({ onClose, produto }) {
               />
             </div>
 
-            <div className={styles.formGroup}>
+            {/*<div className={styles.formGroup}>
               <label className={styles.label}>Imagem do Produto</label>
               <img
                 src={produto.imagem}
@@ -83,7 +83,7 @@ export default function VisualizarProduto({ onClose, produto }) {
                   borderRadius: "8px",
                 }}
               />
-            </div>
+            </div>*/}
 
             <div className={styles.formGroup}>
               <label className={styles.label}>Estado</label>

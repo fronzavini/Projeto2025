@@ -355,6 +355,7 @@ class Funcionario(PessoaFisica):
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar funcionários: {e}")
         finally:
@@ -474,6 +475,7 @@ class Produto:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar produtos: {e}")
         finally:
@@ -589,6 +591,8 @@ class Fornecedor:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar fornecedores: {e}")
         finally:
@@ -713,6 +717,8 @@ class Cupom:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar cupons: {e}")
         finally:
@@ -816,6 +822,8 @@ class ServicoPersonalizado:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar serviços personalizados: {e}")
         finally:
@@ -873,6 +881,8 @@ class Carrinho:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar carrinhos: {e}")
         finally:
@@ -933,6 +943,8 @@ class Venda:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar vendas: {e}")
         finally:
@@ -1025,6 +1037,8 @@ class TransacaoFinanceira:
             resultados = cursor.fetchall()
             for row in resultados:
                 print(row)
+            return resultados
+            
         except mysql.connector.Error as e:
             print(f"Erro ao listar transações financeiras: {e}")
         finally:

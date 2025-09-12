@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filtros } from "../filtros";
 import { FiltroDropdown } from "../filtrosDropdown";
 import styles from "../../styles/tabelas.module.css";
@@ -15,75 +15,7 @@ import EditarProduto from "./editarProduto";
 import { deletarItem } from "../deletar";
 
 export default function TabelaProduto() {
-  const initialData = [
-    {
-      id: 1,
-      nome: "Buquê de Rosas Vermelhas",
-      categoria: "Flores",
-      marca: "FlorBella",
-      preco: 59.9,
-      quantidade_estoque: 30,
-      estoque_minimo: 5,
-      estado: true,
-      fornecedor_id: 1,
-      imagem:
-        "https://static.cestasmichelli.com.br/images/product/26148gg.jpg?ims=750x750",
-    },
-    {
-      id: 2,
-      nome: "Orquídea Branca",
-      categoria: "Plantas",
-      marca: "Orquiflor",
-      preco: 79.5,
-      quantidade_estoque: 20,
-      estoque_minimo: 4,
-      estado: true,
-      fornecedor_id: 2,
-      imagem:
-        "https://cdn.awsli.com.br/600x700/601/601454/produto/98264100/24d915e5d7.jpg",
-    },
-    {
-      id: 3,
-      nome: "Adubo Orgânico 1kg",
-      categoria: "Acessórios",
-      marca: "Naturagro",
-      preco: 25.0,
-      quantidade_estoque: 50,
-      estoque_minimo: 10,
-      estado: true,
-      fornecedor_id: 3,
-      imagem:
-        "https://images.tcdn.com.br/img/img_prod/649920/adubo_e_composto_organico_1kg_esterco_bovino_leiteiro_1331_2_bf1ca3ce220587575ce146ea1084628e.jpg",
-    },
-    {
-      id: 4,
-      nome: "Vaso Cerâmico Branco",
-      categoria: "Vasos",
-      marca: "DecorVasos",
-      preco: 39.99,
-      quantidade_estoque: 15,
-      estoque_minimo: 3,
-      estado: true,
-      fornecedor_id: 4,
-      imagem:
-        "https://images.tcdn.com.br/img/img_prod/774792/cachepot_de_ceramica_branco_bretagne_19x15cm_10719_1_b22ce33b2de2f2dda050d6c2d3f5c3e1.jpg",
-    },
-    {
-      id: 5,
-      nome: "Rosa do Deserto",
-      categoria: "Plantas",
-      marca: "JardimVivo",
-      preco: 89.0,
-      quantidade_estoque: 12,
-      estoque_minimo: 2,
-      estado: false,
-      fornecedor_id: 2,
-      imagem:
-        "https://veiling.com.br/wp-content/uploads/2025/06/rosa-do-des-dobrado-683e423b6210a.jpeg",
-    },
-  ];
-
-  const [produtos, setProdutos] = useState(initialData);
+  const [produtos, setProdutos] = useState([]);
 
   // Estados dos filtros
   const [filterId, setFilterId] = useState("");
@@ -92,53 +24,83 @@ export default function TabelaProduto() {
   const [filterCategoria, setFilterCategoria] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
-  // Opções para filtro status
   const opcoesStatus = [
     { label: "Ativo", value: "ativo" },
     { label: "Inativo", value: "inativo" },
   ];
 
-  // Cria opções únicas para filtros tipo (marca) e categoria
+  // Modal e produto selecionado
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [produtoParaEditar, setProdutoParaEditar] = useState(null);
+
+  // Carregar produtos do backend
+  const carregarProdutos = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/listar_produtos", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Erro ao carregar produtos.");
+      const resultado = await response.json();
+
+      // Garante que é array
+      const produtosArray = Array.isArray(resultado) ? resultado : [];
+      const produtosFormatados = produtosArray.map((p) => ({
+        id: p[0],
+        nome: p[1],
+        categoria: p[2],
+        marca: p[3],
+        preco: Number(p[4]),
+        quantidade_estoque: p[5],
+        estoque_minimo: p[6],
+        estado: p[7],
+        fornecedor_id: p[8],
+        imagem: p[9] || "",
+      }));
+      setProdutos(produtosFormatados);
+
+
+      setProdutos(produtosFormatados);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+      setProdutos([]); // evita quebrar a tabela
+    }
+  };
+
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  // Criar filtros dinâmicos
   const tipos = Array.from(new Set(produtos.map((d) => d.marca))).map((v) => ({
     label: v,
     value: v,
   }));
+  const categorias = Array.from(
+    new Set(produtos.map((d) => d.categoria))
+  ).map((v) => ({ label: v, value: v }));
 
-  const categorias = Array.from(new Set(produtos.map((d) => d.categoria))).map(
-    (v) => ({ label: v, value: v })
-  );
-
-  // Função para renderizar o status com badge colorido
-  const statusTemplate = (rowData) => {
-    const status = rowData.estado ? "ativo" : "inativo";
-    return (
-      <span className={`${styles["status-badge"]} ${styles[status]}`}>
-        {rowData.estado ? "Ativo" : "Inativo"}
-      </span>
-    );
-  };
-
-  // Dados filtrados conforme filtros aplicados
   const filteredData = produtos.filter((item) => {
     const statusStr = item.estado ? "ativo" : "inativo";
     return (
       (!filterId || item.id.toString().startsWith(filterId)) &&
-      (!filterNome ||
-        item.nome.toLowerCase().includes(filterNome.toLowerCase())) &&
+      (!filterNome || item.nome.toLowerCase().includes(filterNome.toLowerCase())) &&
       (!filterTipo || item.marca === filterTipo) &&
       (!filterCategoria || item.categoria === filterCategoria) &&
       (!filterStatus || statusStr === filterStatus)
     );
   });
 
-  // Estados para modais e produto selecionado
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const statusTemplate = (rowData) => {
+    const status = rowData.estado ? "ativo" : "inativo";
+    return <span className={`${styles["status-badge"]} ${styles[status]}`}>{status}</span>;
+  };
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [produtoParaEditar, setProdutoParaEditar] = useState(null);
-
-  // Template para ações (visualizar, editar, deletar)
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
       <button
@@ -167,16 +129,26 @@ export default function TabelaProduto() {
 
       <button
         className={styles.acaoBotao}
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          // Chama a função deletarItem do SweetAlert
-          deletarItem({
-            itemId: rowData.id,
-            itemTipo: "Produto",
-            onDelete: () => {
-              setProdutos((prev) => prev.filter((p) => p.id !== rowData.id));
-            },
-          });
+          if (!confirm(`Deseja realmente deletar o produto "${rowData.nome}"?`)) return;
+
+          try {
+            const response = await fetch(
+              `http://127.0.0.1:5000/deletar_produto/${rowData.id}`,
+              { method: "DELETE" }
+            );
+
+            if (!response.ok) throw new Error("Erro ao deletar produto.");
+
+            const result = await response.json();
+            alert(result.message || "Produto deletado com sucesso!");
+            // Atualiza a lista de produtos
+            setProdutos((prev) => prev.filter((p) => p.id !== rowData.id));
+          } catch (error) {
+            console.error("Erro ao deletar produto:", error);
+            alert("Erro ao deletar produto.");
+          }
         }}
         title="Excluir"
       >
@@ -187,65 +159,19 @@ export default function TabelaProduto() {
 
   return (
     <div>
+
+
       <div className={styles["filters-container"]}>
-        <div className={styles.filtro}>
-          <Filtros
-            value={filterNome}
-            onChange={setFilterNome}
-            placeholder="Ex: Rosa"
-            label="Nome"
-          />
-        </div>
-        <div className={styles.filtro}>
-          <Filtros
-            value={filterId}
-            onChange={setFilterId}
-            placeholder="# 12345"
-            label="ID Produto"
-          />
-        </div>
-        <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterTipo}
-            onChange={setFilterTipo}
-            options={tipos}
-            placeholder="Todos"
-            label="Tipo"
-          />
-        </div>
-        <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterCategoria}
-            onChange={setFilterCategoria}
-            options={categorias}
-            placeholder="Todos"
-            label="Categoria"
-          />
-        </div>
-        <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterStatus}
-            onChange={setFilterStatus}
-            options={opcoesStatus}
-            placeholder="Todos"
-            label="Status"
-          />
-        </div>
+        <Filtros value={filterNome} onChange={setFilterNome} placeholder="Ex: Rosa" label="Nome" />
+        <Filtros value={filterId} onChange={setFilterId} placeholder="# 12345" label="ID Produto" />
+        <FiltroDropdown value={filterTipo} onChange={setFilterTipo} options={tipos} placeholder="Todos" label="Tipo" />
+        <FiltroDropdown value={filterCategoria} onChange={setFilterCategoria} options={categorias} placeholder="Todos" label="Categoria" />
+        <FiltroDropdown value={filterStatus} onChange={setFilterStatus} options={opcoesStatus} placeholder="Todos" label="Status" />
       </div>
 
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
-          <Column
-            field="imagem"
-            header="Imagem"
-            body={(rowData) => (
-              <img
-                src={rowData.imagem}
-                alt={rowData.nome}
-                style={{ width: "40px", height: "40px", borderRadius: "8px" }}
-              />
-            )}
-          />
+          {/*<Column field="imagem" header="Imagem" body={(rowData) => <img src={rowData.imagem} alt={rowData.nome} style={{ width: 40, height: 40, borderRadius: 8 }} />} />*/}
           <Column field="nome" header="Nome" />
           <Column field="id" header="ID" />
           <Column field="marca" header="Tipo" />
@@ -253,34 +179,21 @@ export default function TabelaProduto() {
           <Column
             field="preco"
             header="Valor"
-            body={(rowData) => `R$ ${rowData.preco.toFixed(2)}`}
+            body={(rowData) => {
+              const preco = parseFloat(rowData.preco) || 0;
+              return `R$ ${preco.toFixed(2)}`;
+            }}
           />
           <Column field="estado" header="Status" body={statusTemplate} />
-          <Column
-            body={actionTemplate}
-            header="Ações"
-            style={{ width: "150px" }}
-          />
+          <Column body={actionTemplate} header="Ações" style={{ width: 150 }} />
         </DataTable>
 
         {isModalOpen && produtoSelecionado && (
-          <VisualizarProduto
-            produto={produtoSelecionado}
-            onClose={() => {
-              setIsModalOpen(false);
-              setProdutoSelecionado(null);
-            }}
-          />
+          <VisualizarProduto produto={produtoSelecionado} onClose={() => { setIsModalOpen(false); setProdutoSelecionado(null); carregarProdutos();}} />
         )}
 
         {isEditModalOpen && produtoParaEditar && (
-          <EditarProduto
-            produto={produtoParaEditar}
-            onClose={() => {
-              setIsEditModalOpen(false);
-              setProdutoParaEditar(null);
-            }}
-          />
+          <EditarProduto produto={produtoParaEditar} onClose={() => { setIsEditModalOpen(false); setProdutoParaEditar(null); carregarProdutos(); carregarProdutos(); }} />
         )}
       </div>
     </div>

@@ -86,8 +86,8 @@ def editar_cliente(id):
     }
 
     editado = Cliente.editarCliente(**cliente_data)
-    return jsonify({'resultado': 'ok'
-                    , 'detalhes': editado})
+    return jsonify({'resultado': 'ok',
+                    'detalhes': editado})
 
 
 #lembre de trocar o id caso esteja errado
@@ -126,7 +126,6 @@ def listar_clientes():
 @app.route('/criar_funcionario', methods=['POST'])
 def criar_funcionario():
     dados = request.json
-
     funcionario_data = {
         "nome": dados.get("nome"),
         "email": dados.get("email"),
@@ -150,6 +149,7 @@ def criar_funcionario():
 
     resultado = Funcionario.criarFuncionario(**funcionario_data)
     return jsonify({"message": resultado})
+
 
 
 #curl -X PUT http://127.0.0.1:5000/editar_funcionario/1 -H "Content-Type: application/json" -d "{\"nome\":\"Maria Souza\",\"email\":\"maria.nova@email.com\",\"telefone\":\"11988887777\",\"cep\":\"98765432\",\"logradouro\":\"Rua Y\",\"funcao\":\"gerente\",\"salario\":3500.00}"
@@ -178,7 +178,7 @@ def editar_funcionario(id):
         salario=dados.get("salario"),
         dataContratacao=dados.get("dataContratacao"),
     )
-    return jsonify({"message": "Funcionário atualizado com sucesso."})
+    return jsonify({"message": resultado})
 
 
 #curl -X PATCH http://127.0.0.1:5000/desativar_funcionario/1
