@@ -77,7 +77,9 @@ CREATE TABLE IF NOT EXISTS produtos (
     estoque_minimo INT NOT NULL,
     estado BOOLEAN DEFAULT TRUE NOT NULL,
     fornecedor_id INT,
-    FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id)
+    --imagem_id INT,
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id),
+    --FOREIGN KEY (imagem_id) REFERENCES imagem(id)
 );
 
 -- Tabela: servicos_personalizados
@@ -159,4 +161,5 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     categoria VARCHAR(50),
     descricao TEXT,
     valor DECIMAL(10,2),
+
 )
