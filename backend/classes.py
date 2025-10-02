@@ -183,10 +183,12 @@ class Cliente(PessoaFisica, PessoaJuridica):
     def listarClientes():
         conexao = conectar_banco()
         try:
-            cursor = conexao.cursor(dictionary=True)
+            cursor = conexao.cursor()
             query = "SELECT * FROM clientes"
             cursor.execute(query)
             resultados = cursor.fetchall()
+            for row in resultados:
+                print(row)
             return resultados
         except mysql.connector.Error as e:
             print(f"Erro ao listar clientes: {e}")

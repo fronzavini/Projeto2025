@@ -20,18 +20,14 @@ def conectar_banco():
         return conexao
     except mysql.connector.Error as erro:
         print(f"Erro ao conectar ao banco de dados: {erro}")
-        return erro
+        return None
 
 
-conectar_banco()
+
 
 @app.route('/')
 def home():
     return jsonify({"message": "Bem-vindo ao Flask!"})
-
-@app.route('/teste')
-def teste():
-    return jsonify({"message": "Rota de teste funcionando!"})
 
 
 #Rotas de Cliente
@@ -109,8 +105,7 @@ def deletar_cliente(id):
     return jsonify({"message": resultado})
 
 
-
-#curl -X GET http://127.0.0.1:5000/listar_clientes
+#curl -X GET http://127.0.0.1:5000/listar_cliente
 @app.route('/listar_clientes', methods=['GET'])
 def listar_clientes():
     try:
@@ -501,3 +496,7 @@ def deletar_transacaofinanceira(id):
 def listar_transacaofinanceira():
     transacoes = TransacaoFinanceira.listarTransacoes()
     return jsonify(transacoes)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
