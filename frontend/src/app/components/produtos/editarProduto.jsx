@@ -2,7 +2,13 @@ import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function EditarProduto({ onClose, produto }) {
-  const [formData, setFormData] = useState(produto);
+  const [formData, setFormData] = useState({
+    ...produto,
+    preco: Number(produto.preco), // garante que seja número
+    quantidadeEstoque: Number(produto.quantidade_estoque), // adapta para backend
+  });
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -12,11 +18,43 @@ export default function EditarProduto({ onClose, produto }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Por enquanto só loga localmente e fecha modal
-    console.log("Produto atualizado (local):", formData);
-    onClose();
+    setLoading(true);
+    setErrorMsg(null);
+
+    // Prepara payload conforme backend
+    const payload = {
+      nome: formData.nome,
+      categoria: formData.categoria,
+      marca: formData.marca,
+      preco: Number(formData.preco),
+      quantidadeEstoque: Number(formData.quantidadeEstoque),
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/editar_produto/${produto.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) throw new Error("Erro ao atualizar produto.");
+
+      const result = await response.json();
+      alert(result.message || "Produto atualizado com sucesso!");
+      onClose(); // fecha modal
+    } catch (error) {
+      console.error("Erro no fetch:", error);
+      setErrorMsg("Erro ao atualizar produto.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,9 +74,7 @@ export default function EditarProduto({ onClose, produto }) {
 
           <form onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>
-                Nome
-              </label>
+              <label htmlFor="nome" className={styles.label}>Nome</label>
               <input
                 className={styles.input}
                 id="nome"
@@ -51,9 +87,7 @@ export default function EditarProduto({ onClose, produto }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="categoria" className={styles.label}>
-                Categoria
-              </label>
+              <label htmlFor="categoria" className={styles.label}>Categoria</label>
               <input
                 className={styles.input}
                 id="categoria"
@@ -66,9 +100,7 @@ export default function EditarProduto({ onClose, produto }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="marca" className={styles.label}>
-                Marca
-              </label>
+              <label htmlFor="marca" className={styles.label}>Marca</label>
               <input
                 className={styles.input}
                 id="marca"
@@ -82,9 +114,7 @@ export default function EditarProduto({ onClose, produto }) {
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="preco" className={styles.label}>
-                  Preço
-                </label>
+                <label htmlFor="preco" className={styles.label}>Preço</label>
                 <input
                   className={styles.input}
                   id="preco"
@@ -97,81 +127,37 @@ export default function EditarProduto({ onClose, produto }) {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="quantidade_estoque" className={styles.label}>
-                  Qtd. Estoque
-                </label>
+                <label htmlFor="quantidadeEstoque" className={styles.label}>Qtd. Estoque</label>
                 <input
                   className={styles.input}
-                  id="quantidade_estoque"
-                  name="quantidade_estoque"
+                  id="quantidadeEstoque"
+                  name="quantidadeEstoque"
                   type="number"
-                  value={formData.quantidade_estoque}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="estoque_minimo" className={styles.label}>
-                  Estoque Mínimo
-                </label>
-                <input
-                  className={styles.input}
-                  id="estoque_minimo"
-                  name="estoque_minimo"
-                  type="number"
-                  value={formData.estoque_minimo}
+                  value={formData.quantidadeEstoque}
                   onChange={handleChange}
                   required
                 />
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="imagem" className={styles.label}>
+            {/*<div className={styles.formGroup}>
+            <label htmlFor="imagem" className={styles.label}>
                 URL da Imagem
-              </label>
-              <input
+            </label>
+            <input
                 className={styles.input}
                 id="imagem"
                 name="imagem"
                 type="text"
-                value={formData.imagem}
+                value={form.imagem}
                 onChange={handleChange}
-              />
-            </div>
+            />
+            </div>*/}
 
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="fornecedor_id" className={styles.label}>
-                  Fornecedor ID
-                </label>
-                <input
-                  className={styles.input}
-                  id="fornecedor_id"
-                  name="fornecedor_id"
-                  type="number"
-                  value={formData.fornecedor_id}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="estado" className={styles.label}>
-                  Ativo
-                </label>
-                <input
-                  className={styles.checkbox}
-                  id="estado"
-                  name="estado"
-                  type="checkbox"
-                  checked={formData.estado}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
+            <button type="submit" className={styles.botaoEnviar} disabled={loading}>
+              {loading ? "Atualizando..." : "Salvar alterações"}
             </button>
+            {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
           </form>
         </div>
       </div>

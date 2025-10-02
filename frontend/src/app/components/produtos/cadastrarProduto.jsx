@@ -26,15 +26,15 @@ export default function CadastrarProduto({ onClose }) {
     e.preventDefault();
 
     const dadosCompletos = {
-      ...form,
+      nome: form.nome,
+      categoria: form.categoria,
+      marca: form.marca,
       preco: parseFloat(form.preco),
-      quantidade_estoque: parseInt(form.quantidade_estoque),
-      estoque_minimo: parseInt(form.estoque_minimo),
-      fornecedor_id: parseInt(form.fornecedor_id),
+      quantidadeEstoque: parseInt(form.quantidade_estoque), // adapte para o nome esperado pelo backend
     };
 
     try {
-      const response = await fetch("http://localhost:5000/incluir_produto", {
+      const response = await fetch("http://localhost:5000/criar_produto", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -45,9 +45,11 @@ export default function CadastrarProduto({ onClose }) {
 
       if (!response.ok) throw new Error("Erro ao cadastrar produto.");
 
-      alert("Produto cadastrado com sucesso!");
+      const result = await response.json();
+      alert(result.message || "Produto cadastrado com sucesso!");
       onClose();
 
+      // Limpar formulário
       setForm({
         nome: "",
         categoria: "",
@@ -57,7 +59,7 @@ export default function CadastrarProduto({ onClose }) {
         estoque_minimo: "",
         estado: true,
         fornecedor_id: "",
-        imagem: "",
+        /*imagem: "",*/
       });
     } catch (error) {
       console.error(error);
@@ -172,7 +174,7 @@ export default function CadastrarProduto({ onClose }) {
           </div>
         </div>
 
-        <div className={styles.formGroup}>
+       {/* <div className={styles.formGroup}>
           <label htmlFor="imagem" className={styles.label}>
             URL da Imagem
           </label>
@@ -184,7 +186,7 @@ export default function CadastrarProduto({ onClose }) {
             value={form.imagem}
             onChange={handleChange}
           />
-        </div>
+        </div>*/}
 
         <div className={styles.row}>
           <div className={styles.formGroup}>

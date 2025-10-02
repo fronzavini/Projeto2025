@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
+import axios from "axios";
 
 export default function CadastrarCliente({ onClose }) {
   const [form, setForm] = useState({
@@ -16,6 +17,7 @@ export default function CadastrarCliente({ onClose }) {
     bairro: "",
     logradouro: "",
     complemento: "",
+    uf: "",
   });
 
   function handleChange(e) {
@@ -29,15 +31,15 @@ export default function CadastrarCliente({ onClose }) {
     const dadosCompletos = {
       ...form,
       data_nascimento: form.dataNascimento,
-      cidade: form.cidade,
+      /*cidade: form.cidade,*/
       cnpj: form.tipo === "juridico" ? form.cpf : "",
       senha: "cliente123",
-      uf: "",
+      /*uf: form.uf,*/
       estado: true,
     };
 
     try {
-      const response = await fetch("http://localhost:5000/incluir_cliente", {
+      const response = await fetch("http://127.0.0.1:5000/criar_cliente", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -45,6 +47,10 @@ export default function CadastrarCliente({ onClose }) {
         },
         body: JSON.stringify(dadosCompletos),
       });
+      /*const response = await axios.post(
+        "http://127.0.0.1:5000/criar_cliente",
+        dadosCompletos
+      );*/
 
       if (!response.ok) throw new Error("Erro ao cadastrar cliente.");
 
@@ -65,6 +71,7 @@ export default function CadastrarCliente({ onClose }) {
         bairro: "",
         logradouro: "",
         complemento: "",
+        uf: "",
       });
     } catch (error) {
       console.error(error);
@@ -236,6 +243,22 @@ export default function CadastrarCliente({ onClose }) {
 
         <div className={styles.row}>
           <div className={styles.formGroup}>
+            <label htmlFor="uf" className={styles.label}>
+              UF
+            </label>
+            <input
+              className={styles.input}
+              id="uf"
+              name="uf"
+              type="text"
+              value={form.uf}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        <div className={styles.row}>
+          <div className={styles.formGroup}>
             <label htmlFor="cidade" className={styles.label}>
               Cidade
             </label>
@@ -248,6 +271,7 @@ export default function CadastrarCliente({ onClose }) {
               onChange={handleChange}
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="bairro" className={styles.label}>
               Bairro

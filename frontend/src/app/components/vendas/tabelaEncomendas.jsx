@@ -243,7 +243,7 @@ export default function TabelaEncomendas() {
         </div>
       </div>
 
-      <div className={styles["custom-table-container"]}>
+      <div className={styles["custom-table-cointainer"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column field="idpedido" header="Número do Pedido" />
           <Column field="cpfcliente" header="CPF Cliente" />

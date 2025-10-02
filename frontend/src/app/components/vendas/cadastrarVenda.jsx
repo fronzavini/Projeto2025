@@ -99,7 +99,6 @@ export default function CadastrarVenda({ onClose }) {
         <label>Novo Produto</label>
         <div className={styles.novoProdutoForm}>
           <input
-            className={styles.produtoInput}
             placeholder="Nome"
             value={novoProduto.nome}
             onChange={(e) =>
@@ -107,7 +106,6 @@ export default function CadastrarVenda({ onClose }) {
             }
           />
           <input
-            className={styles.produtoInput}
             type="number"
             placeholder="Valor Unitário"
             value={novoProduto.valorUnit}
@@ -179,24 +177,21 @@ export default function CadastrarVenda({ onClose }) {
           <div className={styles.radioGroup}>
             <label>
               <input
-                className={styles.radioInput}
                 type="radio"
                 value="entrega"
                 checked={tipoEntrega === "entrega"}
                 onChange={() => setTipoEntrega("entrega")}
               />
-              <span className={styles.spanRadio}>Entrega</span>
+              Entrega
             </label>
-
             <label>
               <input
-                className={styles.radioInput}
                 type="radio"
                 value="retirada"
                 checked={tipoEntrega === "retirada"}
                 onChange={() => setTipoEntrega("retirada")}
               />
-              <span className={styles.spanRadio}>Retirada</span>
+              Retirada
             </label>
           </div>
 

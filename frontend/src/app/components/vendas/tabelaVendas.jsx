@@ -184,7 +184,7 @@ export default function TabelaVendas() {
   );
 
   return (
-  <div>
+    <div>
       <div className={styles["filters-container"]}>
         <div className={styles.filtro}>
           <Filtros

@@ -17,9 +17,7 @@ export default function MenuVendas() {
       <ul className={styles.menuLista}>
         {itens.map((item) => (
           <li key={item.href}>
-            <Link
-              href={item.href}
-              className={pathname.startsWith(item.href) ? styles.ativo : ""}
+            <Link href={item.href} className={pathname.startsWith(item.href) ? styles.ativo : ""}
             >
               {item.label}
             </Link>
