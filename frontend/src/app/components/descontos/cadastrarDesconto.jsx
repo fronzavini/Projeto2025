@@ -1,9 +1,17 @@
+"use client";
 import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function CadastrarDesconto({ onClose, onConfirm }) {
+export default function CadastrarDesconto({ onClose, onSuccess }) {
+  const [form, setForm] = useState({
+    nome: "",
+    tipo: "",
+    valor: "",
+    validade: "",
+    descricao: "",
+  });
   const [produto, setProduto] = useState("");
   const [precoOriginal, setPrecoOriginal] = useState("");
   const [desconto, setDesconto] = useState("");
@@ -43,6 +51,27 @@ export default function CadastrarDesconto({ onClose, onConfirm }) {
       categoria,
     });
     onClose();
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const resp = await fetch("http://localhost:5000/criar_desconto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!resp.ok) throw new Error();
+      alert("Desconto cadastrado com sucesso!");
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+    } catch {
+      alert("Erro ao cadastrar desconto.");
+    }
   };
 
   return (

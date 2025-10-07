@@ -152,3 +152,32 @@ export default function VisualizarCupom({ onClose, cupom }) {
     </div>
   );
 }
+
+/*suggestion:
+
+
+"use client";
+import styles from "../../styles/cadastrarCliente.module.css";
+
+export default function VisualizarCupom({ cupom, onClose }) {
+  return (
+    <div className={styles.modal}>
+      <div className={styles.formulario}>
+        <h2>Visualizar Cupom</h2>
+        <p><b>Código:</b> {cupom.codigo}</p>
+        <p><b>Tipo:</b> {cupom.tipo}</p>
+        <p><b>Desconto Fixo:</b> {cupom.descontofixo}</p>
+        <p><b>Desconto %:</b> {cupom.descontoPorcentagem}</p>
+        <p><b>Desconto Frete:</b> {cupom.descontofrete}</p>
+        <p><b>Validade:</b> {cupom.validade}</p>
+        <p><b>Usos Permitidos:</b> {cupom.usos_permitidos}</p>
+        <p><b>Usos Realizados:</b> {cupom.usos_realizados}</p>
+        <p><b>Valor Mínimo:</b> {cupom.valor_minimo}</p>
+        <p><b>Estado:</b> {cupom.estado}</p>
+        <div className={styles.botoes}>
+          <button type="button" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    </div>
+  );
+}

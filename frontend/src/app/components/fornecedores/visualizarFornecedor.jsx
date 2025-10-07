@@ -151,3 +151,35 @@ export default function VisualizarFornecedor({ onClose, fornecedor }) {
     </div>
   );
 }
+
+
+/* Sugestão de código para o arquivo visualizarFornecedor.jsx 
+
+
+
+"use client";
+import styles from "../../styles/cadastrarCliente.module.css";
+
+export default function VisualizarFornecedor({ fornecedor, onClose }) {
+  return (
+    <div className={styles.modal}>
+      <div className={styles.formulario}>
+        <h2>Visualizar Fornecedor</h2>
+        <p><b>Nome da Empresa:</b> {fornecedor.nome_empresa}</p>
+        <p><b>CNPJ:</b> {fornecedor.cnpj}</p>
+        <p><b>Telefone:</b> {fornecedor.telefone}</p>
+        <p><b>Email:</b> {fornecedor.email}</p>
+        <p><b>CEP:</b> {fornecedor.cep}</p>
+        <p><b>Rua:</b> {fornecedor.logradouro || fornecedor.rua}</p>
+        <p><b>Número:</b> {fornecedor.numero}</p>
+        <p><b>Bairro:</b> {fornecedor.bairro}</p>
+        <p><b>Complemento:</b> {fornecedor.complemento}</p>
+        <p><b>UF:</b> {fornecedor.uf}</p>
+        <p><b>Cidade:</b> {fornecedor.cidade || fornecedor.municipio}</p>
+        <div className={styles.botoes}>
+          <button type="button" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    </div>
+  );
+}

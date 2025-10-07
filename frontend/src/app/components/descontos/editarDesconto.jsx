@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

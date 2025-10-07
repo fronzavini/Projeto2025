@@ -1,32 +1,24 @@
+"use client";
 import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
-export default function EditarFinanceiro({ onClose, registro }) {
-  const [form, setForm] = useState({
-    data: "",
-    descricao: "",
-    categoria: "",
-    subcategoria: "",
-    origem: "",
-    valor: "",
-    formaPagamento: "",
-    status: "",
-  });
+export default function EditarFinanceiro({ transacao, onClose, onSuccess }) {
+  const [form, setForm] = useState({ ...transacao });
 
   useEffect(() => {
-    if (registro) {
+    if (transacao) {
       setForm({
-        data: registro.data || "",
-        descricao: registro.descricao || "",
-        categoria: registro.categoria || "",
-        subcategoria: registro.subcategoria || "",
-        origem: registro.origem || "",
-        valor: registro.valor?.toString() || "",
-        formaPagamento: registro.formaPagamento || "",
-        status: registro.status || "",
+        data: transacao.data || "",
+        descricao: transacao.descricao || "",
+        categoria: transacao.categoria || "",
+        subcategoria: transacao.subcategoria || "",
+        origem: transacao.origem || "",
+        valor: transacao.valor?.toString() || "",
+        formaPagamento: transacao.formaPagamento || "",
+        status: transacao.status || "",
       });
     }
-  }, [registro]);
+  }, [transacao]);
 
   const opcoesCategoria = [
     { label: "Receita", value: "Receita" },
@@ -94,13 +86,24 @@ export default function EditarFinanceiro({ onClose, registro }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Dados atualizados (local):", {
-      ...form,
-      valor: parseFloat(form.valor.replace(",", ".")),
-    });
-    onClose();
+    try {
+      const resp = await fetch(
+        `http://localhost:5000/editar_transacaofinanceira/${transacao.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
+      if (!resp.ok) throw new Error();
+      alert("Transação atualizada com sucesso!");
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+    } catch {
+      alert("Erro ao editar transação.");
+    }
   };
 
   return (

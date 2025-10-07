@@ -1,93 +1,23 @@
+"use client";
 import styles from "../../styles/tabelas.module.css";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 import { Filtros } from "../filtros";
 import { FiltroDropdown } from "../filtrosDropdown";
 
-import { deletarItem } from "../deletar"; // função
+import { deletarItem } from "../deletar";
 import EditarDesconto from "./editarDesconto";
+import VisualizarDesconto from "./visualizarDesconto";
 
 export default function TabelaDesconto() {
-  const data = [
-    {
-      id: 1,
-      produto: "Buquê de Rosas Vermelhas",
-      precoOriginal: 120,
-      desconto: 10,
-      precoComDesconto: 108,
-      categoria: "flores",
-      data: "2025-09-11",
-    },
-    {
-      id: 2,
-      produto: "Orquídea Branca",
-      precoOriginal: 85,
-      desconto: 15,
-      precoComDesconto: 72.25,
-      categoria: "flores",
-      data: "2025-09-10",
-    },
-    {
-      id: 3,
-      produto: "Girassol Amarelo",
-      precoOriginal: 60,
-      desconto: 20,
-      precoComDesconto: 48,
-      categoria: "flores",
-      data: "2025-09-09",
-    },
-    {
-      id: 4,
-      produto: "Lírio Branco",
-      precoOriginal: 95,
-      desconto: 5,
-      precoComDesconto: 90.25,
-      categoria: "flores",
-      data: "2025-09-08",
-    },
-    {
-      id: 5,
-      produto: "Tulipas Coloridas",
-      precoOriginal: 110,
-      desconto: 12,
-      precoComDesconto: 96.8,
-      categoria: "flores",
-      data: "2025-09-07",
-    },
-    {
-      id: 6,
-      produto: "Ramalhete de Margaridas",
-      precoOriginal: 50,
-      desconto: 8,
-      precoComDesconto: 46,
-      categoria: "flores",
-      data: "2025-09-06",
-    },
-    {
-      id: 7,
-      produto: "Cesta de Flores do Campo",
-      precoOriginal: 150,
-      desconto: 18,
-      precoComDesconto: 123,
-      categoria: "arranjos",
-      data: "2025-09-05",
-    },
-    {
-      id: 8,
-      produto: "Vaso de Violetas",
-      precoOriginal: 40,
-      desconto: 25,
-      precoComDesconto: 30,
-      categoria: "vasos",
-      data: "2025-09-04",
-    },
-  ];
+  const [dados, setDados] = useState([]);
 
+  // Filtros
   const [filterProduto, setFilterProduto] = useState("");
   const [filterDesconto, setFilterDesconto] = useState("");
   const [filterCategoria, setFilterCategoria] = useState("");
@@ -98,34 +28,71 @@ export default function TabelaDesconto() {
     { label: "Vasos", value: "vasos" },
   ];
 
-  const filteredData = data.filter(
-    (item) =>
-      (!filterProduto ||
-        item.produto.toLowerCase().includes(filterProduto.toLowerCase())) &&
-      (!filterDesconto ||
-        item.desconto.toString().startsWith(filterDesconto)) &&
-      (!filterCategoria || item.categoria === filterCategoria)
-  );
-
-  // Modal de edição
+  // Modal de edição e visualização
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [descontoParaEditar, setDescontoParaEditar] = useState(null);
 
+  const [isVisualizarModalOpen, setIsVisualizarModalOpen] = useState(false);
+  const [descontoParaVisualizar, setDescontoParaVisualizar] = useState(null);
+
+  // Carregar descontos do backend
+  const carregarDescontos = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/listar_descontos");
+      if (!response.ok) throw new Error("Erro ao carregar descontos.");
+      const resultado = await response.json();
+      setDados(resultado);
+    } catch (error) {
+      alert("Erro ao carregar descontos.");
+    }
+  };
+
+  useEffect(() => {
+    carregarDescontos();
+  }, []);
+
+  const filteredData = dados.filter(
+    (item) =>
+      (!filterProduto ||
+        (item.produto || "").toLowerCase().includes(filterProduto.toLowerCase())) &&
+      (!filterDesconto ||
+        (item.desconto || "").toString().startsWith(filterDesconto)) &&
+      (!filterCategoria || item.categoria === filterCategoria)
+  );
+
   // Função para deletar desconto
-  const handleDeleteDesconto = (desconto) => {
-    deletarItem({
+  const handleDeleteDesconto = async (desconto) => {
+    await deletarItem({
       itemId: desconto.id,
       itemTipo: "desconto",
-      onDelete: () => {
-        console.log("Desconto removido:", desconto.id);
-        // Aqui você pode atualizar o estado ou recarregar os dados
+      onDelete: async () => {
+        try {
+          const resp = await fetch(
+            `http://localhost:5000/deletar_desconto/${desconto.id}`,
+            { method: "DELETE" }
+          );
+          if (!resp.ok) throw new Error();
+          setDados((prev) => prev.filter((d) => d.id !== desconto.id));
+        } catch {
+          alert("Erro ao deletar desconto.");
+        }
       },
-      onClose: () => console.log("Modal de exclusão fechado"),
     });
   };
 
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
+      <button
+        className={styles.acaoBotao}
+        onClick={(e) => {
+          e.stopPropagation();
+          setDescontoParaVisualizar(rowData);
+          setIsVisualizarModalOpen(true);
+        }}
+        title="Visualizar"
+      >
+        <FontAwesomeIcon icon={faSearch} />
+      </button>
       <button
         className={styles.acaoBotao}
         onClick={(e) => {
@@ -197,18 +164,25 @@ export default function TabelaDesconto() {
           />
         </DataTable>
 
+        {/* Modal de visualização */}
+        {isVisualizarModalOpen && descontoParaVisualizar && (
+          <VisualizarDesconto
+            desconto={descontoParaVisualizar}
+            onClose={() => {
+              setIsVisualizarModalOpen(false);
+              setDescontoParaVisualizar(null);
+            }}
+          />
+        )}
+
         {/* Modal de edição */}
         {isEditModalOpen && descontoParaEditar && (
           <EditarDesconto
-            descontoInicial={descontoParaEditar}
+            desconto={descontoParaEditar}
             onClose={() => {
               setIsEditModalOpen(false);
               setDescontoParaEditar(null);
-            }}
-            onConfirm={(dadosAtualizados) => {
-              console.log("Desconto atualizado:", dadosAtualizados);
-              setIsEditModalOpen(false);
-              setDescontoParaEditar(null);
+              carregarDescontos();
             }}
           />
         )}

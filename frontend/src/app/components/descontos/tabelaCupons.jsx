@@ -1,6 +1,7 @@
+"use client";
 import styles from "../../styles/tabelas.module.css";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,74 +9,58 @@ import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Filtros } from "../filtros";
 import { FiltroDropdown } from "../filtrosDropdown";
 
-import { deletarItem } from "../deletar"; // função
+import { deletarItem } from "../deletar";
 import VisualizarCupom from "./visualizarCupom";
 import EditarCupom from "./editarCupom";
 
 export default function TabelaCupom() {
-  const data = [
-    {
-      id: 1,
-      nome: "Promoção Dia das Mães",
-      tipo: "percentual",
-      valorDesconto: 15,
-      categoria: "Flores",
-      dataInicio: "2025-05-01",
-      dataTermino: "2025-05-12",
-      descricao: "Desconto especial de 15% em flores para o Dia das Mães.",
-      status: "ativo",
-      usos_permitidos: 100,
-      usos_realizados: 35,
-    },
-    {
-      id: 2,
-      nome: "Desconto Orquídeas",
-      tipo: "valor",
-      valorDesconto: 20,
-      categoria: "Orquídeas",
-      dataInicio: "2025-08-01",
-      dataTermino: "2025-08-15",
-      descricao: "R$ 20 de desconto em compras de orquídeas.",
-      status: "ativo",
-      usos_permitidos: 50,
-      usos_realizados: 12,
-    },
-    // ... outros cupons
-  ];
+  const [dados, setDados] = useState([]);
 
-  // Estados dos filtros
+  // Filtros
   const [filterID, setFilterID] = useState("");
-  const [filterNome, setFilterNome] = useState("");
+  const [filterCodigo, setFilterCodigo] = useState("");
   const [filterTipo, setFilterTipo] = useState("");
-  const [filterCategoria, setFilterCategoria] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
+  // Carregar cupons do backend
+  const carregarCupons = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/listar_cupons");
+      if (!response.ok) throw new Error("Erro ao carregar cupons.");
+      const resultado = await response.json();
+      setDados(resultado);
+    } catch (error) {
+      alert("Erro ao carregar cupons.");
+    }
+  };
+
+  useEffect(() => {
+    carregarCupons();
+  }, []);
+
   // Filtros aplicados
-  const filteredData = data.filter(
+  const filteredData = dados.filter(
     (item) =>
-      (!filterID || item.id.toString().includes(filterID)) &&
-      (!filterNome ||
-        item.nome.toLowerCase().includes(filterNome.toLowerCase())) &&
+      (!filterID || item.id?.toString().includes(filterID)) &&
+      (!filterCodigo ||
+        (item.codigo || "")
+          .toLowerCase()
+          .includes(filterCodigo.toLowerCase())) &&
       (!filterTipo || item.tipo === filterTipo) &&
-      (!filterCategoria || item.categoria === filterCategoria) &&
-      (!filterStatus || item.status === filterStatus)
+      (!filterStatus || item.estado === filterStatus)
   );
 
   // Opções para dropdowns
-  const opcoesCategoria = [
-    { label: "Flores", value: "Flores" },
-    { label: "Arranjos", value: "Arranjos" },
-    { label: "Vasos", value: "Vasos" },
+  const opcoesTipo = [
+    { label: "Porcentagem", value: "percentual" },
+    { label: "Fixo", value: "fixo" },
+    { label: "Frete", value: "frete" },
   ];
 
   const opcoesStatus = [
     { label: "Ativo", value: "ativo" },
     { label: "Inativo", value: "inativo" },
-  ];
-
-  const opcoesTipo = [
-    { label: "Porcentagem", value: "percentual" },
-    { label: "Fixo", value: "valor" },
+    { label: "Expirado", value: "expirado" },
   ];
 
   // Estados para modais
@@ -85,17 +70,22 @@ export default function TabelaCupom() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [cupomParaEditar, setCupomParaEditar] = useState(null);
 
-  // Função para deletar (chama a função de exclusão)
-  const handleDeleteCupom = (cupom) => {
-    deletarItem({
+  // Função para deletar cupom
+  const handleDeleteCupom = async (cupom) => {
+    await deletarItem({
       itemId: cupom.id,
       itemTipo: "cupom",
-      onDelete: () => {
-        console.log("Cupom removido:", cupom.id);
-        // Aqui você pode atualizar o estado ou recarregar os dados
-      },
-      onClose: () => {
-        console.log("Modal de exclusão fechado");
+      onDelete: async () => {
+        try {
+          const resp = await fetch(
+            `http://localhost:5000/deletar_cupom/${cupom.id}`,
+            { method: "DELETE" }
+          );
+          if (!resp.ok) throw new Error();
+          setDados((prev) => prev.filter((c) => c.id !== cupom.id));
+        } catch {
+          alert("Erro ao deletar cupom.");
+        }
       },
     });
   };
@@ -154,10 +144,10 @@ export default function TabelaCupom() {
         </div>
         <div className={styles.filtro}>
           <Filtros
-            value={filterNome}
-            onChange={setFilterNome}
-            placeholder="EX: Dia das Mães"
-            label="Nome"
+            value={filterCodigo}
+            onChange={setFilterCodigo}
+            placeholder="Código"
+            label="Código"
           />
         </div>
         <div className={styles.filtro}>
@@ -167,15 +157,6 @@ export default function TabelaCupom() {
             options={opcoesTipo}
             placeholder="Todos"
             label="Tipo"
-          />
-        </div>
-        <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterCategoria}
-            onChange={setFilterCategoria}
-            options={opcoesCategoria}
-            placeholder="Todos"
-            label="Categoria"
           />
         </div>
         <div className={styles.filtro}>
@@ -193,15 +174,16 @@ export default function TabelaCupom() {
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column field="id" header="ID" />
-          <Column field="nome" header="Nome" />
+          <Column field="codigo" header="Código" />
           <Column field="tipo" header="Tipo" />
-          <Column field="valorDesconto" header="Valor do Desconto" />
-          <Column field="categoria" header="Categoria" />
-          <Column field="dataInicio" header="Data Início" />
-          <Column field="dataTermino" header="Data Término" />
-          <Column field="descricao" header="Descrição" />
+          <Column field="descontofixo" header="Desconto Fixo" />
+          <Column field="descontoPorcentagem" header="Desconto %" />
+          <Column field="descontofrete" header="Desconto Frete" />
+          <Column field="validade" header="Validade" />
           <Column field="usos_permitidos" header="Usos Permitidos" />
           <Column field="usos_realizados" header="Usos Realizados" />
+          <Column field="valor_minimo" header="Valor Mínimo" />
+          <Column field="estado" header="Estado" />
           <Column
             body={actionTemplate}
             header="Ações"
@@ -227,6 +209,7 @@ export default function TabelaCupom() {
             onClose={() => {
               setIsEditModalOpen(false);
               setCupomParaEditar(null);
+              carregarCupons(); // Atualiza após edição
             }}
           />
         )}

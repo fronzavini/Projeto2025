@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/tabelas.module.css";
 
 import { Filtros } from "../filtros";
@@ -14,89 +14,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function TabelaFornecedores() {
-  const dadosIniciais = [
-    {
-      id: 1,
-      nome_empresa: "Floricultura Bela Rosa",
-      cnpj: "12.345.678/0001-90",
-      telefone: "(47) 99999-1111",
-      email: "contato@belarosa.com",
-      cep: "89000-100",
-      logradouro: "Rua das Palmeiras",
-      numero: "100",
-      bairro: "Centro",
-      complemento: "Sala 01",
-      uf: "SC",
-    },
-    {
-      id: 2,
-      nome_empresa: "Verde & Vida Plantas",
-      cnpj: "98.765.432/0001-80",
-      telefone: "(47) 98888-2222",
-      email: "vendas@verdevida.com",
-      cep: "89000-200",
-      logradouro: "Rua das Rosas",
-      numero: "200",
-      bairro: "Velha",
-      complemento: "Loja 2",
-      uf: "SC",
-    },
-    {
-      id: 3,
-      nome_empresa: "Mundo Floral LTDA",
-      cnpj: "23.456.789/0001-77",
-      telefone: "(47) 97777-3333",
-      email: "mundo@floral.com.br",
-      cep: "89000-300",
-      logradouro: "Rua das Hortências",
-      numero: "300",
-      bairro: "Itoupava Norte",
-      complemento: "",
-      uf: "SC",
-    },
-    {
-      id: 4,
-      nome_empresa: "Rei das Flores",
-      cnpj: "34.567.890/0001-66",
-      telefone: "(47) 96666-4444",
-      email: "atendimento@reidasflores.com",
-      cep: "89000-400",
-      logradouro: "Rua das Acácias",
-      numero: "400",
-      bairro: "Garcia",
-      complemento: "Fundos",
-      uf: "SC",
-    },
-    {
-      id: 5,
-      nome_empresa: "Jardim Encantado ME",
-      cnpj: "45.678.901/0001-55",
-      telefone: "(47) 95555-5555",
-      email: "jardim@encantado.com",
-      cep: "89000-500",
-      logradouro: "Rua das Violetas",
-      numero: "500",
-      bairro: "Fortaleza",
-      complemento: "Bloco B",
-      uf: "SC",
-    },
-  ];
-
-  const [dados, setDados] = useState(dadosIniciais);
+  const [dados, setDados] = useState([]);
 
   // filtros
   const [filterId, setFilterId] = useState("");
   const [filterCnpj, setFilterCnpj] = useState("");
   const [filterNome, setFilterNome] = useState("");
-
-  const filteredData = dados.filter((item) => {
-    return (
-      (!filterId || item.id.toString().startsWith(filterId)) &&
-      (!filterCnpj || item.cnpj.startsWith(filterCnpj)) &&
-      (!filterNome ||
-        item.nome_empresa.toLowerCase().startsWith(filterNome.toLowerCase()))
-    );
-  });
 
   // modais
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,6 +27,34 @@ export default function TabelaFornecedores() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [fornecedorParaEditar, setFornecedorParaEditar] = useState(null);
+
+  // Carregar fornecedores do backend
+  const carregarFornecedores = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/listar_fornecedores");
+      if (!response.ok) throw new Error("Erro ao carregar fornecedores.");
+      const resultado = await response.json();
+      setDados(resultado);
+    } catch (error) {
+      alert("Erro ao carregar fornecedores.");
+    }
+  };
+
+  useEffect(() => {
+    carregarFornecedores();
+  }, []);
+
+  // Filtros
+  const filteredData = dados.filter((item) => {
+    return (
+      (!filterId || item.id?.toString().startsWith(filterId)) &&
+      (!filterCnpj || (item.cnpj || "").startsWith(filterCnpj)) &&
+      (!filterNome ||
+        (item.nome_empresa || "")
+          .toLowerCase()
+          .startsWith(filterNome.toLowerCase()))
+    );
+  });
 
   // template das ações
   const actionTemplate = (rowData) => (
@@ -134,13 +85,23 @@ export default function TabelaFornecedores() {
 
       <button
         className={styles.acaoBotao}
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          deletarItem({
+          await deletarItem({
             itemId: rowData.id,
             itemTipo: "Fornecedor",
-            onDelete: () => {
-              setDados((prev) => prev.filter((f) => f.id !== rowData.id));
+            onDelete: async () => {
+              // Chama o backend para deletar
+              try {
+                const resp = await fetch(
+                  `http://localhost:5000/deletar_fornecedor/${rowData.id}`,
+                  { method: "DELETE" }
+                );
+                if (!resp.ok) throw new Error();
+                setDados((prev) => prev.filter((f) => f.id !== rowData.id));
+              } catch {
+                alert("Erro ao deletar fornecedor.");
+              }
             },
           });
         }}
@@ -212,6 +173,7 @@ export default function TabelaFornecedores() {
             onClose={() => {
               setIsEditModalOpen(false);
               setFornecedorParaEditar(null);
+              carregarFornecedores(); // Atualiza após edição
             }}
           />
         )}

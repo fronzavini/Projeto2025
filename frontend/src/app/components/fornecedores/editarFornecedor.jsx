@@ -1,180 +1,113 @@
+"use client";
 import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
-export default function EditarFornecedor({ onClose, fornecedor }) {
-  const [formData, setFormData] = useState(fornecedor);
+export default function EditarFornecedor({ fornecedor, onClose, onSuccess }) {
+  const [form, setForm] = useState({ ...fornecedor });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Por enquanto só loga localmente e fecha modal
-    console.log("Dados atualizados (local):", formData);
-    onClose();
+    try {
+      const resp = await fetch(
+        `http://localhost:5000/editar_fornecedor/${fornecedor.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
+      if (!resp.ok) throw new Error();
+      alert("Fornecedor atualizado com sucesso!");
+      if (onSuccess) onSuccess();
+      if (onClose) onClose();
+    } catch {
+      alert("Erro ao editar fornecedor.");
+    }
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.popupContent}>
-        <div className={styles.container}>
-          <div className={styles.header}>
-            <h2 className={styles.headerTitle}>
-              Editar Fornecedor: {fornecedor.id}
-            </h2>
-            <button
-              className={styles.botaoCancelar}
-              type="button"
-              onClick={onClose}
-            >
-              Fechar
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
-              <label htmlFor="nome_empresa" className={styles.label}>
-                Nome da empresa
-              </label>
-              <input
-                className={styles.input}
-                id="nome_empresa"
-                name="nome_empresa"
-                type="text"
-                value={formData.nome_empresa}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="cnpj" className={styles.label}>
-                CNPJ
-              </label>
-              <input
-                className={styles.input}
-                id="cnpj"
-                name="cnpj"
-                type="text"
-                value={formData.cnpj}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="telefone" className={styles.label}>
-                Telefone
-              </label>
-              <input
-                className={styles.input}
-                id="telefone"
-                name="telefone"
-                type="text"
-                value={formData.telefone}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email
-              </label>
-              <input
-                className={styles.input}
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="cep" className={styles.label}>
-                  CEP
-                </label>
-                <input
-                  className={styles.input}
-                  id="cep"
-                  name="cep"
-                  type="text"
-                  value={formData.cep}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="numero" className={styles.label}>
-                  Número
-                </label>
-                <input
-                  className={styles.input}
-                  id="numero"
-                  name="numero"
-                  type="text"
-                  value={formData.numero}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="bairro" className={styles.label}>
-                  Bairro
-                </label>
-                <input
-                  className={styles.input}
-                  id="bairro"
-                  name="bairro"
-                  type="text"
-                  value={formData.bairro}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="complemento" className={styles.label}>
-                  Complemento
-                </label>
-                <input
-                  className={styles.input}
-                  id="complemento"
-                  name="complemento"
-                  type="text"
-                  value={formData.complemento}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="uf" className={styles.label}>
-                  UF
-                </label>
-                <input
-                  className={styles.input}
-                  id="uf"
-                  name="uf"
-                  type="text"
-                  maxLength={2}
-                  value={formData.uf}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
-            </button>
-          </form>
+    <div className={styles.modal}>
+      <form className={styles.formulario} onSubmit={handleSubmit}>
+        <h2>Editar Fornecedor</h2>
+        <input
+          name="nome_empresa"
+          placeholder="Nome da Empresa"
+          value={form.nome_empresa}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="cnpj"
+          placeholder="CNPJ"
+          value={form.cnpj}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="telefone"
+          placeholder="Telefone"
+          value={form.telefone}
+          onChange={handleChange}
+        />
+        <input
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+        <input
+          name="cep"
+          placeholder="CEP"
+          value={form.cep}
+          onChange={handleChange}
+        />
+        <input
+          name="logradouro"
+          placeholder="Rua"
+          value={form.logradouro}
+          onChange={handleChange}
+        />
+        <input
+          name="numero"
+          placeholder="Número"
+          value={form.numero}
+          onChange={handleChange}
+        />
+        <input
+          name="bairro"
+          placeholder="Bairro"
+          value={form.bairro}
+          onChange={handleChange}
+        />
+        <input
+          name="complemento"
+          placeholder="Complemento"
+          value={form.complemento}
+          onChange={handleChange}
+        />
+        <input
+          name="uf"
+          placeholder="UF"
+          value={form.uf}
+          onChange={handleChange}
+        />
+        <input
+          name="cidade"
+          placeholder="Cidade"
+          value={form.cidade}
+          onChange={handleChange}
+        />
+        <div className={styles.botoes}>
+          <button type="submit">Salvar</button>
+          <button type="button" onClick={onClose}>
+            Cancelar
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
