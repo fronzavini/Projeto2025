@@ -9,6 +9,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function Funcionarios() {
   const [showPopup, setShowPopup] = useState(false);
+  const [showImportPopup, setImportPopup] = useState(false);
 
   return (
     <div>
@@ -22,6 +23,20 @@ export default function Funcionarios() {
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
             <CadastrarFuncionario onClose={() => setShowPopup(false)} />
+          </div>
+        </div>
+      )}
+
+      <BotaoGenerico
+        texto="Importar por csv"
+        icone={faPlus}
+        onClick={() => setImportPopup(true)}
+      />
+
+      {showImportPopup && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popupContent}>
+            <ImportarCsv onClose={() => setImportPopup(false)} />
           </div>
         </div>
       )}

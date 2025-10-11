@@ -8,6 +8,7 @@ import styles from "../../styles/tabelas.module.css";
 
 export default function Produto() {
   const [showPopup, setShowPopup] = useState(false);
+  const [showImportPopup, setImportPopup] = useState(false);
 
   return (
     <div>
@@ -21,6 +22,20 @@ export default function Produto() {
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
             <CadastrarProduto onClose={() => setShowPopup(false)} />
+          </div>
+        </div>
+      )}
+
+      <BotaoGenerico
+        texto="Importar por csv"
+        icone={faPlus}
+        onClick={() => setImportPopup(true)}
+      />
+
+      {showImportPopup && (
+        <div className={styles.popupOverlay}>
+          <div className={styles.popupContent}>
+            <ImportarCsv onClose={() => setImportPopup(false)} />
           </div>
         </div>
       )}
