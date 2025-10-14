@@ -4,7 +4,7 @@ import styles from "../../styles/cadastrarCliente.module.css";
 export default function CadastrarCupom({ onClose }) {
   const [form, setForm] = useState({
     nome: "",
-    tipo: "percentual",
+    tipo: "",
     valorDesconto: 0,
     valorMaximoDesconto: 0,
     valorMinimoCompra: 0,
@@ -42,7 +42,7 @@ export default function CadastrarCupom({ onClose }) {
 
       setForm({
         nome: "",
-        tipo: "percentual",
+        tipo: "",
         valorDesconto: 0,
         valorMaximoDesconto: 0,
         valorMinimoCompra: 0,

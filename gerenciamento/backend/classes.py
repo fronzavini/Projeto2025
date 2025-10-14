@@ -598,11 +598,11 @@ class Fornecedor:
                 print(row)
             return resultados
             
-    except MySQLError as e:
-            print(f"Erro ao listar fornecedores: {e}")
+        except MySQLError as e:
+                print(f"Erro ao listar fornecedores: {e}")
         finally:
-            cursor.close()
-            conexao.close()
+                cursor.close()
+                conexao.close()
 
     def json(self):
         return {

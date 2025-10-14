@@ -1,6 +1,6 @@
 import styles from "../../styles/tabelas.module.css";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,80 +13,24 @@ import { deletarItem } from "../deletar"; // função
 import EditarDesconto from "./editarDesconto";
 
 export default function TabelaDesconto() {
-  const data = [
-    {
-      id: 1,
-      produto: "Buquê de Rosas Vermelhas",
-      precoOriginal: 120,
-      desconto: 10,
-      precoComDesconto: 108,
-      categoria: "flores",
-      data: "2025-09-11",
-    },
-    {
-      id: 2,
-      produto: "Orquídea Branca",
-      precoOriginal: 85,
-      desconto: 15,
-      precoComDesconto: 72.25,
-      categoria: "flores",
-      data: "2025-09-10",
-    },
-    {
-      id: 3,
-      produto: "Girassol Amarelo",
-      precoOriginal: 60,
-      desconto: 20,
-      precoComDesconto: 48,
-      categoria: "flores",
-      data: "2025-09-09",
-    },
-    {
-      id: 4,
-      produto: "Lírio Branco",
-      precoOriginal: 95,
-      desconto: 5,
-      precoComDesconto: 90.25,
-      categoria: "flores",
-      data: "2025-09-08",
-    },
-    {
-      id: 5,
-      produto: "Tulipas Coloridas",
-      precoOriginal: 110,
-      desconto: 12,
-      precoComDesconto: 96.8,
-      categoria: "flores",
-      data: "2025-09-07",
-    },
-    {
-      id: 6,
-      produto: "Ramalhete de Margaridas",
-      precoOriginal: 50,
-      desconto: 8,
-      precoComDesconto: 46,
-      categoria: "flores",
-      data: "2025-09-06",
-    },
-    {
-      id: 7,
-      produto: "Cesta de Flores do Campo",
-      precoOriginal: 150,
-      desconto: 18,
-      precoComDesconto: 123,
-      categoria: "arranjos",
-      data: "2025-09-05",
-    },
-    {
-      id: 8,
-      produto: "Vaso de Violetas",
-      precoOriginal: 40,
-      desconto: 25,
-      precoComDesconto: 30,
-      categoria: "vasos",
-      data: "2025-09-04",
-    },
-  ];
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Buscar descontos do backend
+  useEffect(() => {
+    async function fetchDescontos() {
+      try {
+        const res = await fetch("http://localhost:5000/descontos");
+        const descontos = await res.json();
+        setData(descontos);
+      } catch (err) {
+        console.error("Erro ao buscar descontos:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDescontos();
+  }, []);
 
   const [filterProduto, setFilterProduto] = useState("");
   const [filterDesconto, setFilterDesconto] = useState("");
@@ -112,16 +56,15 @@ export default function TabelaDesconto() {
   const [descontoParaEditar, setDescontoParaEditar] = useState(null);
 
   // Função para deletar desconto
-  const handleDeleteDesconto = (desconto) => {
-    deletarItem({
-      itemId: desconto.id,
-      itemTipo: "desconto",
-      onDelete: () => {
-        console.log("Desconto removido:", desconto.id);
-        // Aqui você pode atualizar o estado ou recarregar os dados
-      },
-      onClose: () => console.log("Modal de exclusão fechado"),
-    });
+  const handleDeleteDesconto = async (desconto) => {
+    try {
+      await fetch(`http://localhost:5000/descontos/${desconto.id}`, {
+        method: "DELETE",
+      });
+      setData((old) => old.filter((d) => d.id !== desconto.id));
+    } catch (err) {
+      console.error("Erro ao deletar desconto:", err);
+    }
   };
 
   const actionTemplate = (rowData) => (
@@ -183,7 +126,13 @@ export default function TabelaDesconto() {
 
       {/* Tabela */}
       <div className={styles["custom-table-container"]}>
-        <DataTable value={filteredData} paginator rows={5} showGridlines>
+        <DataTable
+          value={filteredData}
+          paginator
+          rows={5}
+          showGridlines
+          loading={loading}
+        >
           <Column field="produto" header="Produto" />
           <Column field="precoOriginal" header="Preço Original" />
           <Column field="desconto" header="Desconto (%)" />
@@ -205,8 +154,28 @@ export default function TabelaDesconto() {
               setIsEditModalOpen(false);
               setDescontoParaEditar(null);
             }}
-            onConfirm={(dadosAtualizados) => {
-              console.log("Desconto atualizado:", dadosAtualizados);
+            onConfirm={async (dadosAtualizados) => {
+              try {
+                const res = await fetch(
+                  `http://localhost:5000/descontos/${descontoParaEditar.id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dadosAtualizados),
+                  }
+                );
+                if (res.ok) {
+                  setData((old) =>
+                    old.map((d) =>
+                      d.id === descontoParaEditar.id
+                        ? { ...d, ...dadosAtualizados }
+                        : d
+                    )
+                  );
+                }
+              } catch (err) {
+                console.error("Erro ao atualizar desconto:", err);
+              }
               setIsEditModalOpen(false);
               setDescontoParaEditar(null);
             }}

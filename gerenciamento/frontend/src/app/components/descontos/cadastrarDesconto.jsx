@@ -4,47 +4,78 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function CadastrarDesconto({ onClose, onConfirm }) {
+  const [form, setForm] = useState({
+    nome: "",
+    tipo: "",
+    valorDesconto: 0,
+    valorMaximoDesconto: 0,
+    valorMinimoCompra: 0,
+    categoria: "",
+    dataInicio: "",
+    dataTermino: "",
+    descricao: "",
+    status: "ativo",
+    usos_permitidos: 0,
+    usos_realizados: 0,
+  });
+  const [produtos, setProdutos] = useState([]);
   const [produto, setProduto] = useState("");
-  const [precoOriginal, setPrecoOriginal] = useState("");
-  const [desconto, setDesconto] = useState("");
-  const [categoria, setCategoria] = useState("flores");
-  const [precoComDesconto, setPrecoComDesconto] = useState(0);
 
   useEffect(() => {
-    if (
-      precoOriginal !== "" &&
-      desconto !== "" &&
-      precoOriginal > 0 &&
-      desconto >= 0 &&
-      desconto <= 100
-    ) {
-      const preco = precoOriginal * (1 - desconto / 100);
-      setPrecoComDesconto(parseFloat(preco.toFixed(2)));
-    } else {
-      setPrecoComDesconto(0);
+    async function fetchProdutos() {
+      try {
+        const res = await fetch("http://localhost:5000/produtos");
+        const data = await res.json();
+        setProdutos(data);
+      } catch (err) {
+        console.error("Erro ao buscar produtos:", err);
+      }
     }
-  }, [precoOriginal, desconto]);
+    fetchProdutos();
+  }, []);
 
-  const handleConfirmar = () => {
-    if (
-      produto.trim() === "" ||
-      precoOriginal === "" ||
-      desconto === "" ||
-      categoria.trim() === ""
-    )
-      return;
-    if (desconto < 0 || desconto > 100) return;
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((old) => ({ ...old, [name]: value }));
+  }
 
-    onConfirm({
-      produto: produto.trim(),
-      precoOriginal: Number(precoOriginal),
-      desconto: Number(desconto),
-      precoComDesconto,
-      categoria,
-    });
-    onClose();
-  };
+  async function handleSubmit(e) {
+    e.preventDefault();
 
+    try {
+      const response = await fetch("http://localhost:5000/incluir_cupom", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) throw new Error("Erro ao cadastrar desconto.");
+
+      alert("Cupom cadastrado com sucesso!");
+      onClose();
+
+      setForm({
+        nome: "",
+        tipo: "",
+        valorDesconto: 0,
+        valorMaximoDesconto: 0,
+        valorMinimoCompra: 0,
+        categoria: "",
+        dataInicio: "",
+        dataTermino: "",
+        descricao: "",
+        status: "ativo",
+        usos_permitidos: 0,
+        usos_realizados: 0,
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao cadastrar desconto.");
+    }
+  }
   return (
     <div className={styles.overlay}>
       <div className={`${styles.container} ${styles.modalDesconto}`}>
@@ -59,13 +90,18 @@ export default function CadastrarDesconto({ onClose, onConfirm }) {
         </div>
 
         <label className={styles.titulo}>Produto</label>
-        <input
+        <select
           className={`${styles.input} ${styles.inputDesconto}`}
-          type="text"
-          placeholder="Nome do produto"
           value={produto}
           onChange={(e) => setProduto(e.target.value)}
-        />
+        >
+          <option value="">Selecione um produto</option>
+          {produtos.map((p) => (
+            <option key={p.id} value={p.nome}>
+              {p.nome}
+            </option>
+          ))}
+        </select>
 
         <label className={styles.titulo}>Preço Original (R$)</label>
         <input
