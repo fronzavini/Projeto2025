@@ -322,7 +322,8 @@ def criar_cupom():
         descontofrete=dados.get("descontofrete"),
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
-        valor_minimo=dados.get("valor_minimo")
+        valor_minimo=dados.get("valor_minimo"),
+        produto=dados.get("produto")  # Nome do produto ou tipo
     )
     return jsonify({"message": resultado})
 
@@ -339,9 +340,10 @@ def editar_cupom(id):
         descontofrete=dados.get("descontofrete"),
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
-        valor_minimo=dados.get("valor_minimo")
+        valor_minimo=dados.get("valor_minimo"),
+        produto=dados.get("produto")  # Nome do produto ou tipo
     )
-    return jsonify({"message": "Cupom atualizado com sucesso."})
+    return jsonify({"message": resultado})
 
 #curl -X PATCH http://127.0.0.1:5000/desativar_cupom/1
 @app.route('/desativar_cupom/<int:id>', methods=['PATCH'])

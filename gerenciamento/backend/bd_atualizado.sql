@@ -123,7 +123,8 @@ CREATE TABLE IF NOT EXISTS cupons (
     usos_permitidos INT,
     usos_realizados INT DEFAULT 0,
     valor_minimo DECIMAL(10,2),
-    estado BOOLEAN DEFAULT TRUE NOT NULL
+    estado BOOLEAN DEFAULT TRUE NOT NULL,
+    produto VARCHAR(100)  -- Nome do produto ou tipo
 );
 
 -- Tabela: pedidos
@@ -159,3 +160,7 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     categoria VARCHAR(50),
     descricao TEXT,
     valor DECIMAL(10,2),
+    data_transacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    funcionario_id INT,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
