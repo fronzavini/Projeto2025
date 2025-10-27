@@ -55,9 +55,13 @@ function Sidebar() {
                 <Link
                   href={item.href}
                   className={`${styles.link} ${
-                    pathname === item.href ? styles.active : ""
+                    pathname === item.href
+                      ? styles.active
+                      : pathname.startsWith(item.href) && item.href !== "/"
+                      ? styles.active
+                      : ""
                   }`}
-                  onClick={() => setIsOpen(false)} // fecha ao clicar
+                  onClick={() => setIsOpen(false)}
                 >
                   <FontAwesomeIcon icon={item.icon} /> {item.label}
                 </Link>

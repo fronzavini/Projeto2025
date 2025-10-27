@@ -19,8 +19,10 @@ export default function MenuDescontos() {
         {itens.map((item) => {
           const isAtivo = pathname.startsWith(item.href);
           return (
-            <li key={item.href} className={isAtivo ? styles.ativo : ""}>
-              <Link href={item.href}>{item.label}</Link>
+            <li key={item.href}>
+              <Link href={item.href} className={isAtivo ? styles.ativo : ""}>
+                {item.label}
+              </Link>
             </li>
           );
         })}

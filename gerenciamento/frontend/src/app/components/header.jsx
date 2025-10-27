@@ -3,6 +3,7 @@
 import styles from "../styles/header.module.css";
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // <- useRouter no App Router
+import Link from "next/link";
 
 function Header() {
   const [modal, setModal] = useState(false);
@@ -43,7 +44,9 @@ function Header() {
               </button>
             </div>
 
-            <span>Configurações</span>
+            <Link href="/configuracoes">
+              <span className={styles.link}>Configurações</span>
+            </Link>
             <button onClick={sair} className={styles.botao_simples}>
               Sair
             </button>

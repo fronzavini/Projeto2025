@@ -171,3 +171,7 @@ body {
     margin-left: 2rem;
   }
 }
+
+.link:hover {
+  text-decoration: underline;
+}
