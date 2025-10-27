@@ -1,0 +1,140 @@
+.nav {
+  position: absolute; /* fica sobre o banner */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px 8vw;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: 1.15rem;
+  letter-spacing: 0.4px;
+  color: #fff;
+  transition: all 0.4s ease;
+}
+
+.scrolled {
+  position: fixed; /* fixa no topo ao rolar */
+  top: 0;
+  left: 0;
+  background: #fff;
+  color: #3f2121;
+  padding: 15px 8vw;
+  /*box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);8*/
+}
+
+/* Links */
+.menu,
+.user {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu {
+  flex: 1;
+  justify-content: center;
+  gap: 5rem;
+}
+
+.user {
+  display: flex;
+  gap: 2.5rem;
+  margin-left: auto;
+}
+
+.menu li a,
+.user li svg {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.menu li a.active {
+  text-decoration: underline;
+}
+
+.menu li a:hover,
+.user li svg:hover {
+  color: #ededed; /* tom dourado suave */
+}
+
+/* MENU MOBILE */
+.menuIcon {
+  display: none; /* só aparece no mobile */
+  font-size: 1.8rem;
+  cursor: pointer;
+  z-index: 1100;
+  color: #fff; /* ícone hamburger branco */
+}
+
+/* Menu mobile aberto */
+.menuMobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* ocupa toda a tela */
+  background: rgba(255, 255, 255, 0.85); /* fundo branco semi-transparente */
+  backdrop-filter: blur(12px); /* efeito blur elegante */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* profundidade */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 1000;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.menuMobile ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.menuMobile ul li {
+  margin: 1rem 0;
+}
+
+.menuMobile ul li a {
+  color: #3f2121; /* link escuro elegante */
+  font-size: 2rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.menuMobile ul li a:hover,
+.menuMobile ul li a.active {
+  color: #a38756; /* tom dourado suave */
+  text-decoration: underline;
+}
+
+/* ESCONDER MENU DESKTOP NO MOBILE */
+@media (max-width: 768px) {
+  .menu {
+    display: none;
+  }
+
+  .user {
+    gap: 1.5rem;
+  }
+
+  .menuIcon {
+    display: block;
+  }
+
+  .scrolled {
+    background: rgba(255, 255, 255, 0.9);
+    color: #3f2121;
+  }
+}

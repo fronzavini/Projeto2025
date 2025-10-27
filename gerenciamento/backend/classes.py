@@ -319,7 +319,7 @@ class Funcionario(PessoaFisica):
             cursor.execute(query, valores)
             conexao.commit()
             print(f"Funcionário com ID {id} atualizado com sucesso!")
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao editar funcionário: {e}")
             conexao.rollback()
         finally:
@@ -361,7 +361,7 @@ class Funcionario(PessoaFisica):
             for row in resultados:
                 print(row)
             return resultados
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar funcionários: {e}")
         finally:
             cursor.close()
@@ -481,7 +481,7 @@ class Produto:
             for row in resultados:
                 print(row)
             return resultados
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar produtos: {e}")
         finally:
             cursor.close()
@@ -724,7 +724,7 @@ class Cupom:
                 print(row)
             return resultados
             
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar cupons: {e}")
         finally:
             cursor.close()
@@ -829,7 +829,7 @@ class ServicoPersonalizado:
                 print(row)
             return resultados
             
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar serviços personalizados: {e}")
         finally:
             cursor.close()
@@ -888,7 +888,7 @@ class Carrinho:
                 print(row)
             return resultados
             
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar carrinhos: {e}")
         finally:
             cursor.close()
@@ -950,7 +950,7 @@ class Venda:
                 print(row)
             return resultados
             
-    except MySQLError as e:
+        except MySQLError as e:
             print(f"Erro ao listar vendas: {e}")
         finally:
             cursor.close()

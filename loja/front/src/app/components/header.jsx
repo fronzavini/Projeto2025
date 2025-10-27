@@ -42,6 +42,10 @@ export default function Header({ slides = [], interval = 3000 }) {
         ))}
       </div>
 
+      <div className={styles.logo}>
+        <h1 className={styles.titulo}> BellaDonna </h1>
+      </div>
+
       <div className={styles.dots}>
         {slides.map((_, i) => (
           <span

@@ -1,0 +1,59 @@
+/* produto.module.css */
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap");
+
+.produto {
+  width: 280px; /* tamanho do card */
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Inter", sans-serif;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.imagem {
+  width: 300px;
+  height: 400px;
+  object-fit: cover;
+}
+
+.nome {
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: left;
+  color: #6d6d6d;
+  font-family: "Lato", sans-serif;
+  padding-left: 0;
+  margin-left: 0.8rem;
+}
+
+.preco {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #000;
+  font-family: "Lato", sans-serif;
+}
+
+.botao {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6d6d6d;
+  font-size: 1.2rem;
+  transition: color 0.2s;
+}
+
+.botao:hover {
+  color: rgb(57, 57, 57);
+}
+
+.alinhar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* preço à esquerda, botão à direita */
+  gap: 10px;
+  width: 270px;
+  margin-left: 0.8rem;
+}
