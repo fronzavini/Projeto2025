@@ -1,14 +1,17 @@
 import React from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
-export default function VisualizarCliente({ onClose, cliente }) {
-  console.log(cliente);
+export default function VisualizarFornecedor({ onClose, fornecedor }) {
+  if (!fornecedor) return null;
+
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h2 className={styles.headerTitle}>Cliente: {cliente.id}</h2>
+            <h2 className={styles.headerTitle}>
+              Fornecedor: {fornecedor.id || ""}
+            </h2>
             <button
               className={styles.botaoCancelar}
               type="button"
@@ -20,83 +23,29 @@ export default function VisualizarCliente({ onClose, cliente }) {
 
           <form>
             <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>
-                Nome do cliente
+              <label htmlFor="nome_empresa" className={styles.label}>
+                Nome da empresa
               </label>
               <input
                 className={styles.input}
-                id="nome"
-                name="nome"
+                id="nome_empresa"
+                name="nome_empresa"
                 type="text"
-                value={cliente.nome}
+                value={fornecedor.nome_empresa || ""}
                 disabled
               />
             </div>
 
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="tipo"
-                  value="fisico"
-                  checked={cliente.tipo === "fisico"}
-                  className={styles.radioInput}
-                  disabled
-                />
-                Físico
-              </label>
-              <label className={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="tipo"
-                  value="juridico"
-                  checked={cliente.tipo === "juridico"}
-                  className={styles.radioInput}
-                  disabled
-                />
-                Jurídico
-              </label>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="cpf" className={styles.label}>
-                  CPF
-                </label>
-                <input
-                  className={styles.input}
-                  id="cpf"
-                  name="cpf"
-                  type="text"
-                  value={cliente.cpf}
-                  disabled
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="rg" className={styles.label}>
-                  RG
-                </label>
-                <input
-                  className={styles.input}
-                  id="rg"
-                  name="rg"
-                  type="text"
-                  value={cliente.rg}
-                  disabled
-                />
-              </div>
-            </div>
-
             <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email
+              <label htmlFor="cnpj" className={styles.label}>
+                CNPJ
               </label>
               <input
                 className={styles.input}
-                id="email"
-                name="email"
-                type="email"
-                value={cliente.email}
+                id="cnpj"
+                name="cnpj"
+                type="text"
+                value={fornecedor.cnpj || ""}
                 disabled
               />
             </div>
@@ -110,21 +59,21 @@ export default function VisualizarCliente({ onClose, cliente }) {
                 id="telefone"
                 name="telefone"
                 type="text"
-                value={cliente.telefone}
+                value={fornecedor.telefone || ""}
                 disabled
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="data_nascimento" className={styles.label}>
-                Data de nascimento
+              <label htmlFor="email" className={styles.label}>
+                Email
               </label>
               <input
-                className={styles.inputDate}
-                id="data_nascimento"
-                name="data_nascimento"
-                type="date"
-                value={cliente.data_nascimento || ""}
+                className={styles.input}
+                id="email"
+                name="email"
+                type="email"
+                value={fornecedor.email || ""}
                 disabled
               />
             </div>
@@ -139,7 +88,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="cep"
                   name="cep"
                   type="text"
-                  value={cliente.cep}
+                  value={fornecedor.cep || ""}
                   disabled
                 />
               </div>
@@ -152,26 +101,13 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="numero"
                   name="numero"
                   type="text"
-                  value={cliente.numero}
+                  value={fornecedor.numero || ""}
                   disabled
                 />
               </div>
             </div>
 
             <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="cidade" className={styles.label}>
-                  Cidade
-                </label>
-                <input
-                  className={styles.input}
-                  id="cidade"
-                  name="cidade"
-                  type="text"
-                  value={cliente.cidade}
-                  disabled
-                />
-              </div>
               <div className={styles.formGroup}>
                 <label htmlFor="bairro" className={styles.label}>
                   Bairro
@@ -181,38 +117,38 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="bairro"
                   name="bairro"
                   type="text"
-                  value={cliente.bairro}
+                  value={fornecedor.bairro || ""}
                   disabled
                 />
               </div>
-            </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="logradouro" className={styles.label}>
-                Logradouro
-              </label>
-              <input
-                className={styles.input}
-                id="logradouro"
-                name="logradouro"
-                type="text"
-                value={cliente.logradouro}
-                disabled
-              />
-            </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="complemento" className={styles.label}>
+                  Complemento
+                </label>
+                <input
+                  className={styles.input}
+                  id="complemento"
+                  name="complemento"
+                  type="text"
+                  value={fornecedor.complemento || ""}
+                  disabled
+                />
+              </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="complemento" className={styles.label}>
-                Complemento
-              </label>
-              <input
-                className={styles.input}
-                id="complemento"
-                name="complemento"
-                type="text"
-                value={cliente.complemento}
-                disabled
-              />
+              <div className={styles.formGroup}>
+                <label htmlFor="uf" className={styles.label}>
+                  UF
+                </label>
+                <input
+                  className={styles.input}
+                  id="uf"
+                  name="uf"
+                  type="text"
+                  value={fornecedor.uf || ""}
+                  disabled
+                />
+              </div>
             </div>
           </form>
         </div>

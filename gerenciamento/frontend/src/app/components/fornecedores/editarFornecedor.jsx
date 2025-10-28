@@ -3,6 +3,8 @@ import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function EditarFornecedor({ onClose, fornecedor }) {
   const [formData, setFormData] = useState(fornecedor);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -12,11 +14,36 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Por enquanto só loga localmente e fecha modal
-    console.log("Dados atualizados (local):", formData);
-    onClose();
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/editar_fornecedor/${fornecedor.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        // Se o status HTTP não for 2xx
+        const result = await response.json().catch(() => ({}));
+        setErrorMsg(result.detalhes || "Erro ao atualizar fornecedor.");
+      } else {
+        // Considera qualquer 200 OK como sucesso
+        alert("Fornecedor atualizado com sucesso!");
+        onClose();
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar fornecedor:", error);
+      setErrorMsg("Erro de rede ao atualizar fornecedor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -169,8 +196,18 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
               </div>
             </div>
 
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
+            {errorMsg && (
+              <div style={{ color: "red", marginBottom: "1rem" }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className={styles.botaoEnviar}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar alterações"}
             </button>
           </form>
         </div>

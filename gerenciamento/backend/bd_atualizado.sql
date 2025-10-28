@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS funcionarios (
 CREATE TABLE IF NOT EXISTS fornecedores (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     nome_empresa VARCHAR(100) NOT NULL,
-    cnpj VARCHAR(18) NOT NULL,
+    cnpj VARCHAR(18) NOT NULL UNIQUE,
     telefone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
     endCep VARCHAR(10) NOT NULL,
@@ -165,5 +165,4 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 );
 
-
-select * from cupons;
+select * from fornecedores;

@@ -35,7 +35,7 @@ function Sidebar() {
     { href: "/clientes", icon: faUsers, label: "Clientes" },
     { href: "/funcionarios", icon: faUserTie, label: "Funcionários" },
     { href: "/fornecedores", icon: faTruck, label: "Fornecedores" },
-    { href: "/relatorios", icon: faChartLine, label: "Relatórios" },
+    //{ href: "/relatorios", icon: faChartLine, label: "Relatórios" },
     { href: "/configuracoes", icon: faGear, label: "Configurações" },
   ];
 

@@ -9,7 +9,7 @@ export default function MenuDescontos() {
 
   const itens = [
     { href: "/descontos/cupom", label: "Cupom" },
-    { href: "/descontos/frete", label: "Frete" },
+   // { href: "/descontos/frete", label: "Frete" },
     { href: "/descontos/desconto", label: "Descontos" },
   ];
 

@@ -213,7 +213,42 @@ export default function CadastrarVenda({ onClose }) {
           )}
         </div>
 
-        <button className={styles.confirmarVenda}>Confirmar Venda</button>
+        <button
+          className={styles.confirmarVenda}
+          onClick={async () => {
+            try {
+              const dadosVenda = {
+                cliente: 1, // ID fixo ou real
+                produtos: produtos,
+                valorTotal: produtos.reduce(
+                  (acc, p) => acc + p.valorUnit * p.quantidade,
+                  0
+                ),
+              };
+
+              const resposta = await fetch("http://localhost:5000/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dadosVenda),
+              });
+
+              const data = await resposta.json();
+
+              if (data.link_pagamento) {
+                window.location.href = data.link_pagamento;
+              } else {
+                alert("Erro ao gerar pagamento.");
+              }
+            } catch (e) {
+              console.error("Erro:", e);
+              alert("Erro ao conectar com o servidor.");
+            }
+          }}
+        >
+          Confirmar Venda
+        </button>
+
+
       </div>
     </div>
   );
