@@ -1,0 +1,48 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap");
+
+.estatisticas {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  background-color: #f3f3f1;
+  padding: 2.5rem 0;
+  font-family: "Cormorant Garamond", serif;
+  color: #3f2121;
+  text-align: center;
+}
+
+.estatisticas > div {
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.estatisticas > div:not(:last-child) {
+  border-right: 1px solid #3f2121;
+}
+
+.estatisticas h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3f2121;
+  margin-bottom: 0.3rem;
+}
+
+.estatisticas p {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #3f2121;
+}
+
+@media (max-width: 768px) {
+  .estatisticas {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .estatisticas > div {
+    border: none;
+  }
+}

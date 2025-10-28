@@ -1,0 +1,19 @@
+.filtros {
+  display: flex;
+  gap: 15px;
+  text-align: right;
+}
+
+.containerFiltros {
+  display: flex;
+  justify-content: space-between; /* texto à esquerda, botões à direita */
+  align-items: center;
+  width: 100%;
+  padding: 1rem 4rem; /* espaçamento interno */
+  margin-top: 2rem;
+}
+
+.totalProdutos {
+  font-size: 1rem;
+  color: #2c2c2c;
+}

@@ -1,0 +1,23 @@
+.filtroBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50px; /* formato de pílula */
+  padding: 8px 18px;
+  font-size: 1rem;
+  color: #2c2c2c;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filtroBtn:hover {
+  background-color: #f5f5f5;
+  border-color: #bbb;
+}
+
+.icon {
+  font-size: 1rem;
+  color: #2c2c2c;
+}

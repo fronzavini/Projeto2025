@@ -81,7 +81,7 @@
   left: 0;
   width: 100%;
   height: 100vh; /* ocupa toda a tela */
-  background: rgba(255, 255, 255, 0.85); /* fundo branco semi-transparente */
+  background: #fff;
   backdrop-filter: blur(12px); /* efeito blur elegante */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* profundidade */
   display: flex;
@@ -134,7 +134,11 @@
   }
 
   .scrolled {
-    background: rgba(255, 255, 255, 0.9);
+    background: #fff;
     color: #3f2121;
   }
+}
+
+.scrolled .menuIcon {
+  color: #3f2121;
 }

@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap");
+
+.secao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 4rem 6rem;
+  background-color: #f9f8f7;
+  font-family: "Cormorant Garamond", serif;
+}
+
+.invertido {
+  flex-direction: row-reverse;
+}
+
+.imagem {
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+}
+
+.texto {
+  max-width: 550px;
+  color: #3f2121;
+}
+
+.texto h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #804700;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.subtitulo {
+  font-size: 1.5rem;
+  color: #3f2121;
+  font-weight: 600; /* leve negrito */
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.texto p {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a3b2f;
+  margin-bottom: 1.8rem;
+  text-align: justify;
+}
+
+.texto button {
+  background-color: #804700;
+  color: #dbd1a5;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 30px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.texto button:hover {
+  background-color: #663800;
+}
