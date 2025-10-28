@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
-import mysql.connector
+import pymysql
 from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira
 from flask_cors import CORS
+from pymysql.err import MySQLError
+
 
 app = Flask(__name__)
 CORS(app)  # permite todas as origens
@@ -10,7 +12,7 @@ CORS(app)  # permite todas as origens
 
 def conectar_banco():
     try:
-        conexao = mysql.connector.connect(
+        conexao = pymysql.connect(
             host="localhost",
             user="root",
             password="root",
@@ -18,7 +20,7 @@ def conectar_banco():
         )
         print("Conexao funcionando")
         return conexao
-    except mysql.connector.Error as erro:
+    except MySQLError as erro:
         print(f"Erro ao conectar ao banco de dados: {erro}")
         return None
 
@@ -322,7 +324,8 @@ def criar_cupom():
         descontofrete=dados.get("descontofrete"),
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
-        valor_minimo=dados.get("valor_minimo")
+        valor_minimo=dados.get("valor_minimo"),
+        produto=dados.get("produto")  # Nome do produto ou tipo
     )
     return jsonify({"message": resultado})
 
@@ -339,9 +342,10 @@ def editar_cupom(id):
         descontofrete=dados.get("descontofrete"),
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
-        valor_minimo=dados.get("valor_minimo")
+        valor_minimo=dados.get("valor_minimo"),
+        produto=dados.get("produto")  # Nome do produto ou tipo
     )
-    return jsonify({"message": "Cupom atualizado com sucesso."})
+    return jsonify({"message": resultado})
 
 #curl -X PATCH http://127.0.0.1:5000/desativar_cupom/1
 @app.route('/desativar_cupom/<int:id>', methods=['PATCH'])

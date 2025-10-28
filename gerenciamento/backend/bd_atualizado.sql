@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS vendas (
 CREATE TABLE IF NOT EXISTS cupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
-    tipo ENUM('percentual', 'valor_fixo'),
+    tipo ENUM('percentual', 'valor_fixo','frete'),
     descontofixo DECIMAL(10,2),
     descontoPorcentagem DECIMAL(10,2),
     descontofrete DECIMAL(10,2),
@@ -123,7 +123,8 @@ CREATE TABLE IF NOT EXISTS cupons (
     usos_permitidos INT,
     usos_realizados INT DEFAULT 0,
     valor_minimo DECIMAL(10,2),
-    estado BOOLEAN DEFAULT TRUE NOT NULL
+    estado BOOLEAN DEFAULT TRUE NOT NULL,
+    produto VARCHAR(100)  -- Nome do produto ou tipo
 );
 
 -- Tabela: pedidos
@@ -159,3 +160,10 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     categoria VARCHAR(50),
     descricao TEXT,
     valor DECIMAL(10,2),
+    data_transacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    funcionario_id INT,
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+);
+
+
+select * from cupons;

@@ -1,114 +1,132 @@
-import styles from "../../styles/tabelas.module.css";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+
+import styles from "../../styles/tabelas.module.css";
 import { Filtros } from "../filtros";
 import { FiltroDropdown } from "../filtrosDropdown";
-
-import { deletarItem } from "../deletar"; // função
 import VisualizarCupom from "./visualizarCupom";
 import EditarCupom from "./editarCupom";
 
-export default function TabelaCupom() {
-  const data = [
-    {
-      id: 1,
-      nome: "Promoção Dia das Mães",
-      tipo: "percentual",
-      valorDesconto: 15,
-      categoria: "Flores",
-      dataInicio: "2025-05-01",
-      dataTermino: "2025-05-12",
-      descricao: "Desconto especial de 15% em flores para o Dia das Mães.",
-      status: "ativo",
-      usos_permitidos: 100,
-      usos_realizados: 35,
-    },
-    {
-      id: 2,
-      nome: "Desconto Orquídeas",
-      tipo: "valor",
-      valorDesconto: 20,
-      categoria: "Orquídeas",
-      dataInicio: "2025-08-01",
-      dataTermino: "2025-08-15",
-      descricao: "R$ 20 de desconto em compras de orquídeas.",
-      status: "ativo",
-      usos_permitidos: 50,
-      usos_realizados: 12,
-    },
-    // ... outros cupons
-  ];
+export default function TabelaCupons() {
+  const [cupons, setCupons] = useState([]);
+  const [filtros, setFiltros] = useState({
+    id: "",
+    codigo: "",
+    tipo: "",
+    validade: "",
+    estado: "",
+    produto: "",
+  });
 
-  // Estados dos filtros
-  const [filterID, setFilterID] = useState("");
-  const [filterNome, setFilterNome] = useState("");
-  const [filterTipo, setFilterTipo] = useState("");
-  const [filterCategoria, setFilterCategoria] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-
-  // Filtros aplicados
-  const filteredData = data.filter(
-    (item) =>
-      (!filterID || item.id.toString().includes(filterID)) &&
-      (!filterNome ||
-        item.nome.toLowerCase().includes(filterNome.toLowerCase())) &&
-      (!filterTipo || item.tipo === filterTipo) &&
-      (!filterCategoria || item.categoria === filterCategoria) &&
-      (!filterStatus || item.status === filterStatus)
-  );
-
-  // Opções para dropdowns
-  const opcoesCategoria = [
-    { label: "Flores", value: "Flores" },
-    { label: "Arranjos", value: "Arranjos" },
-    { label: "Vasos", value: "Vasos" },
-  ];
-
-  const opcoesStatus = [
+  const opcoesEstado = [
     { label: "Ativo", value: "ativo" },
     { label: "Inativo", value: "inativo" },
   ];
 
-  const opcoesTipo = [
-    { label: "Porcentagem", value: "percentual" },
-    { label: "Fixo", value: "valor" },
-  ];
+  const [modalVisualizar, setModalVisualizar] = useState(false);
+  const [cupomSelecionado, setCupomSelecionado] = useState(null);
 
-  // Estados para modais
-  const [isVisualizarModalOpen, setIsVisualizarModalOpen] = useState(false);
-  const [cupomParaVisualizar, setCupomParaVisualizar] = useState(null);
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
   const [cupomParaEditar, setCupomParaEditar] = useState(null);
 
-  // Função para deletar (chama a função de exclusão)
-  const handleDeleteCupom = (cupom) => {
-    deletarItem({
-      itemId: cupom.id,
-      itemTipo: "cupom",
-      onDelete: () => {
-        console.log("Cupom removido:", cupom.id);
-        // Aqui você pode atualizar o estado ou recarregar os dados
-      },
-      onClose: () => {
-        console.log("Modal de exclusão fechado");
-      },
-    });
+  // Função para carregar cupons
+  const carregarCupons = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/listar_cupons", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Erro ao carregar cupons.");
+
+      const resultado = await response.json();
+
+      // Filtra apenas cupons com usos_permitidos não nulo
+      const cuponsFiltrados = resultado.filter((c) => c.usos_permitidos > 0);
+
+      // Formata os dados recebidos
+      const cuponsFormatados = cuponsFiltrados.map((c) => ({
+        id: c.id,
+        codigo: c.codigo,
+        tipo: c.tipo,
+        descontoFixo: c.descontofixo,
+        descontoPorcentagem: c.descontoPorcentagem,
+        descontoFrete: c.descontofrete,
+        validade: formatarData(c.validade),
+        usosPermitidos: c.usos_permitidos,
+        usosRealizados: c.usos_realizados,
+        valorMinimo: c.valor_minimo,
+        estado: c.estado === "ativo" ? "ativo" : "inativo",
+        produto: c.produto,
+      }));
+
+      setCupons(cuponsFormatados);
+    } catch (error) {
+      console.error("Erro ao carregar cupons:", error);
+    }
   };
 
-  // Template das ações do DataTable
+  // Função para formatar a data no formato dd/mm/yyyy
+  const formatarData = (dataISO) => {
+    if (!dataISO) return "";
+    const [ano, mes, dia] = dataISO.split("-");
+    return `${dia}/${mes}/${ano}`;
+  };
+
+  // Função para formatar o valor do desconto
+  const formatarValorDesconto = (rowData) => {
+    if (rowData.tipo === "valor_fixo") {
+      return `R$${rowData.descontoFixo}`;
+    } else if (rowData.tipo === "percentual") {
+      return `${rowData.descontoPorcentagem}%`;
+    }
+    return "-";
+  };
+
+  useEffect(() => {
+    carregarCupons();
+  }, []);
+
+  // Filtragem
+  const filteredData = cupons.filter(
+    (item) =>
+      (!filtros.id || item.id.toString().startsWith(filtros.id)) &&
+      (!filtros.codigo ||
+        item.codigo.toLowerCase().startsWith(filtros.codigo.toLowerCase())) &&
+      (!filtros.tipo ||
+        item.tipo.toLowerCase().startsWith(filtros.tipo.toLowerCase())) &&
+      (!filtros.validade || item.validade.startsWith(filtros.validade)) &&
+      (!filtros.estado || item.estado === filtros.estado) &&
+      (!filtros.produto ||
+        item.produto.toLowerCase().startsWith(filtros.produto.toLowerCase()))
+  );
+
+  // Status template
+  const estadoTemplate = (rowData) => (
+    <span
+      className={`${styles["status-badge"]} ${
+        styles[rowData.estado?.toLowerCase() || "indefinido"]
+      }`}
+    >
+      {rowData.estado || "Indefinido"}
+    </span>
+  );
+
+  // Ações
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
       <button
         className={styles.acaoBotao}
         onClick={(e) => {
           e.stopPropagation();
-          setCupomParaVisualizar(rowData);
-          setIsVisualizarModalOpen(true);
+          setCupomSelecionado(rowData);
+          setModalVisualizar(true);
         }}
         title="Visualizar"
       >
@@ -120,7 +138,7 @@ export default function TabelaCupom() {
         onClick={(e) => {
           e.stopPropagation();
           setCupomParaEditar(rowData);
-          setIsEditModalOpen(true);
+          setModalEditar(true);
         }}
         title="Editar"
       >
@@ -129,9 +147,27 @@ export default function TabelaCupom() {
 
       <button
         className={styles.acaoBotao}
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          handleDeleteCupom(rowData);
+          if (!confirm(`Deseja realmente deletar o cupom "${rowData.codigo}"?`))
+            return;
+
+          try {
+            const response = await fetch(
+              `http://127.0.0.1:5000/deletar_cupom/${rowData.id}`,
+              { method: "DELETE" }
+            );
+
+            if (!response.ok) throw new Error("Erro ao deletar cupom.");
+
+            const result = await response.json();
+            alert(result.message || "Cupom deletado com sucesso!");
+            // Atualiza a lista de cupons
+            setCupons((prev) => prev.filter((c) => c.id !== rowData.id));
+          } catch (error) {
+            console.error("Erro ao deletar cupom:", error);
+            alert("Erro ao deletar cupom.");
+          }
         }}
         title="Excluir"
       >
@@ -146,45 +182,51 @@ export default function TabelaCupom() {
       <div className={styles["filters-container"]}>
         <div className={styles.filtro}>
           <Filtros
-            value={filterID}
-            onChange={setFilterID}
-            placeholder="ID"
+            value={filtros.id}
+            onChange={(v) => setFiltros({ ...filtros, id: v })}
+            placeholder="Filtre por ID"
             label="ID"
           />
         </div>
         <div className={styles.filtro}>
           <Filtros
-            value={filterNome}
-            onChange={setFilterNome}
-            placeholder="EX: Dia das Mães"
-            label="Nome"
+            value={filtros.codigo}
+            onChange={(v) => setFiltros({ ...filtros, codigo: v })}
+            placeholder="Filtre por Código"
+            label="Código"
           />
         </div>
         <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterTipo}
-            onChange={setFilterTipo}
-            options={opcoesTipo}
-            placeholder="Todos"
+          <Filtros
+            value={filtros.tipo}
+            onChange={(v) => setFiltros({ ...filtros, tipo: v })}
+            placeholder="Filtre por Tipo"
             label="Tipo"
           />
         </div>
         <div className={styles.filtro}>
-          <FiltroDropdown
-            value={filterCategoria}
-            onChange={setFilterCategoria}
-            options={opcoesCategoria}
-            placeholder="Todos"
-            label="Categoria"
+          <Filtros
+            value={filtros.validade}
+            onChange={(v) => setFiltros({ ...filtros, validade: v })}
+            placeholder="Filtre por Validade"
+            label="Validade"
+          />
+        </div>
+        <div className={styles.filtro}>
+          <Filtros
+            value={filtros.produto}
+            onChange={(v) => setFiltros({ ...filtros, produto: v })}
+            placeholder="Filtre por Produto"
+            label="Produto"
           />
         </div>
         <div className={styles.filtro}>
           <FiltroDropdown
-            value={filterStatus}
-            onChange={setFilterStatus}
-            options={opcoesStatus}
-            placeholder="Todos"
-            label="Status"
+            value={filtros.estado}
+            onChange={(v) => setFiltros({ ...filtros, estado: v })}
+            options={opcoesEstado}
+            placeholder="Selecione o Estado"
+            label="Estado"
           />
         </div>
       </div>
@@ -193,15 +235,17 @@ export default function TabelaCupom() {
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
           <Column field="id" header="ID" />
-          <Column field="nome" header="Nome" />
+          <Column field="codigo" header="Código" />
           <Column field="tipo" header="Tipo" />
-          <Column field="valorDesconto" header="Valor do Desconto" />
-          <Column field="categoria" header="Categoria" />
-          <Column field="dataInicio" header="Data Início" />
-          <Column field="dataTermino" header="Data Término" />
-          <Column field="descricao" header="Descrição" />
-          <Column field="usos_permitidos" header="Usos Permitidos" />
-          <Column field="usos_realizados" header="Usos Realizados" />
+          <Column field="produto" header="Produto" />
+          <Column
+            header="Valor do Desconto"
+            body={formatarValorDesconto} // Exibe o valor formatado
+          />
+          <Column field="validade" header="Validade" />
+          <Column field="usosPermitidos" header="Usos Permitidos" />
+          <Column field="valorMinimo" header="Valor Mínimo" />
+          <Column field="estado" header="Estado" body={estadoTemplate} />
           <Column
             body={actionTemplate}
             header="Ações"
@@ -209,24 +253,23 @@ export default function TabelaCupom() {
           />
         </DataTable>
 
-        {/* Modal Visualizar */}
-        {isVisualizarModalOpen && cupomParaVisualizar && (
+        {/* Modais */}
+        {modalVisualizar && cupomSelecionado && (
           <VisualizarCupom
-            cupom={cupomParaVisualizar}
+            cupom={cupomSelecionado}
             onClose={() => {
-              setIsVisualizarModalOpen(false);
-              setCupomParaVisualizar(null);
+              setModalVisualizar(false);
+              setCupomSelecionado(null);
             }}
           />
         )}
 
-        {/* Modal Editar */}
-        {isEditModalOpen && cupomParaEditar && (
+        {modalEditar && cupomParaEditar && (
           <EditarCupom
-            cupom={cupomParaEditar}
-            onClose={() => {
-              setIsEditModalOpen(false);
-              setCupomParaEditar(null);
+            cupomInicial={cupomParaEditar}
+            onClose={() => setModalEditar(false)}
+            onConfirm={() => {
+              carregarCupons();
             }}
           />
         )}

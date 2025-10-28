@@ -174,7 +174,7 @@ export default function CadastrarProduto({ onClose }) {
           </div>
         </div>
 
-       {/* <div className={styles.formGroup}>
+        {/* <div className={styles.formGroup}>
           <label htmlFor="imagem" className={styles.label}>
             URL da Imagem
           </label>
