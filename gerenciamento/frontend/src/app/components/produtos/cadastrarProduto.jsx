@@ -1,6 +1,8 @@
 import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
+
+
 export default function CadastrarProduto({ onClose }) {
   const [form, setForm] = useState({
     nome: "",

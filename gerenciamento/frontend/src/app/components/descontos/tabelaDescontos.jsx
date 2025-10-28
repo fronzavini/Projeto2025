@@ -35,7 +35,7 @@ export default function TabelaDescontos() {
   const [descontoParaEditar, setDescontoParaEditar] = useState(null);
 
 
-  const carregarProdutos = async () => {
+  /*const carregarProdutos = async () => {
     try {
       const response = await fetch("http://127.0.0.1:5000/listar_produtos", {
         method: "GET",
@@ -69,7 +69,7 @@ export default function TabelaDescontos() {
 
   useEffect(() => {
     carregarProdutos();
-  }, []);
+  }, []);*/
   // Carregar descontos
   const carregarDescontos = async () => {
     try {
@@ -83,9 +83,11 @@ export default function TabelaDescontos() {
       if (!response.ok) throw new Error("Erro ao carregar descontos.");
 
       const resultado = await response.json();
+      const descontosFiltrados = resultado.filter((d) => d.usos_permitidos < 1);
 
       // Formata os dados recebidos
-      const descontosFormatados = resultado.map((d) => ({
+      // Formata os dados recebidos
+      const descontosFormatados = descontosFiltrados.map((d) => ({
         id: d.id,
         codigo: d.codigo,
         tipo: d.tipo,

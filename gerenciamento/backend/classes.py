@@ -722,9 +722,10 @@ class Cupom:
         try:
             cursor = conexao.cursor()
             query = """
-            SELECT id, codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, estado, produto
+            SELECT id, codigo, tipo, descontofixo, descontoPorcentagem, descontofrete,
+                validade, estado, produto, usos_permitidos, usos_realizados, valor_minimo
             FROM cupons
-        """
+            """
             cursor.execute(query)
             resultados = cursor.fetchall()
 
@@ -739,7 +740,10 @@ class Cupom:
                     "descontofrete": row[5],
                     "validade": row[6].strftime("%Y-%m-%d") if row[6] else None,
                     "estado": "ativo" if row[7] else "inativo",
-                    "produto": row[8]  # Nome do produto ou tipo
+                    "produto": row[8],  # Nome do produto ou tipo
+                    "usos_permitidos": row[9] if row[9] is not None else 0,
+                    "usos_realizados": row[10] if row[10] is not None else 0,
+                    "valor_minimo": float(row[11]) if row[11] is not None else 0.0
                 })
 
             return cupons
@@ -749,6 +753,7 @@ class Cupom:
         finally:
             cursor.close()
             conexao.close()
+
 
     def json(self):
         return {

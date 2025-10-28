@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS vendas (
 CREATE TABLE IF NOT EXISTS cupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
-    tipo ENUM('percentual', 'valor_fixo'),
+    tipo ENUM('percentual', 'valor_fixo','frete'),
     descontofixo DECIMAL(10,2),
     descontoPorcentagem DECIMAL(10,2),
     descontofrete DECIMAL(10,2),
@@ -164,3 +164,6 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     funcionario_id INT,
     FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 );
+
+
+select * from cupons;
