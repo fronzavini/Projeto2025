@@ -82,7 +82,7 @@ export default function CadastrarCupom({ onClose }) {
 
       if (!res.ok) throw new Error("Erro ao cadastrar cupom.");
       alert("Cupom cadastrado com sucesso!");
-      onClose();
+      onClose(window.location.reload());
     } catch (err) {
       console.error(err);
       alert("Erro ao cadastrar cupom.");

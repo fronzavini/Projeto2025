@@ -51,7 +51,7 @@ export default function CadastrarFuncionario({ onClose }) {
 
       const resultado = await response.json();
       alert(resultado.message || "Funcionário cadastrado com sucesso!");
-      onClose();
+      onClose(window.location.reload());
 
       setForm({
         nome: "",

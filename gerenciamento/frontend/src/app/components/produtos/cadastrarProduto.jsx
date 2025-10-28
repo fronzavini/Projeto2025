@@ -47,7 +47,7 @@ export default function CadastrarProduto({ onClose }) {
 
       const result = await response.json();
       alert(result.message || "Produto cadastrado com sucesso!");
-      onClose();
+      onClose(window.location.reload());
 
       // Limpar formulário
       setForm({

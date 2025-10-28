@@ -105,7 +105,7 @@ export default function CadastrarDesconto({ onClose }) {
       if (!response.ok) throw new Error("Erro ao cadastrar desconto.");
 
       alert("Desconto cadastrado com sucesso!");
-      onClose();
+      onClose(window.location.reload());
 
       setForm({
         codigo: "",

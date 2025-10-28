@@ -8,6 +8,7 @@ import TabelaClientes from "@/app/components/clientes/tabelaClientes";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import styles from "../../styles/tabelas.module.css";
 
+
 export default function Clientes() {
   const [showPopup, setShowPopup] = useState(false);
   const [showImportPopup, setImportPopup] = useState(false);

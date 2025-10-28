@@ -55,7 +55,7 @@ export default function CadastrarCliente({ onClose }) {
       if (!response.ok) throw new Error("Erro ao cadastrar cliente.");
 
       alert("Cliente cadastrado com sucesso!");
-      onClose();
+      onClose(window.location.reload());
 
       setForm({
         nome: "",
