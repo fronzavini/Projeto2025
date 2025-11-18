@@ -208,7 +208,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             "email": self.email,
             "senha": self.senha,
             "telefone": self.telefone,
-            "data_nascimento": str(getattr(self, "dataNasc", None)) if getattr(self, "dataNasc", None) else None,
+           "data_nascimento": str(getattr(self, "dataNasc", None)) if getattr(self, "dataNasc", None) else None,
             "data_cadastro": str(self.dataCadastro),
             "cep": self.endCep,
             "rua": self.endRua,
@@ -636,7 +636,7 @@ class Cupom:
         cursor = conexao.cursor()
         query = '''
             INSERT INTO cupons (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo, estado)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         '''
         cursor.execute(query, (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo))
         conexao.commit()
@@ -1054,4 +1054,5 @@ class TransacaoFinanceira:
             "valor": self.valor,
             "data": str(self.data) if self.data else None
         }
+
 
