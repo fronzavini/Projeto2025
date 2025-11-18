@@ -163,3 +163,11 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     valor DECIMAL(10,2),
 
 )
+    
+-- Tabela: configuracoes
+CREATE TABLE IF NOT EXISTS configuracoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chave VARCHAR(100) UNIQUE NOT NULL COMMENT 'Nome único da configuração (ex: estoque_minimo_padrao)',
+    valor TEXT NOT NULL COMMENT 'Valor da configuração (pode ser texto, número, JSON, etc.)',
+    descricao VARCHAR(255) COMMENT 'Descrição do que esta chave representa'
+);
