@@ -164,10 +164,16 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
 
 )
     
--- Tabela: configuracoes
-CREATE TABLE IF NOT EXISTS configuracoes (
+-- Tabela: configuracoes_usuario
+CREATE TABLE IF NOT EXISTS configuracoes_usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    chave VARCHAR(100) UNIQUE NOT NULL COMMENT 'Nome único da configuração (ex: estoque_minimo_padrao)',
-    valor TEXT NOT NULL COMMENT 'Valor da configuração (pode ser texto, número, JSON, etc.)',
-    descricao VARCHAR(255) COMMENT 'Descrição do que esta chave representa'
+    cliente_id INT NULL,
+    funcionario_id INT NULL,
+    tema_preferido VARCHAR(50) DEFAULT 'claro' NOT NULL,
+    idioma VARCHAR(10) DEFAULT 'pt_BR' NOT NULL,
+    notificacoes_email BOOLEAN DEFAULT TRUE NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id),
+    -- Garante que um ID de cliente ou funcionário seja único nesta tabela
+    UNIQUE KEY uk_usuario (cliente_id, funcionario_id)
 );
