@@ -33,6 +33,13 @@ export default function Home() {
         preco="10,00"
         addToCart={handleAddToCart}
       />
+
+      <Produto
+        nome="Copo-de-Leite - Flor Unitária"
+        imagemPrincipal="/imgs/copo-de-leite.jpg"
+        preco="10,00"
+        addToCart={handleAddToCart}
+      />
     </div>
   );
 }

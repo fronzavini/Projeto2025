@@ -64,15 +64,16 @@
   padding: 8px 20px; /* Ajustado padding */
   background-color: white;
   border: 1px solid #ccc;
-  border-radius: 20px; /* Mais arredondado, como uma pílula */
+  border-radius: 20px;
   font-size: 14px;
   color: #666; /* Cor do texto mais cinza */
   cursor: pointer;
   transition: background-color 0.2s;
   display: flex; /* Para alinhar o Q com o texto */
   align-items: center;
-  gap: 5px; /* Espaço entre o Q e o texto */
-  font-weight: normal; /* Geralmente não é bold nesse tipo de botão */
+  gap: 5px;
+  font-weight: normal;
+  margin-right: 15px;
 }
 
 .botaoSimilares:hover {
@@ -119,7 +120,7 @@
 }
 
 .botaoSacola {
-  background-color: #8b4513; /* Cor marrom específica da imagem */
+  background-color: #804700; /* Cor marrom específica da imagem */
   color: white;
   border: none;
   padding: 15px 30px;
@@ -199,11 +200,11 @@
 }
 
 .inputCep:focus {
-  border-color: #8b4513; /* Borda fica marrom no foco */
+  border-color: #804700; /* Borda fica marrom no foco */
 }
 
 .botaoCep {
-  background-color: #8b4513; /* Mesma cor do botão da sacola */
+  background-color: #804700; /* Mesma cor do botão da sacola */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -250,4 +251,140 @@
   color: #555;
   /* O texto na imagem tem alinhamento justificado ou quase, por isso o max-width */
   max-width: 800px;
+}
+
+/* ================================
+   RESPONSIVIDADE
+================================ */
+
+/* --------- TELAS GRANDES (até 1200px) --------- */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr 340px;
+    padding: 0 15px;
+  }
+
+  .imagemMenor {
+    width: 80px;
+    height: 80px;
+  }
+
+  .preco {
+    font-size: 28px;
+  }
+
+  .botaoSacola {
+    font-size: 15px;
+    padding: 13px 26px;
+  }
+}
+
+/* --------- TABLETS (até 900px) --------- */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "imagens"
+      "info"
+      "descricao";
+  }
+
+  .colunaImagens {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .imagensMenores {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .imagemMenor {
+    width: 85px;
+    height: 85px;
+  }
+
+  .colunaInfo {
+    text-align: center;
+  }
+
+  .precoContainer {
+    justify-content: center;
+  }
+
+  .botaoSacola {
+    width: 90%;
+    max-width: 350px;
+    margin: 0 auto 30px auto;
+  }
+
+  .formCep {
+    justify-content: center;
+  }
+}
+
+/* --------- CELULARES GRANDES (até 600px) --------- */
+@media (max-width: 600px) {
+  .container {
+    margin: 20px auto;
+    gap: 20px;
+  }
+
+  .imagemMenor {
+    width: 70px;
+    height: 70px;
+  }
+
+  .imagemPrincipal {
+    max-height: 400px;
+  }
+
+  .nome {
+    font-size: 23px;
+    margin-bottom: 8px;
+  }
+
+  .preco {
+    font-size: 26px;
+  }
+
+  .botaoSacola {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .inputCep {
+    width: 100px;
+    font-size: 14px;
+  }
+
+  .botaoCep {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .descricaoText {
+    font-size: 14px;
+  }
+}
+
+/* --------- CELULARES PEQUENOS (até 420px) --------- */
+@media (max-width: 420px) {
+  .imagemMenor {
+    width: 60px;
+    height: 60px;
+  }
+
+  .botaoSacola {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  .nome {
+    font-size: 20px;
+  }
+
+  .preco {
+    font-size: 22px;
+  }
 }
