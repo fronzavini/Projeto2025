@@ -41,7 +41,7 @@
   color: var(--sidebar-link-hover-color);
 }
 
-.active {
+.link.active {
   background-color: var(--sidebar-active-bg);
   color: var(--sidebar-active-color);
   font-weight: 600;

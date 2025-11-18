@@ -45,7 +45,7 @@ function Header() {
             </div>
 
             <Link href="/configuracoes">
-              <span className={styles.link}>Configurações</span>
+              <span className={styles.link}>Perfil</span>
             </Link>
             <button onClick={sair} className={styles.botao_simples}>
               Sair
