@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import Secao from "../components/secao";
 import Citacao from "../components/citacao";
 import Estatisticas from "../components/estatisticas";
@@ -11,15 +12,19 @@ export default function Sobre() {
       <Secao
         imagem="/imgs/flor.jpg"
         titulo="MAIS SAÚDE, ALEGRIA E EQUILÍBRIO PARA SEU DIA A DIA!"
-        subtitulo=" Queremos que cada arranjo nosso faça do seu espaço um refúgio de bem-estar e energia positiva. "
+        subtitulo="Queremos que cada arranjo nosso faça do seu espaço um refúgio de bem-estar e energia positiva."
         texto="Juntos, podemos transformar cada cantinho em um lugar repleto de significado e inspiração, onde cada flor conta uma história, cada aroma desperta sensações de bem-estar, e cada cor traz alegria e harmonia para o seu dia. Fazemos com que cada espaço se torne um refúgio de beleza, acolhimento e momentos especiais."
-        botao="Transforme seu espaço"
+        botao={
+          <Link href="/arranjos" className={styles.link}>
+            Transforme seu espaço
+          </Link>
+        }
         invertido={false}
       />
 
       <Citacao
         texto="Em cada arranjo da BellaDonna, percebe-se uma atenção
-        delicada aos detalhes, como se flor trouxesse sua própria
+        delicada aos detalhes, como se cada flor trouxesse sua própria
         voz. É um trabalho que celebra a natureza e traz energia ao
         espaço, transformando simples gestos em reflexos de beleza
         e serenidade."
@@ -54,7 +59,9 @@ Foi a partir dessa percepção que nasceu a BellaDonna. Ao longo da minha jornad
             Cada arranjo da BellaDonna é um convite para desacelerar, respirar
             fundo e reconectar o equilíbrio que faz a vida florescer.
           </p>
-          <button>Transforme seu espaço</button>
+          <Link href="/arranjos">
+            <button>Transforme seu espaço</button>
+          </Link>
         </div>
       </div>
     </div>

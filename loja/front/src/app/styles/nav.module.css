@@ -26,6 +26,12 @@
   /*box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);8*/
 }
 
+.scrolled .menu li a:hover,
+.scrolled .user li svg:hover,
+.scrolled .menuIcon :hover {
+  color: #753838;
+}
+
 /* Links */
 .menu,
 .user {

@@ -30,7 +30,7 @@ export default function Home() {
       <Produto
         nome="Copo-de-Leite - Buquê"
         imagemPrincipal="/imgs/copo-de-leite.jpg"
-        preco="10,00"
+        preco="35,00"
         addToCart={handleAddToCart}
       />
     </div>
