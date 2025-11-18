@@ -15,7 +15,7 @@ def conectar_banco():
         conexao = pymysql.connect(
             host="localhost",
             user="root",
-            password="root",
+            password="root",    
             database="bd_belladonna"
         )
         print("Conexao funcionando")
