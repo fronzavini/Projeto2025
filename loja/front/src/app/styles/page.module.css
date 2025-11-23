@@ -17,3 +17,10 @@
   font-size: 1rem;
   color: #2c2c2c;
 }
+
+.produtoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 4.3rem; /* espaço entre os cards */
+  width: 100%;
+}

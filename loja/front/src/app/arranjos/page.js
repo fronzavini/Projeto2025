@@ -29,13 +29,14 @@ export default function Home() {
           />
         </div>
       </div>
-
-      <Produto
-        nome="Copo-de-Leite - Buquê"
-        imagemPrincipal="/imgs/copo-de-leite.jpg"
-        preco="35,00"
-        addToCart={handleAddToCart}
-      />
+      <div className={styles.produtoGrid}>
+        <Produto
+          nome="Copo-de-Leite - Buquê"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="35,00"
+          addToCart={handleAddToCart}
+        />
+      </div>
     </div>
   );
 }

@@ -30,19 +30,49 @@ export default function Home() {
         </div>
       </div>
 
-      <Produto
-        nome="Copo-de-Leite - Flor Unitária"
-        imagemPrincipal="/imgs/copo-de-leite.jpg"
-        preco="10,00"
-        addToCart={handleAddToCart}
-      />
+      <div className={styles.produtoGrid}>
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
 
-      <Produto
-        nome="Copo-de-Leite - Flor Unitária"
-        imagemPrincipal="/imgs/copo-de-leite.jpg"
-        preco="10,00"
-        addToCart={handleAddToCart}
-      />
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
+
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
+
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
+
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
+
+        <Produto
+          nome="Copo-de-Leite - Flor Unitária"
+          imagemPrincipal="/imgs/copo-de-leite.jpg"
+          preco="10,00"
+          addToCart={handleAddToCart}
+        />
+      </div>
     </div>
   );
 }
