@@ -3,7 +3,6 @@
 import React from "react";
 import Produto from "../components/produto";
 import Banner from "../components/banner";
-import Filtro from "../components/filtro";
 import Relevancia from "../components/relevancia";
 import styles from "../styles/page.module.css";
 
@@ -22,8 +21,12 @@ export default function Home() {
       <div className={styles.containerFiltros}>
         <span className={styles.totalProdutos}>120 produtos</span>
         <div className={styles.filtros}>
-          <Filtro />
-          <Relevancia />
+          <Relevancia
+            onChange={(valor) => {
+              console.log("Ordenação escolhida:", valor);
+              // preco-asc  ou  preco-desc
+            }}
+          />
         </div>
       </div>
 
