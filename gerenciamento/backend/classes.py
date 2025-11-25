@@ -1088,4 +1088,7 @@ class TransacaoFinanceira:
         }
 
 
+
+
+
 conectar_banco()

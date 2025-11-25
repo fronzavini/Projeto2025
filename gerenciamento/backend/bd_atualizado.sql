@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS funcionarios (
     endComplemento VARCHAR(50) NOT NULL,
     endUF CHAR(2) NOT NULL,
     endMunicipio VARCHAR(50) NOT NULL,
-    funcao VARCHAR(50) NOT NULL,
+    #--funcao VARCHAR(50) NOT NULL,
     salario DECIMAL(10,2),
     dataContratacao DATE
 );
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
 CREATE TABLE IF NOT EXISTS usuarios_sistema (
     id INT AUTO_INCREMENT PRIMARY KEY,
     funcionario_id INT NOT NULL UNIQUE,
-    tipo_usuario ENUM('admin', 'funcionario') NOT NULL,
+    tipo_usuario ENUM('Administrador', 'Vendedor', 'Estoque') NOT NULL,
     usuario VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(100) NOT NULL,
     tema_preferido VARCHAR(50) DEFAULT 'claro',

@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
 import pymysql
+import csv
+import io
+import json
+import re
 from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira
 from flask_cors import CORS
 from pymysql.err import MySQLError
@@ -176,7 +180,7 @@ def editar_funcionario(id):
         rg=dados.get("rg"),
         sexo=dados.get("sexo"),
         dataNasc=dados.get("data_nascimento"),
-        funcao=dados.get("funcao"),
+        #funcao=dados.get("funcao"),
         salario=dados.get("salario"),
         dataContratacao=dados.get("dataContratacao"),
     )
@@ -202,6 +206,48 @@ def deletar_funcionario(id):
 def listar_funcionarios():
     funcionarios = Funcionario.listarFuncionarios()
     return jsonify(funcionarios)
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    dados = request.json
+    email = dados.get('email')
+    senha = dados.get('senha')
+    if not email or not senha:
+        return jsonify({'resultado': 'erro', 'detalhes': 'email e senha obrigatorios'}), 400
+
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
+    cursor = conexao.cursor()
+    try:
+        cursor.execute('SELECT id, nome, email, funcao, perfil_id FROM funcionarios WHERE email = %s AND senha = %s', (email, senha))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Credenciais inválidas'}), 401
+        funcionario = {'id': row[0], 'nome': row[1], 'email': row[2], 'funcao': row[3], 'perfil_id': row[4]}
+
+        # load user settings
+        cursor.execute('SELECT chave, valor FROM configuracoes WHERE chave LIKE %s', (f'user:{funcionario["id"]}:%',))
+        rows = cursor.fetchall()
+        settings = {}
+        for r in rows:
+            key = r[0].split(':', 2)[-1]
+            settings[key] = r[1]
+
+        # load perfil if exists
+        perfil = None
+        if funcionario.get('perfil_id'):
+            cursor.execute('SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s', (funcionario['perfil_id'],))
+            p = cursor.fetchone()
+            if p:
+                perfil = {'id': p[0], 'nome': p[1], 'permissoes': p[2], 'ativo': bool(p[3])}
+
+        return jsonify({'resultado': 'ok', 'funcionario': funcionario, 'perfil': perfil, 'settings': settings})
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+    finally:
+        cursor.close(); conexao.close()
 
 
 
@@ -309,6 +355,140 @@ def deletar_fornecedor(id):
 def listar_fornecedores():
     fornecedores = Fornecedor.listarFornecedores()
     return jsonify(fornecedores)
+
+
+# Endpoint genérico para importar CSV para tabelas permitidas
+@app.route('/importar_csv', methods=['POST'])
+def importar_csv():
+    # Expecting multipart/form-data with fields:
+    # - file: the csv file
+    # - target: target table name (ex: produtos, clientes)
+    # - mapping (optional): JSON string mapping CSV header -> DB column
+    # - delimiter (optional): CSV delimiter, default ','
+    if 'file' not in request.files:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Arquivo não enviado (campo "file" ausente)'}), 400
+
+    file = request.files['file']
+    target = request.form.get('target')
+    mapping_raw = request.form.get('mapping')
+    delimiter = request.form.get('delimiter') or ','
+
+    if not target:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Parametro "target" é obrigatório'}), 400
+
+    # whitelist de tabelas permitidas para evitar SQL injection
+    allowed_tables = {
+        'clientes', 'funcionarios', 'fornecedores', 'produtos', 'cupons',
+        'servicos_personalizados', 'vendas', 'transacoes_financeiras', 'itens_pedido'
+    }
+
+    if target not in allowed_tables:
+        return jsonify({'resultado': 'erro', 'detalhes': f'Tabela alvo "{target}" não permitida'}), 400
+
+    try:
+        content = file.read().decode('utf-8-sig')
+    except Exception:
+        try:
+            content = file.read().decode('latin-1')
+        except Exception as e:
+            return jsonify({'resultado': 'erro', 'detalhes': f'Falha ao ler arquivo: {e}'}), 400
+
+    sio = io.StringIO(content)
+    try:
+        reader = csv.DictReader(sio, delimiter=delimiter)
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': f'Falha ao parsear CSV: {e}'}), 400
+
+    rows = list(reader)
+    if not rows:
+        return jsonify({'resultado': 'erro', 'detalhes': 'CSV vazio ou sem linhas'}), 400
+
+    # optional mapping: CSV header -> DB column name
+    mapping = None
+    if mapping_raw:
+        try:
+            mapping = json.loads(mapping_raw)
+        except Exception as e:
+            return jsonify({'resultado': 'erro', 'detalhes': f'Mapping JSON inválido: {e}'}), 400
+
+    # build normalized rows with db column names
+    normalized = []
+    for r in rows:
+        nr = {}
+        for key, val in r.items():
+            col = mapping.get(key, key) if mapping else key
+            nr[col.strip()] = val
+        normalized.append(nr)
+
+    # validate column names (safe identifier)
+    colname_re = re.compile(r'^[A-Za-z0-9_]+$')
+    cols = list(normalized[0].keys())
+    for c in cols:
+        if not colname_re.match(c):
+            return jsonify({'resultado': 'erro', 'detalhes': f'Nome de coluna inválido: "{c}"'}), 400
+
+    # perform inserts in a transaction
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Não foi possível conectar ao banco'}), 500
+
+    placeholders = ','.join(['%s'] * len(cols))
+    cols_sql = ','.join([f"{c}" for c in cols])
+    insert_sql = f"INSERT INTO {target} ({cols_sql}) VALUES ({placeholders})"
+
+    cursor = conexao.cursor()
+    inserted = 0
+    errors = []
+    try:
+        for i, row in enumerate(normalized, start=1):
+            vals = [None if row.get(c, '') == '' else row.get(c) for c in cols]
+            try:
+                cursor.execute(insert_sql, vals)
+                inserted += 1
+            except Exception as e:
+                conexao.rollback()
+                errors.append({'linha': i, 'erro': str(e), 'dados': row})
+        # commit successful inserts
+        conexao.commit()
+    except Exception as e:
+        conexao.rollback()
+        return jsonify({'resultado': 'erro', 'detalhes': f'Erro na inserção: {e}'}), 500
+    finally:
+        cursor.close()
+        conexao.close()
+
+    return jsonify({'resultado': 'ok', 'inseridos': inserted, 'erros': errors})
+
+
+@app.route('/colunas_tabela', methods=['GET'])
+def colunas_tabela():
+    table = request.args.get('table')
+    if not table:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Parametro "table" é obrigatório'}), 400
+
+    allowed_tables = {
+        'clientes', 'funcionarios', 'fornecedores', 'produtos', 'cupons',
+        'servicos_personalizados', 'vendas', 'transacoes_financeiras', 'itens_pedido'
+    }
+
+    if table not in allowed_tables:
+        return jsonify({'resultado': 'erro', 'detalhes': f'Tabela "{table}" não permitida'}), 400
+
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Não foi possível conectar ao banco'}), 500
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute(f"SHOW COLUMNS FROM `{table}`")
+        rows = cursor.fetchall()
+        cols = [r[0] for r in rows]
+        return jsonify({'resultado': 'ok', 'colunas': cols})
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+    finally:
+        cursor.close()
+        conexao.close()
 
 
 # ROTAS DE CUPOM

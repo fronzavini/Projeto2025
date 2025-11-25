@@ -12,12 +12,44 @@ export default function LoginForm() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (usuario === "admin" && senha === "1234") {
-      localStorage.setItem("token", "meu-token-exemplo");
-      window.location.href = "/";
-    } else {
-      setErro(true);
-    }
+    // Call backend login
+    fetch('http://localhost:5000/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: usuario, senha }),
+    })
+      .then(async (res) => {
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+          setErro(true);
+          return;
+        }
+        // Successful login: json contains funcionario, settings, perfil
+        const { funcionario, settings } = json;
+        // store basic session info
+        localStorage.setItem('user', JSON.stringify(funcionario));
+        if (settings) localStorage.setItem('settings', JSON.stringify(settings));
+
+        // apply theme immediately if present
+        try {
+          const tema = settings && settings.tema ? settings.tema : localStorage.getItem('tema');
+          if (tema) {
+            document.body.setAttribute('data-theme', tema === 'escuro' ? 'dark' : 'light');
+            localStorage.setItem('tema', tema);
+          }
+          const idioma = settings && settings.idioma ? settings.idioma : localStorage.getItem('idioma');
+          if (idioma) localStorage.setItem('idioma', idioma);
+        } catch (err) {
+          console.error('Erro ao aplicar settings:', err);
+        }
+
+        // redirect to home
+        window.location.href = '/';
+      })
+      .catch((err) => {
+        console.error('Erro no login:', err);
+        setErro(true);
+      });
   };
 
   return (

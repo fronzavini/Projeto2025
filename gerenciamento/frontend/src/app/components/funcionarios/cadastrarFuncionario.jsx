@@ -47,10 +47,12 @@ export default function CadastrarFuncionario({ onClose }) {
         body: JSON.stringify(dadosCompletos),
       });
 
-      if (!response.ok) throw new Error("Erro ao cadastrar funcionário.");
-
       const resultado = await response.json();
-      alert(resultado.message || "Funcionário cadastrado com sucesso!");
+      if (!response.ok) {
+        const msg = (resultado && resultado.detalhes) || 'Erro ao cadastrar funcionário.';
+        throw new Error(msg);
+      }
+      alert('Funcionário cadastrado com sucesso!');
       onClose();
 
       setForm({
@@ -165,14 +167,18 @@ export default function CadastrarFuncionario({ onClose }) {
         {/* Função, Email e Senha */}
         <div className={styles.formGroup}>
           <label htmlFor="funcao" className={styles.label}>Função</label>
-          <input
+          <select
             className={styles.input}
             id="funcao"
             name="funcao"
             value={form.funcao}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Selecione uma função</option>
+            <option value="vendedor">Vendedor</option>
+            <option value="estoque">Estoque</option>
+          </select>
         </div>
         <div className={styles.formGroup}>
           <label htmlFor="email" className={styles.label}>Email</label>
