@@ -4,79 +4,29 @@ import styles from "../../styles/cadastrarCliente.module.css";
 export default function CadastrarFinanceiro({ onClose }) {
   const [form, setForm] = useState({
     data: "",
-    descricao: "",
+    tipo: "",
     categoria: "",
-    subcategoria: "",
-    origem: "",
+    descricao: "",
     valor: "",
-    formaPagamento: "",
-    status: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const opcoesTipo = [
+    { label: "Entrada", value: "entrada" },
+    { label: "Saída", value: "saida" },
+  ];
+
   const opcoesCategoria = [
-    { label: "Receita", value: "Receita" },
-    { label: "Despesa", value: "Despesa" },
-    { label: "Investimento", value: "Investimento" },
+    { label: "Venda", value: "venda" },
+    { label: "Aluguel", value: "aluguel" },
+    { label: "Compra de Insumos", value: "compra_insumos" },
+    { label: "Marketing", value: "marketing" },
+    { label: "Serviço", value: "servico" },
+    { label: "Equipamentos", value: "equipamentos" },
+    { label: "Outro", value: "outro" },
   ];
-
-  const opcoesSubcategoria = [
-    // Receita
-    {
-      label: "Venda Loja Física",
-      value: "Venda Loja Física",
-      categoria: "Receita",
-    },
-    { label: "Venda Online", value: "Venda Online", categoria: "Receita" },
-    {
-      label: "Serviço de Montagem / Decoração",
-      value: "Serviço de Montagem / Decoração",
-      categoria: "Receita",
-    },
-    // Despesa
-    { label: "Aluguel", value: "Aluguel", categoria: "Despesa" },
-    {
-      label: "Compra de Mercadorias / Insumos",
-      value: "Compra de Mercadorias / Insumos",
-      categoria: "Despesa",
-    },
-    {
-      label: "Marketing e Divulgação",
-      value: "Marketing e Divulgação",
-      categoria: "Despesa",
-    },
-    // Investimento
-    {
-      label: "Compra de Equipamentos",
-      value: "Compra de Equipamentos",
-      categoria: "Investimento",
-    },
-    {
-      label: "Reformas e Melhorias",
-      value: "Reformas e Melhorias",
-      categoria: "Investimento",
-    },
-  ];
-
-  const opcoesFormaPagamento = [
-    { label: "Pix", value: "Pix" },
-    { label: "Cartão de Crédito", value: "Cartão de Crédito" },
-    { label: "Cartão de Débito", value: "Cartão de Débito" },
-    { label: "Dinheiro", value: "Dinheiro" },
-    { label: "Boleto", value: "Boleto" },
-    { label: "Transferência Bancária", value: "Transferência Bancária" },
-  ];
-
-  const opcoesStatus = [
-    { label: "Pendente", value: "Pendente" },
-    { label: "Recebido", value: "Recebido" },
-    { label: "Pago", value: "Pago" },
-    { label: "Cancelado", value: "Cancelado" },
-  ];
-
-  // Filtra subcategorias conforme categoria selecionada
-  const subcategoriasFiltradas = form.categoria
-    ? opcoesSubcategoria.filter((sub) => sub.categoria === form.categoria)
-    : [];
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -85,15 +35,20 @@ export default function CadastrarFinanceiro({ onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    const dadosParaEnviar = {
-      ...form,
-      valor: parseFloat(form.valor.replace(",", ".")),
-    };
+    setLoading(true);
+    setErrorMsg(null);
 
     try {
+      const dadosParaEnviar = {
+        tipo: form.tipo,
+        categoria: form.categoria,
+        descricao: form.descricao,
+        valor: parseFloat(form.valor),
+        data: form.data,
+      };
+
       const response = await fetch(
-        "http://localhost:5000/incluir_movimentacao",
+        "http://localhost:5000/criar_transacaofinanceira",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -101,24 +56,23 @@ export default function CadastrarFinanceiro({ onClose }) {
         }
       );
 
-      if (!response.ok) throw new Error("Erro ao cadastrar movimentação.");
+      if (!response.ok) throw new Error("Erro ao cadastrar transação.");
 
-      alert("Movimentação cadastrada com sucesso!");
+      alert("Transação cadastrada com sucesso!");
       onClose();
 
       setForm({
         data: "",
-        descricao: "",
+        tipo: "",
         categoria: "",
-        subcategoria: "",
-        origem: "",
+        descricao: "",
         valor: "",
-        formaPagamento: "",
-        status: "",
       });
     } catch (error) {
       console.error(error);
-      alert("Erro ao cadastrar movimentação.");
+      setErrorMsg("Erro ao cadastrar transação.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -151,22 +105,28 @@ export default function CadastrarFinanceiro({ onClose }) {
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="descricao" className={styles.label}>
-            Descrição
-          </label>
-          <input
-            type="text"
-            id="descricao"
-            name="descricao"
-            className={styles.input}
-            value={form.descricao}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
         <div className={styles.row}>
+          <div className={styles.formGroup}>
+            <label htmlFor="tipo" className={styles.label}>
+              Tipo
+            </label>
+            <select
+              id="tipo"
+              name="tipo"
+              className={styles.input}
+              value={form.tipo}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Selecione o tipo</option>
+              {opcoesTipo.map((op) => (
+                <option key={op.value} value={op.value}>
+                  {op.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="categoria" className={styles.label}>
               Categoria
@@ -187,41 +147,20 @@ export default function CadastrarFinanceiro({ onClose }) {
               ))}
             </select>
           </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="subcategoria" className={styles.label}>
-              Subcategoria
-            </label>
-            <select
-              id="subcategoria"
-              name="subcategoria"
-              className={styles.input}
-              value={form.subcategoria}
-              onChange={handleChange}
-              disabled={!form.categoria}
-              required
-            >
-              <option value="">Selecione a subcategoria</option>
-              {subcategoriasFiltradas.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="origem" className={styles.label}>
-            Origem
+          <label htmlFor="descricao" className={styles.label}>
+            Descrição
           </label>
           <input
             type="text"
-            id="origem"
-            name="origem"
+            id="descricao"
+            name="descricao"
             className={styles.input}
-            value={form.origem}
+            value={form.descricao}
             onChange={handleChange}
+            required
           />
         </div>
 
@@ -242,52 +181,10 @@ export default function CadastrarFinanceiro({ onClose }) {
           />
         </div>
 
-        <div className={styles.row}>
-          <div className={styles.formGroup}>
-            <label htmlFor="formaPagamento" className={styles.label}>
-              Forma de Pagamento
-            </label>
-            <select
-              id="formaPagamento"
-              name="formaPagamento"
-              className={styles.input}
-              value={form.formaPagamento}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecione forma de pagamento</option>
-              {opcoesFormaPagamento.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        {errorMsg && <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>}
 
-          <div className={styles.formGroup}>
-            <label htmlFor="status" className={styles.label}>
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              className={styles.input}
-              value={form.status}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecione status</option>
-              {opcoesStatus.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <button type="submit" className={styles.botaoEnviar}>
-          Cadastrar movimentação
+        <button type="submit" className={styles.botaoEnviar} disabled={loading}>
+          {loading ? "Cadastrando..." : "Cadastrar transação"}
         </button>
       </form>
     </div>

@@ -1,28 +1,49 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash,
   faPlus,
   faMinus,
-  faMagnifyingGlass,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function CadastrarOrcamento({ onClose }) {
-  const [produtos, setProdutos] = useState([
-    { nome: "Buquê de rosas", quantidade: 1, valorUnit: 98.77 },
-    { nome: "Girassol", quantidade: 2, valorUnit: 10.5 },
-  ]);
-  const [novoProduto, setNovoProduto] = useState({ nome: "", valorUnit: 0 });
-  const [tipoEntrega, setTipoEntrega] = useState("entrega");
-  const [formaPagamento, setFormaPagamento] = useState("Pix");
+  const [produtos, setProdutos] = useState([]);
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [clienteId, setClienteId] = useState("");
+  const [funcionarioId, setFuncionarioId] = useState("1");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [novoProdutoId, setNovoProdutoId] = useState("");
+  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
 
-  const subtotal = produtos.reduce(
-    (acc, p) => acc + p.valorUnit * p.quantidade,
-    0
-  );
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  const carregarProdutos = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_produtos", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error("Erro ao carregar produtos");
+      const resultado = await res.json();
+      const produtosFormatados = (resultado || []).map((p) => ({
+        id: p[0],
+        nome: p[1],
+        preco: Number(p[4]),
+      }));
+      setProdutosDisponiveis(produtosFormatados);
+    } catch (err) {
+      console.error("Erro ao carregar produtos:", err);
+    }
+  };
+
+  const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
 
   const handleRemover = (index) => {
     setProdutos(produtos.filter((_, i) => i !== index));
@@ -35,14 +56,73 @@ export default function CadastrarOrcamento({ onClose }) {
   };
 
   const handleAdicionarProduto = () => {
-    if (novoProduto.nome && novoProduto.valorUnit > 0) {
-      setProdutos([...produtos, { ...novoProduto, quantidade: 1 }]);
-      setNovoProduto({ nome: "", valorUnit: 0 });
+    if (novoProdutoId && novoProdutoQuantidade > 0) {
+      const produtoEncontrado = produtosDisponiveis.find(
+        (p) => p.id.toString() === novoProdutoId
+      );
+      if (produtoEncontrado) {
+        setProdutos([
+          ...produtos,
+          {
+            id: produtoEncontrado.id,
+            nome: produtoEncontrado.nome,
+            preco: produtoEncontrado.preco,
+            quantidade: novoProdutoQuantidade,
+          },
+        ]);
+        setNovoProdutoId("");
+        setNovoProdutoQuantidade(1);
+      }
     }
   };
 
-  const [cliente, setCliente] = useState(null);
-  const [clienteBusca, setClienteBusca] = useState("");
+  const handleAdicionarCliente = () => {
+    if (clienteId.trim()) {
+      setClienteSelecionado(clienteId);
+    }
+  };
+
+  const handleConfirmarOrcamento = async () => {
+    if (!clienteSelecionado) {
+      alert("Selecione um cliente");
+      return;
+    }
+    if (produtos.length === 0) {
+      alert("Adicione pelo menos um produto");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const payload = {
+        cliente: parseInt(clienteSelecionado),
+        funcionario: parseInt(funcionarioId),
+        produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
+        valorTotal: subtotal,
+        dataVenda: new Date().toISOString().split("T")[0],
+        entrega: false,
+        dataEntrega: null,
+      };
+
+      const res = await fetch("http://localhost:5000/criar_venda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Erro ao criar orçamento");
+
+      alert("Orçamento criado com sucesso!");
+      onClose();
+    } catch (err) {
+      console.error("Erro:", err);
+      setErrorMsg("Erro ao criar orçamento");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.overlay}>
@@ -54,42 +134,27 @@ export default function CadastrarOrcamento({ onClose }) {
           </button>
         </div>
 
-        <label className={styles.titulo}>Cliente</label>
+        <label className={styles.titulo}>Cliente ID</label>
         <div className={styles.inlineSearch}>
-          <div className={styles.inputIconWrapper}>
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              className={styles.inputIcon}
-            />
-            <input
-              className={styles.input}
-              placeholder="Buscar Cliente"
-              value={clienteBusca}
-              onChange={(e) => setClienteBusca(e.target.value)}
-            />
-          </div>
-
-          <button
-            className={styles.botaoRoxo}
-            onClick={() => {
-              if (clienteBusca.trim() !== "") {
-                setCliente(clienteBusca.trim());
-                setClienteBusca("");
-              }
-            }}
-          >
+          <input
+            className={styles.input}
+            placeholder="ID do Cliente"
+            value={clienteId}
+            onChange={(e) => setClienteId(e.target.value)}
+          />
+          <button className={styles.botaoRoxo} onClick={handleAdicionarCliente}>
             Adicionar
           </button>
         </div>
 
-        {cliente && (
+        {clienteSelecionado && (
           <div className={styles.clienteSelecionado}>
             <span>
-              Cliente selecionado: <strong>{cliente}</strong>
+              Cliente selecionado ID: <strong>{clienteSelecionado}</strong>
             </span>
             <button
               className={styles.removerCliente}
-              onClick={() => setCliente(null)}
+              onClick={() => setClienteSelecionado(null)}
               title="Remover cliente"
             >
               <FontAwesomeIcon icon={faXmark} />
@@ -97,32 +162,37 @@ export default function CadastrarOrcamento({ onClose }) {
           </div>
         )}
 
-        <h3 className={styles.titulo}>Produtos</h3>
+        <label className={styles.titulo}>Funcionário ID</label>
+        <input
+          className={styles.input}
+          type="number"
+          value={funcionarioId}
+          onChange={(e) => setFuncionarioId(e.target.value)}
+          min="1"
+        />
 
-        <label>Novo Produto</label>
+        <h3 className={styles.titulo}>Produtos</h3>
+        <label>Adicionar Produto</label>
         <div className={styles.novoProdutoForm}>
-          <input
-            placeholder="Nome"
-            value={novoProduto.nome}
-            onChange={(e) =>
-              setNovoProduto({ ...novoProduto, nome: e.target.value })
-            }
-          />
+          <select
+            value={novoProdutoId}
+            onChange={(e) => setNovoProdutoId(e.target.value)}
+          >
+            <option value="">Selecione um produto</option>
+            {produtosDisponiveis.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome} - R${p.preco.toFixed(2)}
+              </option>
+            ))}
+          </select>
           <input
             type="number"
-            placeholder="Valor Unitário"
-            value={novoProduto.valorUnit}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              if (inputValue === "") {
-                setNovoProduto({ ...novoProduto, valorUnit: "" });
-                return;
-              }
-              const valor = parseFloat(inputValue);
-              if (!isNaN(valor) && valor >= 0) {
-                setNovoProduto({ ...novoProduto, valorUnit: valor });
-              }
-            }}
+            placeholder="Quantidade"
+            value={novoProdutoQuantidade}
+            onChange={(e) =>
+              setNovoProdutoQuantidade(Math.max(1, parseInt(e.target.value) || 1))
+            }
+            min="1"
           />
           <button className={styles.botaoRoxo} onClick={handleAdicionarProduto}>
             Adicionar Produto
@@ -150,10 +220,8 @@ export default function CadastrarOrcamento({ onClose }) {
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               </div>
-              <span>R${produto.valorUnit.toFixed(2)}</span>
-              <span>
-                R${(produto.valorUnit * produto.quantidade).toFixed(2)}
-              </span>
+              <span>R${produto.preco.toFixed(2)}</span>
+              <span>R${(produto.preco * produto.quantidade).toFixed(2)}</span>
               <button
                 className={styles.trashButton}
                 onClick={() => handleRemover(index)}
@@ -169,17 +237,21 @@ export default function CadastrarOrcamento({ onClose }) {
           </div>
         </div>
 
-        <label className={styles.titulo}>Adicionar Cupom</label>
-        <div className={styles.inlineSearch}>
-          <div className={styles.inputIconWrapper}>
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              className={styles.inputIcon}
-            />
-            <input className={styles.input} placeholder="Buscar Cupom" />
-          </div>
-          <button className={styles.botaoRoxo}>Aplicar</button>
-        </div>
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>
+        )}
+
+        <button
+          className={styles.confirmarVenda}
+          onClick={handleConfirmarOrcamento}
+          disabled={loading}
+        >
+          {loading ? "Criando..." : "Confirmar Orçamento"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
         <div className={styles.resumo}>
           <div className={styles.resumoItem}>

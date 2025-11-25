@@ -4,103 +4,80 @@ import styles from "../../styles/cadastrarCliente.module.css";
 export default function EditarFinanceiro({ onClose, registro }) {
   const [form, setForm] = useState({
     data: "",
-    descricao: "",
+    tipo: "",
     categoria: "",
-    subcategoria: "",
-    origem: "",
+    descricao: "",
     valor: "",
-    formaPagamento: "",
-    status: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     if (registro) {
       setForm({
         data: registro.data || "",
-        descricao: registro.descricao || "",
+        tipo: registro.tipo || "",
         categoria: registro.categoria || "",
-        subcategoria: registro.subcategoria || "",
-        origem: registro.origem || "",
+        descricao: registro.descricao || "",
         valor: registro.valor?.toString() || "",
-        formaPagamento: registro.formaPagamento || "",
-        status: registro.status || "",
       });
     }
   }, [registro]);
 
+  const opcoesTipo = [
+    { label: "Entrada", value: "entrada" },
+    { label: "Saída", value: "saida" },
+  ];
+
   const opcoesCategoria = [
-    { label: "Receita", value: "Receita" },
-    { label: "Despesa", value: "Despesa" },
-    { label: "Investimento", value: "Investimento" },
+    { label: "Venda", value: "venda" },
+    { label: "Aluguel", value: "aluguel" },
+    { label: "Compra de Insumos", value: "compra_insumos" },
+    { label: "Marketing", value: "marketing" },
+    { label: "Serviço", value: "servico" },
+    { label: "Equipamentos", value: "equipamentos" },
+    { label: "Outro", value: "outro" },
   ];
-
-  const opcoesSubcategoria = [
-    {
-      label: "Venda Loja Física",
-      value: "Venda Loja Física",
-      categoria: "Receita",
-    },
-    { label: "Venda Online", value: "Venda Online", categoria: "Receita" },
-    {
-      label: "Serviço de Montagem / Decoração",
-      value: "Serviço de Montagem / Decoração",
-      categoria: "Receita",
-    },
-    { label: "Aluguel", value: "Aluguel", categoria: "Despesa" },
-    {
-      label: "Compra de Mercadorias / Insumos",
-      value: "Compra de Mercadorias / Insumos",
-      categoria: "Despesa",
-    },
-    {
-      label: "Marketing e Divulgação",
-      value: "Marketing e Divulgação",
-      categoria: "Despesa",
-    },
-    {
-      label: "Compra de Equipamentos",
-      value: "Compra de Equipamentos",
-      categoria: "Investimento",
-    },
-    {
-      label: "Reformas e Melhorias",
-      value: "Reformas e Melhorias",
-      categoria: "Investimento",
-    },
-  ];
-
-  const opcoesFormaPagamento = [
-    { label: "Pix", value: "Pix" },
-    { label: "Cartão de Crédito", value: "Cartão de Crédito" },
-    { label: "Cartão de Débito", value: "Cartão de Débito" },
-    { label: "Dinheiro", value: "Dinheiro" },
-    { label: "Boleto", value: "Boleto" },
-    { label: "Transferência Bancária", value: "Transferência Bancária" },
-  ];
-
-  const opcoesStatus = [
-    { label: "Pendente", value: "Pendente" },
-    { label: "Recebido", value: "Recebido" },
-    { label: "Pago", value: "Pago" },
-    { label: "Cancelado", value: "Cancelado" },
-  ];
-
-  const subcategoriasFiltradas = form.categoria
-    ? opcoesSubcategoria.filter((sub) => sub.categoria === form.categoria)
-    : [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Dados atualizados (local):", {
-      ...form,
-      valor: parseFloat(form.valor.replace(",", ".")),
-    });
-    onClose();
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const payload = {
+        tipo: form.tipo,
+        categoria: form.categoria,
+        descricao: form.descricao,
+        valor: parseFloat(form.valor),
+        data: form.data,
+      };
+
+      const res = await fetch(
+        `http://localhost:5000/editar_transacaofinanceira/${registro.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error("Erro ao atualizar transação");
+
+      alert("Transação atualizada com sucesso!");
+      onClose();
+    } catch (err) {
+      console.error("Erro:", err);
+      setErrorMsg("Erro ao atualizar transação");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -134,28 +111,34 @@ export default function EditarFinanceiro({ onClose, registro }) {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="descricao" className={styles.label}>
-                Descrição
-              </label>
-              <input
-                className={styles.input}
-                type="text"
-                id="descricao"
-                name="descricao"
-                value={form.descricao}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
             <div className={styles.row}>
+              <div className={styles.formGroup}>
+                <label htmlFor="tipo" className={styles.label}>
+                  Tipo
+                </label>
+                <select
+                  className={styles.input}
+                  id="tipo"
+                  name="tipo"
+                  value={form.tipo}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Selecione tipo</option>
+                  {opcoesTipo.map((op) => (
+                    <option key={op.value} value={op.value}>
+                      {op.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className={styles.formGroup}>
                 <label htmlFor="categoria" className={styles.label}>
                   Categoria
                 </label>
                 <select
-                  className={styles.select}
+                  className={styles.input}
                   id="categoria"
                   name="categoria"
                   value={form.categoria}
@@ -170,41 +153,20 @@ export default function EditarFinanceiro({ onClose, registro }) {
                   ))}
                 </select>
               </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="subcategoria" className={styles.label}>
-                  Subcategoria
-                </label>
-                <select
-                  className={styles.select}
-                  id="subcategoria"
-                  name="subcategoria"
-                  value={form.subcategoria}
-                  onChange={handleChange}
-                  disabled={!form.categoria}
-                  required
-                >
-                  <option value="">Selecione a subcategoria</option>
-                  {subcategoriasFiltradas.map((op) => (
-                    <option key={op.value} value={op.value}>
-                      {op.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="origem" className={styles.label}>
-                Origem
+              <label htmlFor="descricao" className={styles.label}>
+                Descrição
               </label>
               <input
                 className={styles.input}
                 type="text"
-                id="origem"
-                name="origem"
-                value={form.origem}
+                id="descricao"
+                name="descricao"
+                value={form.descricao}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -225,52 +187,16 @@ export default function EditarFinanceiro({ onClose, registro }) {
               />
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="formaPagamento" className={styles.label}>
-                  Forma de Pagamento
-                </label>
-                <select
-                  className={styles.select}
-                  id="formaPagamento"
-                  name="formaPagamento"
-                  value={form.formaPagamento}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione forma de pagamento</option>
-                  {opcoesFormaPagamento.map((op) => (
-                    <option key={op.value} value={op.value}>
-                      {op.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {errorMsg && (
+              <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>
+            )}
 
-              <div className={styles.formGroup}>
-                <label htmlFor="status" className={styles.label}>
-                  Status
-                </label>
-                <select
-                  className={styles.select}
-                  id="status"
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Selecione status</option>
-                  {opcoesStatus.map((op) => (
-                    <option key={op.value} value={op.value}>
-                      {op.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
+            <button
+              type="submit"
+              className={styles.botaoEnviar}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar alterações"}
             </button>
           </form>
         </div>

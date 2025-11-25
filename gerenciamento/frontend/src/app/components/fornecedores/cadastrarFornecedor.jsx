@@ -7,12 +7,13 @@ export default function CadastrarFornecedor({ onClose }) {
     cnpj: "",
     telefone: "",
     email: "",
-    cep: "",
-    logradouro: "",
-    numero: "",
-    bairro: "",
-    complemento: "",
-    uf: "",
+    endCep: "",
+    endRua: "",
+    endNumero: "",
+    endBairro: "",
+    endComplemento: "",
+    endUF: "",
+    endMunicipio: "",
   });
 
   function handleChange(e) {
@@ -23,10 +24,6 @@ export default function CadastrarFornecedor({ onClose }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const dadosCompletos = {
-      ...form,
-    };
-
     try {
       const response = await fetch("http://localhost:5000/incluir_fornecedor", {
         method: "POST",
@@ -34,7 +31,7 @@ export default function CadastrarFornecedor({ onClose }) {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dadosCompletos),
+        body: JSON.stringify(form),
       });
 
       if (!response.ok) throw new Error("Erro ao cadastrar fornecedor.");
@@ -42,17 +39,19 @@ export default function CadastrarFornecedor({ onClose }) {
       alert("Fornecedor cadastrado com sucesso!");
       onClose();
 
+      // limpar formulário
       setForm({
         nome_empresa: "",
         cnpj: "",
         telefone: "",
         email: "",
-        cep: "",
-        logradouro: "",
-        numero: "",
-        bairro: "",
-        complemento: "",
-        uf: "",
+        endCep: "",
+        endRua: "",
+        endNumero: "",
+        endBairro: "",
+        endComplemento: "",
+        endUF: "",
+        endMunicipio: "",
       });
     } catch (error) {
       console.error(error);
@@ -64,20 +63,15 @@ export default function CadastrarFornecedor({ onClose }) {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Novo fornecedor</h2>
-        <button
-          className={styles.botaoCancelar}
-          type="button"
-          onClick={onClose}
-        >
+        <button className={styles.botaoCancelar} type="button" onClick={onClose}>
           Cancelar
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome_empresa" className={styles.label}>
-            Nome da empresa
-          </label>
+          <label htmlFor="nome_empresa" className={styles.label}>Nome da empresa</label>
           <input
             className={styles.input}
             id="nome_empresa"
@@ -89,10 +83,9 @@ export default function CadastrarFornecedor({ onClose }) {
           />
         </div>
 
+        {/* CNPJ */}
         <div className={styles.formGroup}>
-          <label htmlFor="cnpj" className={styles.label}>
-            CNPJ
-          </label>
+          <label htmlFor="cnpj" className={styles.label}>CNPJ</label>
           <input
             className={styles.input}
             id="cnpj"
@@ -104,10 +97,9 @@ export default function CadastrarFornecedor({ onClose }) {
           />
         </div>
 
+        {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>
-            Telefone
-          </label>
+          <label htmlFor="telefone" className={styles.label}>Telefone</label>
           <input
             className={styles.input}
             id="telefone"
@@ -119,10 +111,9 @@ export default function CadastrarFornecedor({ onClose }) {
           />
         </div>
 
+        {/* Email */}
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>
-            Email
-          </label>
+          <label htmlFor="email" className={styles.label}>Email</label>
           <input
             className={styles.input}
             id="email"
@@ -134,92 +125,97 @@ export default function CadastrarFornecedor({ onClose }) {
           />
         </div>
 
+        {/* CEP + Número */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cep" className={styles.label}>
-              CEP
-            </label>
+            <label htmlFor="endCep" className={styles.label}>CEP</label>
             <input
               className={styles.input}
-              id="cep"
-              name="cep"
+              id="endCep"
+              name="endCep"
               type="text"
-              value={form.cep}
+              value={form.endCep}
               onChange={handleChange}
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="numero" className={styles.label}>
-              Número
-            </label>
+            <label htmlFor="endNumero" className={styles.label}>Número</label>
             <input
               className={styles.input}
-              id="numero"
-              name="numero"
+              id="endNumero"
+              name="endNumero"
               type="text"
-              value={form.numero}
+              value={form.endNumero}
               onChange={handleChange}
             />
           </div>
         </div>
 
+        {/* Rua */}
         <div className={styles.formGroup}>
-          <label htmlFor="logradouro" className={styles.label}>
-            Logradouro
-          </label>
+          <label htmlFor="endRua" className={styles.label}>Logradouro</label>
           <input
             className={styles.input}
-            id="logradouro"
-            name="logradouro"
+            id="endRua"
+            name="endRua"
             type="text"
-            value={form.logradouro}
+            value={form.endRua}
             onChange={handleChange}
           />
         </div>
 
+        {/* Bairro / Complemento / UF */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="bairro" className={styles.label}>
-              Bairro
-            </label>
+            <label htmlFor="endBairro" className={styles.label}>Bairro</label>
             <input
               className={styles.input}
-              id="bairro"
-              name="bairro"
+              id="endBairro"
+              name="endBairro"
               type="text"
-              value={form.bairro}
+              value={form.endBairro}
               onChange={handleChange}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="complemento" className={styles.label}>
-              Complemento
-            </label>
+            <label htmlFor="endComplemento" className={styles.label}>Complemento</label>
             <input
               className={styles.input}
-              id="complemento"
-              name="complemento"
+              id="endComplemento"
+              name="endComplemento"
               type="text"
-              value={form.complemento}
+              value={form.endComplemento}
               onChange={handleChange}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="uf" className={styles.label}>
-              UF
-            </label>
+            <label htmlFor="endUF" className={styles.label}>UF</label>
             <input
               className={styles.input}
-              id="uf"
-              name="uf"
+              id="endUF"
+              name="endUF"
               type="text"
               maxLength={2}
-              value={form.uf}
+              value={form.endUF}
               onChange={handleChange}
             />
           </div>
+        </div>
+
+        {/* Município */}
+        <div className={styles.formGroup}>
+          <label htmlFor="endMunicipio" className={styles.label}>Município</label>
+          <input
+            className={styles.input}
+            id="endMunicipio"
+            name="endMunicipio"
+            type="text"
+            value={form.endMunicipio}
+            onChange={handleChange}
+          />
         </div>
 
         <button type="submit" className={styles.botaoEnviar}>

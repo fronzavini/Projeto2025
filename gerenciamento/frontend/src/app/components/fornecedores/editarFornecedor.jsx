@@ -2,7 +2,9 @@ import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function EditarFornecedor({ onClose, fornecedor }) {
-  const [formData, setFormData] = useState(fornecedor);
+  const [formData, setFormData] = useState(fornecedor || {});
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -12,11 +14,45 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Por enquanto só loga localmente e fecha modal
-    console.log("Dados atualizados (local):", formData);
-    onClose();
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const payload = {
+        nome_empresa: formData.nome_empresa,
+        cnpj: formData.cnpj,
+        telefone: formData.telefone,
+        email: formData.email,
+        endCep: formData.cep,
+        endRua: formData.logradouro,
+        endNumero: formData.numero,
+        endBairro: formData.bairro,
+        endComplemento: formData.complemento,
+        endUF: formData.uf,
+        endMunicipio: formData.cidade,
+      };
+
+      const res = await fetch(`http://localhost:5000/editar_fornecedor/${fornecedor.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Erro ao atualizar fornecedor.");
+
+      const result = await res.json();
+      alert(result.message || "Fornecedor atualizado com sucesso!");
+      onClose();
+    } catch (err) {
+      console.error("Erro ao atualizar fornecedor:", err);
+      setErrorMsg("Erro ao atualizar fornecedor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,7 +82,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                 id="nome_empresa"
                 name="nome_empresa"
                 type="text"
-                value={formData.nome_empresa}
+                value={formData.nome_empresa || ""}
                 onChange={handleChange}
                 required
               />
@@ -61,7 +97,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                 id="cnpj"
                 name="cnpj"
                 type="text"
-                value={formData.cnpj}
+                value={formData.cnpj || ""}
                 onChange={handleChange}
                 required
               />
@@ -76,7 +112,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                 id="telefone"
                 name="telefone"
                 type="text"
-                value={formData.telefone}
+                value={formData.telefone || ""}
                 onChange={handleChange}
               />
             </div>
@@ -90,7 +126,21 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                 id="email"
                 name="email"
                 type="email"
-                value={formData.email}
+                value={formData.email || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="logradouro" className={styles.label}>
+                Logradouro
+              </label>
+              <input
+                className={styles.input}
+                id="logradouro"
+                name="logradouro"
+                type="text"
+                value={formData.logradouro || ""}
                 onChange={handleChange}
               />
             </div>
@@ -105,7 +155,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                   id="cep"
                   name="cep"
                   type="text"
-                  value={formData.cep}
+                  value={formData.cep || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -118,7 +168,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                   id="numero"
                   name="numero"
                   type="text"
-                  value={formData.numero}
+                  value={formData.numero || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -134,11 +184,27 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                   id="bairro"
                   name="bairro"
                   type="text"
-                  value={formData.bairro}
+                  value={formData.bairro || ""}
                   onChange={handleChange}
                 />
               </div>
 
+              <div className={styles.formGroup}>
+                <label htmlFor="cidade" className={styles.label}>
+                  Cidade
+                </label>
+                <input
+                  className={styles.input}
+                  id="cidade"
+                  name="cidade"
+                  type="text"
+                  value={formData.cidade || ""}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="complemento" className={styles.label}>
                   Complemento
@@ -148,7 +214,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                   id="complemento"
                   name="complemento"
                   type="text"
-                  value={formData.complemento}
+                  value={formData.complemento || ""}
                   onChange={handleChange}
                 />
               </div>
@@ -163,14 +229,20 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
                   name="uf"
                   type="text"
                   maxLength={2}
-                  value={formData.uf}
+                  value={formData.uf || ""}
                   onChange={handleChange}
                 />
               </div>
             </div>
 
-            <button type="submit" className={styles.botaoEnviar}>
-              Salvar alterações
+            {errorMsg && (
+              <div style={{ color: "red", marginBottom: "1rem" }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <button type="submit" className={styles.botaoEnviar} disabled={loading}>
+              {loading ? "Salvando..." : "Salvar alterações"}
             </button>
           </form>
         </div>

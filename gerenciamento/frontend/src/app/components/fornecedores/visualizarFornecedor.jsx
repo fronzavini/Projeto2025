@@ -102,6 +102,20 @@ export default function VisualizarFornecedor({ onClose, fornecedor }) {
               </div>
             </div>
 
+            <div className={styles.formGroup}>
+              <label htmlFor="logradouro" className={styles.label}>
+                Logradouro
+              </label>
+              <input
+                className={styles.input}
+                id="logradouro"
+                name="logradouro"
+                type="text"
+                value={fornecedor.logradouro}
+                disabled
+              />
+            </div>
+
             <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="bairro" className={styles.label}>
@@ -117,19 +131,33 @@ export default function VisualizarFornecedor({ onClose, fornecedor }) {
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="complemento" className={styles.label}>
-                  Complemento
-                </label>
-                <input
-                  className={styles.input}
-                  id="complemento"
-                  name="complemento"
-                  type="text"
-                  value={fornecedor.complemento}
-                  disabled
-                />
-              </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="complemento" className={styles.label}>
+                    Complemento
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="complemento"
+                    name="complemento"
+                    type="text"
+                    value={fornecedor.complemento}
+                    disabled
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="cidade" className={styles.label}>
+                    Cidade
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="cidade"
+                    name="cidade"
+                    type="text"
+                    value={fornecedor.cidade}
+                    disabled
+                  />
+                </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="uf" className={styles.label}>

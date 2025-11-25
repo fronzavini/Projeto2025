@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -12,43 +12,11 @@ import SaidaEstoque from "./saidaEstoque";
 import EntradaEstoque from "./entradaEstoque";
 
 export default function TabelaEstoque() {
-  const data = [
-    {
-      id: 1,
-      produto: "Buquê de Rosas Vermelhas",
-      quantidade_atual: 15,
-      status: "disponivel",
-      ultima_movimentacao: "2025-07-10T14:30:00",
-    },
-    {
-      id: 2,
-      produto: "Orquídea Branca",
-      quantidade_atual: 8,
-      status: "baixo",
-      ultima_movimentacao: "2025-07-12T10:45:00",
-    },
-    {
-      id: 3,
-      produto: "Arranjo de Flores do Campo",
-      quantidade_atual: 0,
-      status: "esgotado",
-      ultima_movimentacao: "2025-06-30T17:20:00",
-    },
-    {
-      id: 4,
-      produto: "Mini Cacto Decorativo",
-      quantidade_atual: 40,
-      status: "disponivel",
-      ultima_movimentacao: "2025-07-15T09:10:00",
-    },
-    {
-      id: 5,
-      produto: "Vaso de Suculentas Mistas",
-      quantidade_atual: 5,
-      status: "baixo",
-      ultima_movimentacao: "2025-07-13T11:00:00",
-    },
-  ];
+  const [produtos, setProdutos] = useState([]);
+
+  const [filterId, setFilterId] = useState("");
+  const [filterProduto, setFilterProduto] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   const opcoesStatus = [
     { label: "Disponível", value: "disponivel" },
@@ -56,15 +24,59 @@ export default function TabelaEstoque() {
     { label: "Esgotado", value: "esgotado" },
   ];
 
-  const [filterId, setFilterId] = useState("");
-  const [filterProduto, setFilterProduto] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  // carregar produtos do backend
+  const carregarProdutos = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_produtos", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
-  const filteredData = data.filter(
+      if (!res.ok) throw new Error("Erro ao carregar produtos");
+
+      const resultado = await res.json();
+
+      // Mapeia produtos do backend (tuplas) para objeto com status dinâmico
+      const produtosFormatados = (resultado || []).map((p) => {
+        const quantidadeEstoque = p[4] || 0; // índice da quantidade_estoque
+        let status = "disponivel";
+        if (quantidadeEstoque === 0) {
+          status = "esgotado";
+        } else if (quantidadeEstoque <= 10) {
+          status = "baixo";
+        }
+
+        return {
+          id: p[0],
+          nome: p[1],
+          categoria: p[2],
+          marca: p[3],
+          preco: p[5],
+          quantidade_estoque: quantidadeEstoque,
+          status,
+          ultima_movimentacao: new Date().toISOString(),
+        };
+      });
+
+      setProdutos(produtosFormatados);
+    } catch (err) {
+      console.error("Erro ao carregar produtos:", err);
+      setProdutos([]);
+    }
+  };
+
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  const filteredData = produtos.filter(
     (item) =>
       (!filterId || item.id.toString().startsWith(filterId)) &&
       (!filterProduto ||
-        item.produto.toLowerCase().startsWith(filterProduto.toLowerCase())) &&
+        item.nome.toLowerCase().startsWith(filterProduto.toLowerCase())) &&
       (!filterStatus || item.status === filterStatus)
   );
 
@@ -137,9 +149,9 @@ export default function TabelaEstoque() {
 
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
-          <Column field="produto" header="Produto" />
+          <Column field="nome" header="Produto" />
           <Column field="id" header="ID" />
-          <Column field="quantidade_atual" header="Quantidade Atual" />
+          <Column field="quantidade_estoque" header="Quantidade Atual" />
           <Column field="status" header="Status" body={statusTemplate} />
           <Column field="ultima_movimentacao" header="Última Movimentação" />
           <Column
@@ -151,14 +163,14 @@ export default function TabelaEstoque() {
 
         {saidaModal.open && saidaModal.item && (
           <SaidaEstoque
-            estoqueId={saidaModal.item.id.toString()}
+            produto={saidaModal.item}
             onClose={() => setSaidaModal({ open: false, item: null })}
           />
         )}
 
         {entradaModal.open && entradaModal.item && (
           <EntradaEstoque
-            estoqueId={entradaModal.item.id.toString()}
+            produto={entradaModal.item}
             onClose={() => setEntradaModal({ open: false, item: null })}
           />
         )}

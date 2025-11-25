@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,20 +11,43 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function CadastrarVenda({ onClose }) {
-  const [produtos, setProdutos] = useState([
-    { nome: "Buquê de rosas", quantidade: 1, valorUnit: 98.77 },
-    { nome: "Girassol", quantidade: 2, valorUnit: 10.5 },
-  ]);
-  const [novoProduto, setNovoProduto] = useState({ nome: "", valorUnit: 0 });
-  const [tipoEntrega, setTipoEntrega] = useState("entrega");
-  const [formaPagamento, setFormaPagamento] = useState("Pix");
-  const [cliente, setCliente] = useState(null);
+  const [produtos, setProdutos] = useState([]);
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [clienteId, setClienteId] = useState("");
   const [clienteBusca, setClienteBusca] = useState("");
+  const [funcionarioId, setFuncionarioId] = useState("1");
+  const [tipoEntrega, setTipoEntrega] = useState("entrega");
+  const [dataEntrega, setDataEntrega] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [novoProdutoId, setNovoProdutoId] = useState("");
+  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
 
-  const subtotal = produtos.reduce(
-    (acc, p) => acc + p.valorUnit * p.quantidade,
-    0
-  );
+  useEffect(() => {
+    carregarProdutos();
+  }, []);
+
+  const carregarProdutos = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_produtos", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error("Erro ao carregar produtos");
+      const resultado = await res.json();
+      const produtosFormatados = (resultado || []).map((p) => ({
+        id: p[0],
+        nome: p[1],
+        preco: Number(p[4]),
+      }));
+      setProdutosDisponiveis(produtosFormatados);
+    } catch (err) {
+      console.error("Erro ao carregar produtos:", err);
+    }
+  };
+
+  const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
 
   const handleRemover = (index) => {
     setProdutos(produtos.filter((_, i) => i !== index));
@@ -37,9 +60,76 @@ export default function CadastrarVenda({ onClose }) {
   };
 
   const handleAdicionarProduto = () => {
-    if (novoProduto.nome && novoProduto.valorUnit > 0) {
-      setProdutos([...produtos, { ...novoProduto, quantidade: 1 }]);
-      setNovoProduto({ nome: "", valorUnit: 0 });
+    if (novoProdutoId && novoProdutoQuantidade > 0) {
+      const produtoEncontrado = produtosDisponiveis.find(
+        (p) => p.id.toString() === novoProdutoId
+      );
+      if (produtoEncontrado) {
+        setProdutos([
+          ...produtos,
+          {
+            id: produtoEncontrado.id,
+            nome: produtoEncontrado.nome,
+            preco: produtoEncontrado.preco,
+            quantidade: novoProdutoQuantidade,
+          },
+        ]);
+        setNovoProdutoId("");
+        setNovoProdutoQuantidade(1);
+      }
+    }
+  };
+
+  const handleAdicionarCliente = () => {
+    if (clienteId.trim()) {
+      setClienteSelecionado(clienteId);
+      setClienteBusca("");
+    }
+  };
+
+  const handleConfirmarVenda = async () => {
+    if (!clienteSelecionado) {
+      alert("Selecione um cliente");
+      return;
+    }
+    if (produtos.length === 0) {
+      alert("Adicione pelo menos um produto");
+      return;
+    }
+    if (tipoEntrega === "entrega" && !dataEntrega) {
+      alert("Informe a data de entrega");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const payload = {
+        cliente: parseInt(clienteSelecionado),
+        funcionario: parseInt(funcionarioId),
+        produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
+        valorTotal: subtotal,
+        dataVenda: new Date().toISOString().split("T")[0],
+        entrega: tipoEntrega === "entrega",
+        dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
+      };
+
+      const res = await fetch("http://localhost:5000/criar_venda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Erro ao criar venda");
+
+      alert("Venda criada com sucesso!");
+      onClose();
+    } catch (err) {
+      console.error("Erro:", err);
+      setErrorMsg("Erro ao criar venda");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,41 +143,27 @@ export default function CadastrarVenda({ onClose }) {
           </button>
         </div>
 
-        <label className={styles.titulo}>Cliente</label>
+        <label className={styles.titulo}>Cliente ID</label>
         <div className={styles.inlineSearch}>
-          <div className={styles.inputIconWrapper}>
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              className={styles.inputIcon}
-            />
-            <input
-              className={styles.input}
-              placeholder="Buscar Cliente"
-              value={clienteBusca}
-              onChange={(e) => setClienteBusca(e.target.value)}
-            />
-          </div>
-          <button
-            className={styles.botaoRoxo}
-            onClick={() => {
-              if (clienteBusca.trim() !== "") {
-                setCliente(clienteBusca.trim());
-                setClienteBusca("");
-              }
-            }}
-          >
+          <input
+            className={styles.input}
+            placeholder="ID do Cliente"
+            value={clienteId}
+            onChange={(e) => setClienteId(e.target.value)}
+          />
+          <button className={styles.botaoRoxo} onClick={handleAdicionarCliente}>
             Adicionar
           </button>
         </div>
 
-        {cliente && (
+        {clienteSelecionado && (
           <div className={styles.clienteSelecionado}>
             <span>
-              Cliente selecionado: <strong>{cliente}</strong>
+              Cliente selecionado ID: <strong>{clienteSelecionado}</strong>
             </span>
             <button
               className={styles.removerCliente}
-              onClick={() => setCliente(null)}
+              onClick={() => setClienteSelecionado(null)}
               title="Remover cliente"
             >
               <FontAwesomeIcon icon={faXmark} />
@@ -95,28 +171,37 @@ export default function CadastrarVenda({ onClose }) {
           </div>
         )}
 
+        <label className={styles.titulo}>Funcionário ID</label>
+        <input
+          className={styles.input}
+          type="number"
+          value={funcionarioId}
+          onChange={(e) => setFuncionarioId(e.target.value)}
+          min="1"
+        />
+
         <h3 className={styles.titulo}>Produtos</h3>
-        <label>Novo Produto</label>
+        <label>Adicionar Produto</label>
         <div className={styles.novoProdutoForm}>
-          <input
-            placeholder="Nome"
-            value={novoProduto.nome}
-            onChange={(e) =>
-              setNovoProduto({ ...novoProduto, nome: e.target.value })
-            }
-          />
+          <select
+            value={novoProdutoId}
+            onChange={(e) => setNovoProdutoId(e.target.value)}
+          >
+            <option value="">Selecione um produto</option>
+            {produtosDisponiveis.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome} - R${p.preco.toFixed(2)}
+              </option>
+            ))}
+          </select>
           <input
             type="number"
-            placeholder="Valor Unitário"
-            value={novoProduto.valorUnit}
-            onChange={(e) => {
-              const valor = parseFloat(e.target.value);
-              if (!isNaN(valor) && valor >= 0) {
-                setNovoProduto({ ...novoProduto, valorUnit: valor });
-              } else if (e.target.value === "") {
-                setNovoProduto({ ...novoProduto, valorUnit: "" });
-              }
-            }}
+            placeholder="Quantidade"
+            value={novoProdutoQuantidade}
+            onChange={(e) =>
+              setNovoProdutoQuantidade(Math.max(1, parseInt(e.target.value) || 1))
+            }
+            min="1"
           />
           <button className={styles.botaoRoxo} onClick={handleAdicionarProduto}>
             Adicionar Produto
@@ -144,10 +229,8 @@ export default function CadastrarVenda({ onClose }) {
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               </div>
-              <span>R${produto.valorUnit.toFixed(2)}</span>
-              <span>
-                R${(produto.valorUnit * produto.quantidade).toFixed(2)}
-              </span>
+              <span>R${produto.preco.toFixed(2)}</span>
+              <span>R${(produto.preco * produto.quantidade).toFixed(2)}</span>
               <button
                 className={styles.trashButton}
                 onClick={() => handleRemover(index)}
@@ -162,16 +245,6 @@ export default function CadastrarVenda({ onClose }) {
             <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
           </div>
         </div>
-
-        <label className={styles.titulo}>Forma de Pagamento</label>
-        <select
-          className={styles.select}
-          value={formaPagamento}
-          onChange={(e) => setFormaPagamento(e.target.value)}
-        >
-          <option>Pix</option>
-          <option>Espécie</option>
-        </select>
 
         <div className={styles.entregaBox}>
           <div className={styles.radioGroup}>
@@ -198,22 +271,29 @@ export default function CadastrarVenda({ onClose }) {
           {tipoEntrega === "entrega" && (
             <div className={styles.entregaCampos}>
               <div className={styles.row}>
-                <label className={styles.labelCinza}>Endereço da entrega</label>
-                <input type="text" className={styles.inputEntrega} />
-              </div>
-              <div className={styles.row}>
                 <label className={styles.labelCinza}>Data da entrega</label>
-                <input type="date" className={styles.inputEntrega} />
-              </div>
-              <div className={styles.row}>
-                <label className={styles.labelCinza}>Frete</label>
-                <span className={styles.valorDireita}>R$00,00</span>
+                <input
+                  type="date"
+                  className={styles.inputEntrega}
+                  value={dataEntrega}
+                  onChange={(e) => setDataEntrega(e.target.value)}
+                />
               </div>
             </div>
           )}
         </div>
 
-        <button className={styles.confirmarVenda}>Confirmar Venda</button>
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>
+        )}
+
+        <button
+          className={styles.confirmarVenda}
+          onClick={handleConfirmarVenda}
+          disabled={loading}
+        >
+          {loading ? "Criando..." : "Confirmar Venda"}
+        </button>
       </div>
     </div>
   );
