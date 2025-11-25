@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/loginPopup.module.css";
 
-export default function LoginPopup({ fechar }) {
+export default function LoginPopup({ fechar, irParaRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -94,9 +94,17 @@ export default function LoginPopup({ fechar }) {
           {/* Registro */}
           <p className={styles.registerText}>
             Ainda não tem uma conta?{" "}
-            <a href="/register" className={styles.registerLink}>
+            <span
+              className={styles.registerLink}
+              onClick={() => {
+                if (typeof irParaRegister === "function") {
+                  irParaRegister();
+                }
+                fechar();
+              }}
+            >
               Registre-se
-            </a>
+            </span>
           </p>
         </div>
       </div>

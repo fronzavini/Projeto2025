@@ -12,16 +12,17 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-regular-svg-icons";
 
-// IMPORTA O POPUP DE LOGIN
 import LoginPopup from "./loginPopup";
+import RegisterPopup from "./registerPopup";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [abrirBusca, setAbrirBusca] = useState(false);
 
-  // 👉 novo estado
+  // ESTADOS DOS POPUPS
   const [abrirLogin, setAbrirLogin] = useState(false);
+  const [abrirRegister, setAbrirRegister] = useState(false);
 
   const pathname = usePathname();
 
@@ -44,7 +45,7 @@ export default function Nav() {
           <FontAwesomeIcon icon={menuAberto ? faTimes : faBars} />
         </div>
 
-        {/* MENU DESKTOP */}
+        {/* --- MENU DESKTOP --- */}
         <ul className={styles.menu}>
           <li>
             <Link href="/" className={pathname === "/" ? styles.active : ""}>
@@ -94,7 +95,7 @@ export default function Nav() {
             <FontAwesomeIcon icon={faMagnifyingGlass} />
           </li>
 
-          {/* 👉 abre o login ao clicar */}
+          {/* ABRE LOGIN */}
           <li onClick={() => setAbrirLogin(true)} className={styles.iconClick}>
             <FontAwesomeIcon icon={faUser} />
           </li>
@@ -104,7 +105,7 @@ export default function Nav() {
           </li>
         </ul>
 
-        {/* BARRA DE BUSCA EXPANDIDA */}
+        {/* BARRA DE BUSCA */}
         {abrirBusca && (
           <div className={styles.searchContainer}>
             <div className={styles.searchBox}>
@@ -134,47 +135,27 @@ export default function Nav() {
           <div className={styles.menuMobile}>
             <ul>
               <li>
-                <Link
-                  href="/"
-                  onClick={() => setMenuAberto(false)}
-                  className={pathname === "/" ? styles.active : ""}
-                >
+                <Link href="/" onClick={() => setMenuAberto(false)}>
                   Home
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/sobre"
-                  onClick={() => setMenuAberto(false)}
-                  className={pathname === "/sobre" ? styles.active : ""}
-                >
+                <Link href="/sobre" onClick={() => setMenuAberto(false)}>
                   Sobre
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/flores"
-                  onClick={() => setMenuAberto(false)}
-                  className={pathname === "/flores" ? styles.active : ""}
-                >
+                <Link href="/flores" onClick={() => setMenuAberto(false)}>
                   Flores
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/arranjos"
-                  onClick={() => setMenuAberto(false)}
-                  className={pathname === "/arranjos" ? styles.active : ""}
-                >
+                <Link href="/arranjos" onClick={() => setMenuAberto(false)}>
                   Arranjos
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/orcamentos"
-                  onClick={() => setMenuAberto(false)}
-                  className={pathname === "/orcamentos" ? styles.active : ""}
-                >
+                <Link href="/orcamentos" onClick={() => setMenuAberto(false)}>
                   Orçamentos
                 </Link>
               </li>
@@ -183,8 +164,27 @@ export default function Nav() {
         )}
       </nav>
 
-      {/* POPUP DE LOGIN */}
-      {abrirLogin && <LoginPopup fechar={() => setAbrirLogin(false)} />}
+      {/* POPUP LOGIN */}
+      {abrirLogin && (
+        <LoginPopup
+          fechar={() => setAbrirLogin(false)}
+          irParaRegister={() => {
+            setAbrirLogin(false);
+            setAbrirRegister(true);
+          }}
+        />
+      )}
+
+      {/* POPUP REGISTRO */}
+      {abrirRegister && (
+        <RegisterPopup
+          fechar={() => setAbrirRegister(false)}
+          irParaLogin={() => {
+            setAbrirRegister(false);
+            setAbrirLogin(true);
+          }}
+        />
+      )}
     </>
   );
 }

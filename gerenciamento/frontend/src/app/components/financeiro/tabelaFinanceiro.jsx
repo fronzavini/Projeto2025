@@ -27,11 +27,16 @@ export default function TabelaFinanceiro() {
 
       const transacoesFormatadas = (resultado || []).map((t) => ({
         id: t[0],
-        tipo: t[1],
-        categoria: t[2],
-        descricao: t[3],
-        valor: t[4],
-        data: t[5],
+        data: t[1],
+        tipo: t[2],
+        categoria: t[3],
+        descricao: t[4],
+        // garantir que `valor` seja número (pode vir como string/Decimal)
+        valor: (() => {
+          const v = t[5];
+          const num = typeof v === "number" ? v : Number(v);
+          return Number.isFinite(num) ? num : 0;
+        })(),
       }));
 
       setTransacoes(transacoesFormatadas);

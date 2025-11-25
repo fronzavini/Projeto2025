@@ -28,9 +28,41 @@ export default function CadastrarFinanceiro({ onClose }) {
     { label: "Outro", value: "outro" },
   ];
 
+  // mapeamento de categoria -> tipo esperado ('' = indiferente)
+  const categoriaParaTipo = {
+    venda: "entrada",
+    aluguel: "entrada",
+    servico: "entrada",
+    compra_insumos: "saida",
+    marketing: "saida",
+    equipamentos: "saida",
+    outro: "",
+  };
+
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm((old) => ({ ...old, [name]: value }));
+    setForm((old) => {
+      const next = { ...old, [name]: value };
+
+      // se o usuário escolher uma categoria, forçar/ajustar o tipo quando apropriado
+      if (name === "categoria") {
+        const mapped = categoriaParaTipo[value];
+        if (mapped) next.tipo = mapped;
+      }
+
+      // se o usuário escolher um tipo, limpar categoria se ela não pertence ao tipo
+      if (name === "tipo"){ 
+        // permitir categorias que sejam mapeadas para esse tipo ou que sejam 'outro'
+        const permitidas = opcoesCategoria
+          .map((c) => c.value)
+          .filter((cat) => !categoriaParaTipo[cat] || categoriaParaTipo[cat] === value || categoriaParaTipo[cat] === "");
+        if (next.categoria && !permitidas.includes(next.categoria)) {
+          next.categoria = "";
+        }
+      }
+
+      return next;
+    });
   }
 
   async function handleSubmit(e) {
@@ -140,11 +172,18 @@ export default function CadastrarFinanceiro({ onClose }) {
               required
             >
               <option value="">Selecione uma categoria</option>
-              {opcoesCategoria.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
+              {opcoesCategoria
+                .filter((op) => {
+                  // se tipo estiver definido, mostrar apenas categorias compatíveis ou 'outro'
+                  if (!form.tipo) return true;
+                  const mapped = categoriaParaTipo[op.value];
+                  return mapped === "" || mapped === form.tipo;
+                })
+                .map((op) => (
+                  <option key={op.value} value={op.value}>
+                    {op.label}
+                  </option>
+                ))}
             </select>
           </div>
         </div>

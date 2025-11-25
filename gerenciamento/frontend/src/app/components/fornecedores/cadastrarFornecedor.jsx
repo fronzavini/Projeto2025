@@ -25,7 +25,7 @@ export default function CadastrarFornecedor({ onClose }) {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/incluir_fornecedor", {
+      const response = await fetch("http://localhost:5000/criar_fornecedor", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -154,7 +154,7 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* Rua */}
         <div className={styles.formGroup}>
-          <label htmlFor="endRua" className={styles.label}>Logradouro</label>
+          <label htmlFor="endRua" className={styles.label}>Rua</label>
           <input
             className={styles.input}
             id="endRua"

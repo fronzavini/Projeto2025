@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
+import CadastrarCliente from "../clientes/cadastrarCliente";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrash,
@@ -16,6 +17,9 @@ export default function CadastrarVenda({ onClose }) {
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
   const [clienteId, setClienteId] = useState("");
   const [clienteBusca, setClienteBusca] = useState("");
+  const [clientesLista, setClientesLista] = useState([]);
+  const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
+  const [funcionariosLista, setFuncionariosLista] = useState([]);
   const [funcionarioId, setFuncionarioId] = useState("1");
   const [tipoEntrega, setTipoEntrega] = useState("entrega");
   const [dataEntrega, setDataEntrega] = useState("");
@@ -26,6 +30,11 @@ export default function CadastrarVenda({ onClose }) {
 
   useEffect(() => {
     carregarProdutos();
+  }, []);
+
+  useEffect(() => {
+    carregarClientes();
+    carregarFuncionarios();
   }, []);
 
   const carregarProdutos = async () => {
@@ -40,10 +49,56 @@ export default function CadastrarVenda({ onClose }) {
         id: p[0],
         nome: p[1],
         preco: Number(p[4]),
+        quantidadeEstoque: Number(p[5]) || 0,
       }));
       setProdutosDisponiveis(produtosFormatados);
     } catch (err) {
       console.error("Erro ao carregar produtos:", err);
+    }
+  };
+
+  const carregarClientes = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_clientes", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error("Erro ao carregar clientes");
+      const resultado = await res.json();
+      // API retorna { resultado: 'ok', detalhes: [...] }
+      const rows = resultado.detalhes || resultado;
+      const clientesFormatados = (rows || []).map((c) => ({
+        id: c[0],
+        nome: c[2] || c.nome || `Cliente ${c[0]}`,
+      }));
+      setClientesLista(clientesFormatados);
+    } catch (err) {
+      console.error("Erro ao carregar clientes:", err);
+      setClientesLista([]);
+    }
+  };
+
+  const carregarFuncionarios = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_funcionarios", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error("Erro ao carregar funcionários");
+      const resultado = await res.json();
+      const rows = resultado || [];
+      const funcionariosFormatados = (rows || []).map((f) => ({
+        id: f[0],
+        nome: f[1] || `Funcionario ${f[0]}`,
+      }));
+      setFuncionariosLista(funcionariosFormatados);
+      // se não houver funcionarioId definido, usar primeiro
+      if (!funcionarioId && funcionariosFormatados.length > 0) {
+        setFuncionarioId(funcionariosFormatados[0].id.toString());
+      }
+    } catch (err) {
+      console.error("Erro ao carregar funcionários:", err);
+      setFuncionariosLista([]);
     }
   };
 
@@ -105,12 +160,13 @@ export default function CadastrarVenda({ onClose }) {
     setErrorMsg(null);
 
     try {
+      const dataVenda = new Date().toISOString().split("T")[0];
       const payload = {
         cliente: parseInt(clienteSelecionado),
         funcionario: parseInt(funcionarioId),
         produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
         valorTotal: subtotal,
-        dataVenda: new Date().toISOString().split("T")[0],
+        dataVenda: dataVenda,
         entrega: tipoEntrega === "entrega",
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
       };
@@ -122,6 +178,43 @@ export default function CadastrarVenda({ onClose }) {
       });
 
       if (!res.ok) throw new Error("Erro ao criar venda");
+
+      // registrar transacao financeira se for compra física (retirada)
+      if (tipoEntrega === "retirada") {
+        try {
+          await fetch("http://localhost:5000/criar_transacaofinanceira", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tipo: "entrada",
+              categoria: "venda",
+              descricao: `Venda (cliente ${clienteSelecionado})`,
+              valor: subtotal,
+              data: dataVenda,
+            }),
+          });
+        } catch (err) {
+          console.error("Erro ao registrar transacao financeira:", err);
+        }
+      }
+
+      // reduzir estoque dos produtos vendidos
+      for (const item of produtos) {
+        try {
+          const prodDisponivel = produtosDisponiveis.find((p) => p.id === item.id || p.id.toString() === item.id.toString());
+          const currentQty = prodDisponivel ? Number(prodDisponivel.quantidadeEstoque || 0) : null;
+          if (currentQty !== null) {
+            const newQty = Math.max(0, currentQty - item.quantidade);
+            await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ quantidadeEstoque: newQty }),
+            });
+          }
+        } catch (err) {
+          console.error(`Erro ao reduzir estoque do produto ${item.id}:`, err);
+        }
+      }
 
       alert("Venda criada com sucesso!");
       onClose();
@@ -143,16 +236,25 @@ export default function CadastrarVenda({ onClose }) {
           </button>
         </div>
 
-        <label className={styles.titulo}>Cliente ID</label>
+        <label className={styles.titulo}>Cliente</label>
         <div className={styles.inlineSearch}>
-          <input
+          <select
             className={styles.input}
-            placeholder="ID do Cliente"
-            value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-          />
-          <button className={styles.botaoRoxo} onClick={handleAdicionarCliente}>
-            Adicionar
+            value={clienteSelecionado ?? ""}
+            onChange={(e) => setClienteSelecionado(e.target.value)}
+          >
+            <option value="">Selecione um cliente</option>
+            {clientesLista.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.id} - {c.nome} 
+              </option>
+            ))}
+          </select>
+          <button
+            className={styles.botaoRoxo}
+            onClick={() => setShowCadastrarCliente(true)}
+          >
+            Novo cliente
           </button>
         </div>
 
@@ -171,14 +273,19 @@ export default function CadastrarVenda({ onClose }) {
           </div>
         )}
 
-        <label className={styles.titulo}>Funcionário ID</label>
-        <input
-          className={styles.input}
-          type="number"
-          value={funcionarioId}
-          onChange={(e) => setFuncionarioId(e.target.value)}
-          min="1"
-        />
+          <label className={styles.titulo}>Funcionário</label>
+          <select
+            className={styles.input}
+            value={funcionarioId}
+            onChange={(e) => setFuncionarioId(e.target.value)}
+          >
+            <option value="">Selecione um funcionário</option>
+            {funcionariosLista.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nome} (ID:{f.id})
+              </option>
+            ))}
+          </select>
 
         <h3 className={styles.titulo}>Produtos</h3>
         <label>Adicionar Produto</label>
@@ -295,6 +402,16 @@ export default function CadastrarVenda({ onClose }) {
           {loading ? "Criando..." : "Confirmar Venda"}
         </button>
       </div>
+      {showCadastrarCliente && (
+        <div className={styles.modalWrapper}>
+          <CadastrarCliente
+            onClose={() => {
+              setShowCadastrarCliente(false);
+              carregarClientes();
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

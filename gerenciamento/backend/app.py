@@ -272,7 +272,7 @@ def criar_fornecedor():
         endBairro=dados.get("endBairro"),
         endComplemento=dados.get("endComplemento"),
         endUF=dados.get("endUF"),
-        endMunicipio=dados.get("endCidade")
+        endMunicipio=dados.get("endMunicipio")
     )
     return jsonify({"message": resultado})
 

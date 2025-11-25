@@ -109,20 +109,57 @@ const carregarFornecedores = async () => {
     const resultado = await res.json();
 
     // AJUSTE COMPLETO DE NOMENCLATURA
-    const fornecedoresFormatados = (resultado || []).map((f) => ({
-      id: f.id,
-      nome_empresa: f.nome_empresa,
-      cnpj: f.cnpj,
-      telefone: f.telefone,
-      email: f.email,
-      endCep: f.endCep,
-      endRua: f.endRua,
-      endNumero: f.endNumero,
-      endBairro: f.endBairro,
-      endComplemento: f.endComplemento,
-      endUF: f.endUF,
-      endMunicipio: f.endMunicipio,
-    }));
+    const fornecedoresFormatados = (resultado || []).map((f) => {
+      // Se o backend retornar linhas como arrays (tuplas), mapear por índices
+      if (Array.isArray(f)) {
+        // ordem na tabela: id, nome_empresa, cnpj, telefone, email, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio
+        return {
+          id: f[0],
+          nome_empresa: f[1],
+          cnpj: f[2],
+          telefone: f[3],
+          email: f[4],
+          endCep: f[5],
+          endRua: f[6],
+          endNumero: f[7],
+          endBairro: f[8],
+          endComplemento: f[9],
+          endUF: f[10],
+          endMunicipio: f[11],
+          // nomes usados pelos modais
+          cep: f[5] || "",
+          logradouro: f[6] || "",
+          numero: f[7] || "",
+          bairro: f[8] || "",
+          complemento: f[9] || "",
+          cidade: f[11] || "",
+          uf: f[10] || "",
+        };
+      }
+
+      // Caso o backend já retorne objetos com nomes, usar propriedades
+      return {
+        id: f.id ?? f[0],
+        nome_empresa: f.nome_empresa ?? f.nome ?? "",
+        cnpj: f.cnpj ?? "",
+        telefone:   f.telefone ?? "",
+        email: f.email ?? "",
+        endCep: f.endCep ?? f.cep ?? "",
+        endRua: f.endRua ?? f.logradouro ?? "",
+        endNumero: f.endNumero ?? f.numero ?? "",
+        endBairro: f.endBairro ?? f.bairro ?? "",
+        endComplemento: f.endComplemento ?? f.complemento ?? "",
+        endUF: f.endUF ?? f.uf ?? "",
+        endMunicipio: f.endMunicipio ?? f.cidade ?? "",
+        cep: f.endCep ?? f.cep ?? "",
+        logradouro: f.endRua ?? f.logradouro ?? "",
+        numero: f.endNumero ?? f.numero ?? "",
+        bairro: f.endBairro ?? f.bairro ?? "",
+        complemento: f.endComplemento ?? f.complemento ?? "",
+        cidade: f.endMunicipio ?? f.cidade ?? "",
+        uf: f.endUF ?? f.uf ?? "",
+      };
+    });
 
     setDados(fornecedoresFormatados);
   } catch (err) {
@@ -130,6 +167,11 @@ const carregarFornecedores = async () => {
     setDados([]);
   }
 };
+
+  // carregar fornecedores ao montar o componente
+  useEffect(() => {
+    carregarFornecedores();
+  }, []);
 
   return (
     <div>

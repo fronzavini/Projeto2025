@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS itens_pedido (
 
 CREATE TABLE IF NOT EXISTS transacoes_financeiras (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    data_transacao DATETIME DEFAULT CURRENT_TIMESTAMP, 
     tipo ENUM('entrada', 'saida'),
     categoria VARCHAR(50),
     descricao TEXT,
@@ -158,11 +159,12 @@ CREATE TABLE IF NOT EXISTS transacoes_financeiras (
 CREATE TABLE IF NOT EXISTS usuarios_sistema (
     id INT AUTO_INCREMENT PRIMARY KEY,
     funcionario_id INT NOT NULL UNIQUE,
+    tipo_usuario ENUM('admin', 'funcionario') NOT NULL,
     usuario VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(100) NOT NULL,
     tema_preferido VARCHAR(50) DEFAULT 'claro',
-    idioma VARCHAR(10) DEFAULT 'pt_BR',
-    notificacoes_email BOOLEAN DEFAULT TRUE,
+    --idioma VARCHAR(10) DEFAULT 'pt_BR',
+    --notificacoes_email BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 );
 

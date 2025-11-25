@@ -1011,7 +1011,7 @@ class TransacaoFinanceira:
         conexao = conectar_banco()
         cursor = conexao.cursor()
         query = '''
-            INSERT INTO transacoes_financeiras (tipo, categoria, descricao, valor, data)
+            INSERT INTO transacoes_financeiras (tipo, categoria, descricao, valor, data_transacao)
             VALUES (%s, %s, %s, %s, %s)
         '''
         cursor.execute(query, (tipo, categoria, descricao, valor, data))
@@ -1080,11 +1080,11 @@ class TransacaoFinanceira:
     def json(self):
         return {
             "id": self.id,
+            "data": str(self.data) if self.data else None,
             "tipo": self.tipo,
             "categoria": self.categoria,
             "descricao": self.descricao,
             "valor": self.valor,
-            "data": str(self.data) if self.data else None
         }
 
 

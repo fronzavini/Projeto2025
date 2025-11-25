@@ -41,7 +41,9 @@ export default function TabelaEstoque() {
 
       // Mapeia produtos do backend (tuplas) para objeto com status dinâmico
       const produtosFormatados = (resultado || []).map((p) => {
-        const quantidadeEstoque = p[4] || 0; // índice da quantidade_estoque
+        // tabela produtos: id, nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado, fornecedor_id
+        const preco = Number(p[4]) || 0; // índice do preco
+        const quantidadeEstoque = Number(p[5]) || 0; // índice da quantidade_estoque
         let status = "disponivel";
         if (quantidadeEstoque === 0) {
           status = "esgotado";
@@ -54,7 +56,7 @@ export default function TabelaEstoque() {
           nome: p[1],
           categoria: p[2],
           marca: p[3],
-          preco: p[5],
+          preco: preco,
           quantidade_estoque: quantidadeEstoque,
           status,
           ultima_movimentacao: new Date().toISOString(),
