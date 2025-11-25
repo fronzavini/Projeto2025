@@ -177,3 +177,13 @@ CREATE TABLE IF NOT EXISTS configuracoes_usuario (
     -- Garante que um ID de cliente ou funcionário seja único nesta tabela
     UNIQUE KEY uk_usuario (cliente_id, funcionario_id)
 );
+
+--Tabela: imagem
+CREATE TABLE IF NOT EXISTS imagem (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_arquivo VARCHAR(255) NOT NULL, -- Nome original do arquivo
+    caminho_uri VARCHAR(500) NOT NULL, -- Caminho relativo ou URI completa para acesso
+    tipo_mime VARCHAR(50) NOT NULL,    -- Ex: image/jpeg, image/png
+    tamanho_bytes INT,                 -- Tamanho do arquivo em bytes
+    data_upload DATETIME DEFAULT CURRENT_TIMESTAMP
+);
