@@ -15,7 +15,7 @@ def conectar_banco():
         conexao = pymysql.connect(
             host="localhost",
             user="root",
-            password="root",
+            password="root",    
             database="bd_belladonna"
         )
         print("Conexao funcionando")
@@ -266,13 +266,13 @@ def criar_fornecedor():
         cnpj=dados.get("cnpj"),
         telefone=dados.get("telefone"),
         email=dados.get("email"),
-        endCep=dados.get("cep"),
-        endRua=dados.get("logradouro"),
-        endNumero=dados.get("numero"),
-        endBairro=dados.get("bairro"),
-        endComplemento=dados.get("complemento"),
-        endUF=dados.get("uf"),
-        endMunicipio=dados.get("cidade")
+        endCep=dados.get("endCep"),
+        endRua=dados.get("endRua"),
+        endNumero=dados.get("endNumero"),
+        endBairro=dados.get("endBairro"),
+        endComplemento=dados.get("endComplemento"),
+        endUF=dados.get("endUF"),
+        endMunicipio=dados.get("endCidade")
     )
     return jsonify({"message": resultado})
 
@@ -288,13 +288,13 @@ def editar_fornecedor(id):
         cnpj=dados.get("cnpj"),
         telefone=dados.get("telefone"),
         email=dados.get("email"),
-        endCep=dados.get("cep"),
-        endRua=dados.get("logradouro"),
-        endNumero=dados.get("numero"),
-        endBairro=dados.get("bairro"),
-        endComplemento=dados.get("complemento"),
-        endUF=dados.get("uf"),
-        endMunicipio=dados.get("cidade")
+        endCep=dados.get("endCep"),
+        endRua=dados.get("endRua"),
+        endNumero=dados.get("endNumero"),
+        endBairro=dados.get("endBairro"),
+        endComplemento=dados.get("endComplemento"),
+        endUF=dados.get("endUF"),
+        endMunicipio=dados.get("endMunicipio")
     )
     return jsonify({"message": "Fornecedor atualizado com sucesso."})
 
