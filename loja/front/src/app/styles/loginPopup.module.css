@@ -1,0 +1,221 @@
+/* --- OVERLAY --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+/* --- POPUP --- */
+.popup {
+  background: #ffffff;
+  padding: 28px 32px;
+  border-radius: 12px;
+  width: 360px;
+  position: relative;
+  animation: fadeIn 0.2s ease-out;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+/* --- FECHAR --- */
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #7b4a4a;
+  transition: opacity 0.2s;
+}
+
+.closeBtn:hover {
+  opacity: 0.65;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --- CONTAINER DO LOGIN --- */
+.loginContainer {
+  font-family: "Cormorant Garamond", serif;
+  text-align: center;
+  color: #3f2121;
+}
+
+/* --- TÍTULO --- */
+.title {
+  font-size: 1.9em;
+  font-weight: 600;
+  margin-bottom: 22px;
+  color: #3f2121;
+}
+
+/* --- FORMULÁRIO --- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* LABEL + INPUT */
+.inputGroup {
+  text-align: left;
+}
+
+.label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #6a3d3d;
+  font-size: 0.95rem;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e4d9d4;
+  border-radius: 8px;
+  background: #faf7f6;
+  color: #3f2121;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  border-color: #a38756;
+  background: #fff;
+  outline: none;
+}
+
+/* --- ESQUECEU SENHA --- */
+.forgotPassword {
+  font-size: 0.85rem;
+  color: #753838;
+  cursor: pointer;
+  text-align: right;
+  margin-top: -8px;
+  transition: color 0.2s;
+}
+
+.forgotPassword:hover {
+  color: #a38756;
+}
+
+/* --- BOTÃO SUBMIT --- */
+.submitButton {
+  background-color: #753838;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.05em;
+  font-weight: 600;
+  margin-top: 10px;
+  transition: 0.25s ease;
+}
+
+.submitButton:hover {
+  background-color: #3f2121;
+}
+
+/* --- DIVISOR --- */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 22px 0;
+}
+
+.hr {
+  flex-grow: 1;
+  border: none;
+  border-top: 1px solid #e8ddd8;
+}
+
+.orText {
+  padding: 0 12px;
+  font-size: 0.95rem;
+  color: #a38756;
+}
+
+/* --- SOCIAL BUTTON --- */
+.socialButton {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d7c9c1;
+  border-radius: 8px;
+  background: #faf7f6;
+  color: #3f2121;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 600;
+  transition: 0.25s ease;
+}
+
+.socialButton:hover {
+  background: #f3edea;
+  border-color: #a38756;
+}
+
+/* Botão Google */
+.googleButton {
+  border-color: #753838;
+  color: #753838;
+}
+
+/* --- REGISTRO --- */
+.registerText {
+  margin-top: 18px;
+  font-size: 0.95rem;
+  color: #3f2121;
+}
+
+.registerLink {
+  font-weight: 700;
+  color: #753838;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.registerLink:hover {
+  color: #a38756;
+  text-decoration: underline;
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.showPasswordBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #753838;
+  font-size: 1rem;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s;
+}
+
+.showPasswordBtn:hover {
+  opacity: 0.7;
+}
