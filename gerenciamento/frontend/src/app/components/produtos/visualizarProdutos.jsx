@@ -1,68 +1,32 @@
-import { useState } from "react";
-import styles from "../../styles/cadastrarCliente.module.css";
+import React from "react";
+// O estilo pode ser reutilizado ou adaptado, dependendo da sua estrutura de arquivos.
+// Estou assumindo que 'cadastrarCliente.module.css' tem estilos genéricos para overlay, popup, form, etc.
+import styles from "../../styles/cadastrarCliente.module.css"; 
 
-export default function EditarProduto({ onClose, produto }) {
-  const [formData, setFormData] = useState({
-    ...produto,
-    preco: Number(produto.preco), // garante que seja número
-    quantidadeEstoque: Number(produto.quantidade_estoque), // adapta para backend
-  });
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
+/**
+ * Componente para visualizar os detalhes de um produto.
+ * @param {object} props - As propriedades do componente.
+ * @param {function} props.onClose - Função para fechar o modal.
+ * @param {object} props.produto - O objeto do produto a ser visualizado.
+ */
+export default function VisualizarProduto({ onClose, produto }) {
+  // Você pode usar o console.log para inspecionar os dados do produto ao abrir o modal.
+  // console.log(produto);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg(null);
-
-    // Prepara payload conforme backend
-    const payload = {
-      nome: formData.nome,
-      categoria: formData.categoria,
-      marca: formData.marca,
-      preco: Number(formData.preco),
-      quantidadeEstoque: Number(formData.quantidadeEstoque),
-    };
-
-    try {
-      const response = await fetch(
-        `http://localhost:5000/editar_produto/${produto.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) throw new Error("Erro ao atualizar produto.");
-
-      const result = await response.json();
-      alert(result.message || "Produto atualizado com sucesso!");
-      onClose(); // fecha modal
-    } catch (error) {
-      console.error("Erro no fetch:", error);
-      setErrorMsg("Erro ao atualizar produto.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Formatação simples do preço para Reais (BRL)
+  const precoFormatado = produto.preco ? 
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(produto.preco) : 'R$ 0,00';
 
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h2 className={styles.headerTitle}>Editar Produto: {produto.id}</h2>
+            {/* Exibe o ID do produto no título */}
+            <h2 className={styles.headerTitle}>Produto: {produto.id}</h2>
             <button
               className={styles.botaoCancelar}
               type="button"
@@ -72,92 +36,84 @@ export default function EditarProduto({ onClose, produto }) {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form>
+            {/* Campo Nome do Produto */}
             <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>Nome</label>
+              <label htmlFor="nome" className={styles.label}>
+                Nome do produto
+              </label>
               <input
                 className={styles.input}
                 id="nome"
                 name="nome"
                 type="text"
-                value={formData.nome}
-                onChange={handleChange}
-                required
+                value={produto.nome || ""}
+                disabled // Todos os campos são desabilitados para visualização
               />
             </div>
 
+            <div className={styles.row}>
+              {/* Campo Preço */}
+              <div className={styles.formGroup}>
+                <label htmlFor="preco" className={styles.label}>
+                  Preço
+                </label>
+                <input
+                  className={styles.input}
+                  id="preco"
+                  name="preco"
+                  type="text" // Mantém como texto para exibir o preço formatado
+                  value={precoFormatado}
+                  disabled
+                />
+              </div>
+              
+              {/* Campo Quantidade em Estoque */}
+              <div className={styles.formGroup}>
+                <label htmlFor="quantidadeEstoque" className={styles.label}>
+                  Qtd. em Estoque
+                </label>
+                <input
+                  className={styles.input}
+                  id="quantidadeEstoque"
+                  name="quantidadeEstoque"
+                  type="number" 
+                  value={produto.quantidadeEstoque || 0}
+                  disabled
+                />
+              </div>
+            </div>
+
+            {/* Campo Categoria (exemplo com select desabilitado) */}
             <div className={styles.formGroup}>
-              <label htmlFor="categoria" className={styles.label}>Categoria</label>
+              <label htmlFor="categoria" className={styles.label}>
+                Categoria
+              </label>
               <input
                 className={styles.input}
                 id="categoria"
                 name="categoria"
                 type="text"
-                value={formData.categoria}
-                onChange={handleChange}
-                required
+                value={produto.categoria || ""}
+                disabled 
               />
             </div>
 
+            {/* Campo Descrição */}
             <div className={styles.formGroup}>
-              <label htmlFor="marca" className={styles.label}>Marca</label>
-              <input
-                className={styles.input}
-                id="marca"
-                name="marca"
-                type="text"
-                value={formData.marca}
-                onChange={handleChange}
-                required
+              <label htmlFor="descricao" className={styles.label}>
+                Descrição
+              </label>
+              <textarea
+                className={styles.input} // Pode adaptar para um estilo de textarea
+                id="descricao"
+                name="descricao"
+                rows="4"
+                value={produto.descricao || ""}
+                disabled
               />
             </div>
-
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="preco" className={styles.label}>Preço</label>
-                <input
-                  className={styles.input}
-                  id="preco"
-                  name="preco"
-                  type="number"
-                  step="0.01"
-                  value={formData.preco}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="quantidadeEstoque" className={styles.label}>Qtd. Estoque</label>
-                <input
-                  className={styles.input}
-                  id="quantidadeEstoque"
-                  name="quantidadeEstoque"
-                  type="number"
-                  value={formData.quantidadeEstoque}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            {/*<div className={styles.formGroup}>
-            <label htmlFor="imagem" className={styles.label}>
-                URL da Imagem
-            </label>
-            <input
-                className={styles.input}
-                id="imagem"
-                name="imagem"
-                type="text"
-                value={form.imagem}
-                onChange={handleChange}
-            />
-            </div>*/}
-
-            <button type="submit" className={styles.botaoEnviar} disabled={loading}>
-              {loading ? "Atualizando..." : "Salvar alterações"}
-            </button>
-            {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+            
           </form>
         </div>
       </div>
