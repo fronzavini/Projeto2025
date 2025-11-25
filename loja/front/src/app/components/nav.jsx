@@ -15,6 +15,7 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
+  const [abrirBusca, setAbrirBusca] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function Nav() {
 
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
-      {/* Ícone do menu (hambúrguer) - só aparece no mobile */}
+      {/* ÍCONE MENU MOBILE */}
       <div
         className={styles.menuIcon}
         onClick={() => setMenuAberto(!menuAberto)}
@@ -76,9 +77,12 @@ export default function Nav() {
         </li>
       </ul>
 
-      {/* ÍCONES DE USUÁRIO */}
+      {/* ÍCONES DIREITA */}
       <ul className={styles.user}>
-        <li>
+        <li
+          onClick={() => setAbrirBusca(!abrirBusca)}
+          className={styles.iconClick}
+        >
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </li>
         <li>
@@ -89,7 +93,32 @@ export default function Nav() {
         </li>
       </ul>
 
-      {/* MENU MOBILE (abre com o hambúrguer) */}
+      {/* BARRA DE BUSCA EXPANDIDA */}
+      {abrirBusca && (
+        <div className={styles.searchContainer}>
+          <div className={styles.searchBox}>
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              className={styles.searchIcon}
+            />
+
+            <input
+              type="text"
+              placeholder="Estou buscando por..."
+              className={styles.searchInput}
+            />
+
+            <button
+              className={styles.closeSearch}
+              onClick={() => setAbrirBusca(false)}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MENU MOBILE */}
       {menuAberto && (
         <div className={styles.menuMobile}>
           <ul>

@@ -148,3 +148,139 @@
 .scrolled .menuIcon {
   color: #3f2121;
 }
+
+.searchBar {
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  background: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+  animation: fade 0.2s ease;
+}
+
+.searchBar input {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 200px;
+}
+
+.searchBar button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.iconClick {
+  cursor: pointer;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustes para o search bar  */
+/* --- BARRA DE BUSCA EXPANDIDA --- */
+
+/* 1. Estado Inicial (Antes de rolar) */
+.searchContainer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 8vw;
+  background: transparent;
+  box-shadow: none;
+  z-index: 999;
+  animation: slideDown 0.3s ease-out;
+}
+
+/* 2. Estado ROLADO (Com a classe .scrolled) */
+.scrolled + .searchContainer {
+  position: fixed;
+  top: 65px; /* Ajuste conforme o tamanho da navbar */
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Caixa de Busca */
+.searchBox {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 30px;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+}
+
+/* Ícones e Inputs */
+.searchIcon {
+  color: #753838;
+  font-size: 1.1rem;
+  margin-right: 10px;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  padding: 5px 0;
+  font-size: 1rem;
+  color: #3f2121;
+  background: transparent;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.closeSearch {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #753838;
+  margin-left: 10px;
+  transition: color 0.3s ease;
+}
+
+.closeSearch:hover {
+  color: #a38756;
+}
+
+/* Animação de entrada */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .searchContainer {
+    padding: 10px 4vw;
+  }
+}
+
