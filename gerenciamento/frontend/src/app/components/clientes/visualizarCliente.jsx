@@ -3,6 +3,18 @@ import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function VisualizarCliente({ onClose, cliente }) {
   console.log(cliente);
+  if (!cliente) return null;
+
+  const tipo = cliente.tipo ?? cliente.tipoPessoa ?? cliente.tipo_cliente ?? "";
+  const isJuridico = String(tipo).toLowerCase() === "juridico";
+
+  // normalizações de campos possíveis
+  const cpf = cliente.cpf ?? cliente.documento ?? "";
+  const cnpj = cliente.cnpj ?? cliente.cnpj_empresa ?? "";
+  const rg = cliente.rg ?? "";
+  const telefone = cliente.telefone ?? cliente.telefone1 ?? "";
+  const dataNasc = cliente.data_nascimento ?? cliente.dataNascimento ?? "";
+
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
@@ -28,7 +40,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                 id="nome"
                 name="nome"
                 type="text"
-                value={cliente.nome}
+                value={cliente.nome ?? cliente.razao_social ?? ""}
                 disabled
               />
             </div>
@@ -39,7 +51,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   type="radio"
                   name="tipo"
                   value="fisico"
-                  checked={cliente.tipo === "fisico"}
+                  checked={!isJuridico}
                   className={styles.radioInput}
                   disabled
                 />
@@ -50,7 +62,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   type="radio"
                   name="tipo"
                   value="juridico"
-                  checked={cliente.tipo === "juridico"}
+                  checked={isJuridico}
                   className={styles.radioInput}
                   disabled
                 />
@@ -58,34 +70,97 @@ export default function VisualizarCliente({ onClose, cliente }) {
               </label>
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.formGroup}>
-                <label htmlFor="cpf" className={styles.label}>
-                  CPF
-                </label>
-                <input
-                  className={styles.input}
-                  id="cpf"
-                  name="cpf"
-                  type="text"
-                  value={cliente.cpf}
-                  disabled
-                />
+            {/* Campos condicionais: Físico -> CPF + RG + Data nascimento; Jurídico -> CNPJ */}
+            {isJuridico ? (
+              <div className={styles.row}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cnpj" className={styles.label}>
+                    CNPJ
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="cnpj"
+                    name="cnpj"
+                    type="text"
+                    value={cnpj || cpf /* fallback caso cnpj venha no campo documento */}
+                    disabled
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="telefone" className={styles.label}>
+                    Telefone
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="telefone"
+                    name="telefone"
+                    type="text"
+                    value={telefone}
+                    disabled
+                  />
+                </div>
               </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="rg" className={styles.label}>
-                  RG
-                </label>
-                <input
-                  className={styles.input}
-                  id="rg"
-                  name="rg"
-                  type="text"
-                  value={cliente.rg}
-                  disabled
-                />
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className={styles.row}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="cpf" className={styles.label}>
+                      CPF
+                    </label>
+                    <input
+                      className={styles.input}
+                      id="cpf"
+                      name="cpf"
+                      type="text"
+                      value={cpf}
+                      disabled
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="rg" className={styles.label}>
+                      RG
+                    </label>
+                    <input
+                      className={styles.input}
+                      id="rg"
+                      name="rg"
+                      type="text"
+                      value={rg}
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="telefone" className={styles.label}>
+                    Telefone
+                  </label>
+                  <input
+                    className={styles.input}
+                    id="telefone"
+                    name="telefone"
+                    type="text"
+                    value={telefone}
+                    disabled
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="data_nascimento" className={styles.label}>
+                    Data de nascimento
+                  </label>
+                  <input
+                    className={styles.inputDate}
+                    id="data_nascimento"
+                    name="data_nascimento"
+                    type="date"
+                    value={dataNasc ? (new Date(dataNasc).toISOString().slice(0, 10)) : ""}
+                    disabled
+                  />
+                </div>
+              </>
+            )}
 
             <div className={styles.formGroup}>
               <label htmlFor="email" className={styles.label}>
@@ -96,35 +171,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                 id="email"
                 name="email"
                 type="email"
-                value={cliente.email}
-                disabled
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="telefone" className={styles.label}>
-                Telefone
-              </label>
-              <input
-                className={styles.input}
-                id="telefone"
-                name="telefone"
-                type="text"
-                value={cliente.telefone}
-                disabled
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="data_nascimento" className={styles.label}>
-                Data de nascimento
-              </label>
-              <input
-                className={styles.inputDate}
-                id="data_nascimento"
-                name="data_nascimento"
-                type="date"
-                value={cliente.data_nascimento || ""}
+                value={cliente.email ?? ""}
                 disabled
               />
             </div>
@@ -139,7 +186,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="cep"
                   name="cep"
                   type="text"
-                  value={cliente.cep}
+                  value={cliente.cep ?? cliente.endCep ?? ""}
                   disabled
                 />
               </div>
@@ -152,7 +199,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="numero"
                   name="numero"
                   type="text"
-                  value={cliente.numero}
+                  value={cliente.numero ?? cliente.endNumero ?? ""}
                   disabled
                 />
               </div>
@@ -168,7 +215,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="cidade"
                   name="cidade"
                   type="text"
-                  value={cliente.cidade}
+                  value={cliente.cidade ?? cliente.endMunicipio ?? ""}
                   disabled
                 />
               </div>
@@ -181,7 +228,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                   id="bairro"
                   name="bairro"
                   type="text"
-                  value={cliente.bairro}
+                  value={cliente.bairro ?? cliente.endBairro ?? ""}
                   disabled
                 />
               </div>
@@ -196,7 +243,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                 id="logradouro"
                 name="logradouro"
                 type="text"
-                value={cliente.logradouro}
+                value={cliente.logradouro ?? cliente.endRua ?? ""}
                 disabled
               />
             </div>
@@ -210,7 +257,7 @@ export default function VisualizarCliente({ onClose, cliente }) {
                 id="complemento"
                 name="complemento"
                 type="text"
-                value={cliente.complemento}
+                value={cliente.complemento ?? cliente.endComplemento ?? ""}
                 disabled
               />
             </div>

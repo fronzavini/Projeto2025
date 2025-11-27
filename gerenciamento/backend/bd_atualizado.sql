@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS vendas (
     dataVenda DATE,
     entrega VARCHAR(100),
     dataEntrega DATE,
+    pago BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (cliente) REFERENCES clientes(id),
     FOREIGN KEY (funcionario) REFERENCES funcionarios(id)
 );

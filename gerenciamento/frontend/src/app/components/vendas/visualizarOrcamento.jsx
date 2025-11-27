@@ -7,11 +7,13 @@ const formatCurrency = (valor) =>
   });
 
 export default function VisualizarOrcamento({ onClose, pedido }) {
+  const localPedido = pedido ?? {};
+
   return (
     <div className={styles.overlay}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <h2>Encomenda #{pedido.idpedido}</h2>
+          <h2>Orçamento #{localPedido.id ?? "-"}</h2>
           <button onClick={onClose} className={styles.closeButton}>
             Fechar
           </button>
@@ -20,15 +22,19 @@ export default function VisualizarOrcamento({ onClose, pedido }) {
         <div className={styles.infoLinha}>
           <div className={`${styles.infoColuna} ${styles.infoColunaEsquerda}`}>
             <strong>Cliente:</strong>
-            <span>{pedido.nomeCliente}</span>
+            <span>{localPedido.nomeCliente}</span>
           </div>
+
           <div className={`${styles.infoColuna} ${styles.infoColunaDireita}`}>
             <strong>Data da compra:</strong>
-            <span>{new Date(pedido.dataVenda).toLocaleDateString()}</span>
+            <span>
+              {localPedido.dataVenda ? new Date(localPedido.dataVenda).toLocaleDateString() : "-"}
+            </span>
           </div>
+
           <div className={`${styles.infoColuna} ${styles.infoColunaDireita}`}>
-            <strong>Status:</strong>
-            <span>{pedido.status}</span>
+            <strong>Pago:</strong>
+            <span>{localPedido.pago ? "Sim" : "Não"}</span>
           </div>
         </div>
 
@@ -44,7 +50,7 @@ export default function VisualizarOrcamento({ onClose, pedido }) {
             </tr>
           </thead>
           <tbody>
-            {pedido.itensVendidos.map((item, index) => (
+            {localPedido.itensVendidos.map((item, index) => (
               <tr key={index}>
                 <td>
                   <span className={styles.itemIcon}></span>
@@ -63,15 +69,15 @@ export default function VisualizarOrcamento({ onClose, pedido }) {
         <div className={styles.section}>
           <div className={styles.totalLinha}>
             <strong>SubTotal:</strong>
-            <span>{formatCurrency(pedido.subtotal)}</span>
+            <span>{formatCurrency(localPedido.subtotal)}</span>
           </div>
           <div className={styles.totalLinha}>
             <strong>Desconto:</strong>
-            <span>{formatCurrency(pedido.desconto)}</span>
+            <span>{formatCurrency(localPedido.desconto)}</span>
           </div>
           <div className={styles.totalDestaque}>
             <strong>Total:</strong>
-            <span>{formatCurrency(pedido.valorTotal)}</span>
+            <span>{formatCurrency(localPedido.valorTotal)}</span>
           </div>
         </div>
 
@@ -79,15 +85,15 @@ export default function VisualizarOrcamento({ onClose, pedido }) {
 
         <div className={styles.section}>
           <div className={styles.footerLinha}>
-            <strong>Forma de pagamento:</strong> {pedido.formaPagamento}
+            <strong>Forma de pagamento:</strong> {localPedido.formaPagamento}
           </div>
           <div className={styles.footerLinha}>
-            <strong>Entrega:</strong> {pedido.formaEntrega} -{" "}
-            {pedido.localEntrega}
+            <strong>Entrega:</strong> {localPedido.formaEntrega} -{" "}
+            {localPedido.localEntrega}
           </div>
           <div className={styles.footerLinha}>
             <strong>Data de Entrega:</strong>{" "}
-            {new Date(pedido.dataEntrega).toLocaleDateString()}
+            {new Date(localPedido.dataEntrega).toLocaleDateString()}
           </div>
         </div>
       </div>

@@ -27,6 +27,13 @@ export default function CadastrarVenda({ onClose }) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [novoProdutoId, setNovoProdutoId] = useState("");
   const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
+  const [form, setForm] = useState({
+    clienteId: "",
+    data: "",
+    observacoes: "",
+    itens: [],
+    pago: false,
+  });
 
   useEffect(() => {
     carregarProdutos();
@@ -169,6 +176,8 @@ export default function CadastrarVenda({ onClose }) {
         dataVenda: dataVenda,
         entrega: tipoEntrega === "entrega",
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
+        pago: !!form.pago,
+        observacoes: form.observacoes,
       };
 
       const res = await fetch("http://localhost:5000/criar_venda", {

@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify, request
 from datetime import datetime, timedelta, date
 import pymysql
@@ -56,23 +55,23 @@ class PessoaJuridica(Pessoa):
 class Cliente(PessoaFisica, PessoaJuridica):
     def __init__(self, senha, **kwargs):
         super().__init__(**kwargs)
-        self.senha = senha
+        #self.senha = senha
 
     @staticmethod
-    def criarCliente(nome, tipo, email, senha, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
+    def criarCliente(nome, tipo, email, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
+        # Ajuste: tabela clientes não possui coluna 'senha' (nem obrigatoriamente 'email' como campo sensível).
         conexao = conectar_banco()
         if not conexao:
             return {"error": "Não foi possível conectar ao banco de dados."}
-
         try:
             cursor = conexao.cursor()
             query = '''
-                INSERT INTO clientes (dataCadastro, nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
+                INSERT INTO clientes (dataCadastro, nome, tipo, sexo, cpf, cnpj, rg, email, telefone,
                                       dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             '''
             valores = (
-                datetime.now(), nome, tipo, sexo, cpf, cnpj, rg, email, senha, telefone,
+                datetime.now(), nome, tipo, sexo, cpf, cnpj, rg, email, telefone,
                 dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio
             )
             cursor.execute(query, valores)
@@ -86,7 +85,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             conexao.close()
 
     @staticmethod
-    def editarCliente(id, nome=None, email=None, senha=None, telefone=None,
+    def editarCliente(id, nome=None, email=None, telefone=None,
                     endCep=None, endRua=None, endNumero=None, endBairro=None, endComplemento=None, endUF=None, endMunicipio=None,
                     cpf=None, rg=None, sexo=None, dataNasc=None, cnpj=None):
         conexao = conectar_banco()
@@ -100,9 +99,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             if email:
                 campos.append("email = %s")
                 valores.append(email)
-            if senha:
-                campos.append("senha = %s")
-                valores.append(senha)
+            # senha não é tratada aqui - não existe coluna senha na tabela clientes
             if telefone:
                 campos.append("telefone = %s")
                 valores.append(telefone)
@@ -206,7 +203,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
         return {
             "id": self.id,
             "nome": self.nome,
-            "sexo": self.sexo,
+            #"sexo": self.sexo,
             "estado": self.status,
             "cpf": getattr(self, "cpf", None),
             "cnpj": getattr(self, "cnpj", None),
@@ -231,24 +228,24 @@ class Funcionario(PessoaFisica):
         self.funcao = funcao
         self.salario = salario
         self.dataContratacao = dataContratacao
-        self.senha = senha
+        #self.senha = senha
 
     @staticmethod
-    def criarFuncionario(nome, email, senha, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf, rg, sexo, dataNasc, funcao, salario, dataContratacao):
+    def criarFuncionario(nome, email,telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf, rg, sexo, dataNasc, funcao, salario, dataContratacao):
         conexao = conectar_banco()
         cursor = conexao.cursor()
         query = '''
-            INSERT INTO funcionarios (nome, cpf, rg, data_nascimento, sexo, email, senha, estado, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao)
+            INSERT INTO funcionarios (nome, cpf, rg, data_nascimento, sexo, email, estado, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         '''
-        cursor.execute(query, (nome, cpf, rg, dataNasc, sexo, email, senha, True, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao))
+        cursor.execute(query, (nome, cpf, rg, dataNasc, sexo, email, True, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao))
         conexao.commit()
         cursor.close()
         conexao.close()
         return "Funcionário adicionado com sucesso"
 
     @staticmethod
-    def editarFuncionario(id, nome=None, email=None, senha=None, telefone=None, endCep=None, endRua=None, endNumero=None, endBairro=None, endComplemento=None, endUF=None, endMunicipio=None, cpf=None, rg=None, sexo=None, dataNasc=None, funcao=None, salario=None, dataContratacao=None):
+    def editarFuncionario(id, nome=None, email=None, telefone=None, endCep=None, endRua=None, endNumero=None, endBairro=None, endComplemento=None, endUF=None, endMunicipio=None, cpf=None, rg=None, sexo=None, dataNasc=None, funcao=None, salario=None, dataContratacao=None):
         conexao = conectar_banco()
         try:
             cursor = conexao.cursor()
@@ -260,9 +257,9 @@ class Funcionario(PessoaFisica):
             if email:
                 campos.append("email = %s")
                 valores.append(email)
-            if senha:
-                campos.append("senha = %s")
-                valores.append(senha)
+            #if senha:
+            #    campos.append("senha = %s")
+            #    valores.append(senha)
             if telefone:
                 campos.append("telefone = %s")
                 valores.append(telefone)
@@ -377,7 +374,7 @@ class Funcionario(PessoaFisica):
             "cpf": getattr(self, "cpf", None),
             "rg": getattr(self, "rg", None),
             "email": self.email,
-            "senha": self.senha,
+            #"senha": self.senha,
             "telefone": self.telefone,
             "data_nascimento": str(getattr(self, "dataNasc", None)) if getattr(self, "dataNasc", None) else None,
             "data_cadastro": str(self.dataCadastro) if hasattr(self, "dataCadastro") else None,
@@ -939,21 +936,20 @@ class Venda:
         self.dataVenda = dataVenda
         self.entrega = entrega
         self.dataEntrega = dataEntrega
+        self.pago = False
 
     @staticmethod
-    def criarVenda(cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega):
-        # Implementação básica, pode ser adaptada conforme o modelo do banco
+    def criarVenda(cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega, pago=False):
         conexao = conectar_banco()
         cursor = conexao.cursor()
-        query = '''
-            INSERT INTO vendas (cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        '''
-        cursor.execute(query, (cliente, funcionario, str(produtos), valorTotal, dataVenda, entrega, dataEntrega))
+        # inclui o campo 'pago' (BOOLEAN) no INSERT
+        query = "INSERT INTO vendas (cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega, pago) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(query, (cliente, funcionario, str(produtos), valorTotal, dataVenda, entrega, dataEntrega, 1 if pago else 0))
         conexao.commit()
+        last_id = cursor.lastrowid
         cursor.close()
         conexao.close()
-        return "Venda criada com sucesso"
+        return {"id": last_id}
 
     @staticmethod
     def excluirVenda(id):
@@ -991,7 +987,8 @@ class Venda:
             "valorTotal": self.valorTotal,
             "dataVenda": str(self.dataVenda) if self.dataVenda else None,
             "entrega": self.entrega,
-            "dataEntrega": str(self.dataEntrega) if self.dataEntrega else None
+            "dataEntrega": str(self.dataEntrega) if self.dataEntrega else None,
+            "pago": self.pago
         }
     
 

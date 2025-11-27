@@ -46,7 +46,7 @@ def criar_cliente():
         "nome": dados.get("nome"),
         "tipo": dados.get("tipo"),
         "email": dados.get("email"),
-        "senha": dados.get("senha", "cliente123") if dados.get("senha") else None,
+        #"senha": dados.get("senha", "cliente123") if dados.get("senha") else None,
         "telefone": dados.get("telefone"),
         "endCep": dados.get("cep"),
         "endRua": dados.get("logradouro"),
@@ -75,7 +75,7 @@ def editar_cliente(id):
         "id": id,
         "nome": dados.get("nome"),
         "email": dados.get("email"),
-        "senha": dados.get("senha"),
+        #"senha": dados.get("senha"),
         "telefone": dados.get("telefone"),
         "endCep": dados.get("cep"),
         "endRua": dados.get("logradouro"),
@@ -135,7 +135,7 @@ def criar_funcionario():
     funcionario_data = {
         "nome": dados.get("nome"),
         "email": dados.get("email"),
-        "senha": dados.get("senha", "func123"),
+        #"senha": dados.get("senha", "func123"),
         "telefone": dados.get("telefone"),
         "endCep": dados.get("cep"),
         "endRua": dados.get("logradouro"),
@@ -167,7 +167,7 @@ def editar_funcionario(id):
         id=id,
         nome=dados.get("nome"),
         email=dados.get("email"),
-        senha=dados.get("senha"),
+        #senha=dados.get("senha"),
         telefone=dados.get("telefone"),
         endCep=dados.get("cep"),
         endRua=dados.get("logradouro"),
@@ -212,19 +212,20 @@ def listar_funcionarios():
 def login():
     dados = request.json
     email = dados.get('email')
-    senha = dados.get('senha')
-    if not email or not senha:
-        return jsonify({'resultado': 'erro', 'detalhes': 'email e senha obrigatorios'}), 400
+    # senha não armazenada no schema atual de funcionarios; validar apenas email por enquanto
+    if not email:
+        return jsonify({'resultado': 'erro', 'detalhes': 'email é obrigatório'}), 400
 
     conexao = conectar_banco()
     if not conexao:
         return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
     cursor = conexao.cursor()
     try:
-        cursor.execute('SELECT id, nome, email, funcao, perfil_id FROM funcionarios WHERE email = %s AND senha = %s', (email, senha))
+        # busca por email; se existir, retorna dados (sem verificação de senha)
+        cursor.execute('SELECT id, nome, email, funcao, perfil_id FROM funcionarios WHERE email = %s', (email,))
         row = cursor.fetchone()
         if not row:
-            return jsonify({'resultado': 'erro', 'detalhes': 'Credenciais inválidas'}), 401
+            return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 401
         funcionario = {'id': row[0], 'nome': row[1], 'email': row[2], 'funcao': row[3], 'perfil_id': row[4]}
 
         # load user settings
@@ -617,17 +618,25 @@ def listar_carrinhos():
 #curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
 @app.route('/criar_venda', methods=['POST'])
 def criar_venda():
-    dados = request.json
-    resultado = Venda.criarVenda(
-        cliente=dados.get("cliente"),
-        funcionario=dados.get("funcionario"),
-        produtos=dados.get("produtos"),
-        valorTotal=dados.get("valorTotal"),
-        dataVenda=dados.get("dataVenda"),
-        entrega=dados.get("entrega"),
-        dataEntrega=dados.get("dataEntrega")
-    )
-    return jsonify({"message": resultado})
+    dados = request.json or {}
+    try:
+        cliente = dados.get("cliente")
+        funcionario = dados.get("funcionario")
+        produtos = dados.get("produtos", [])
+        valorTotal = dados.get("valorTotal")
+        dataVenda = dados.get("dataVenda")
+        entrega = dados.get("entrega")
+        dataEntrega = dados.get("dataEntrega")
+        pago = dados.get("pago", False)
+
+        resultado = Venda.criarVenda(
+            cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega, pago
+        )
+
+        return jsonify({"message": "Venda criada.", "resultado": resultado}), 201
+    except Exception as e:
+        return jsonify({"message": "Erro ao criar venda.", "erro": str(e)}), 500
+
 
 #curl -X DELETE http://127.0.0.1:5000/deletar_venda/1
 @app.route('/deletar_venda/<int:id>', methods=['DELETE'])
@@ -684,3 +693,12 @@ def listar_transacaofinanceira():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000) # , debug=True)
+
+
+
+
+"""# Exemplos de requisições CURL para popular o banco de dados# --- CLIENTES (3)
+curl -X POST "http://127.0.0.1:5000/criar_cliente" -H "Content-Type: application/json" -d "{\"nome\":\"João Silva\",\"tipo\":\"fisico\",\"email\":\"joao.silva@example.com\",\"telefone\":\"11999990001\",\"cep\":\"01001000\",\"logradouro\":\"Rua A\",\"numero\":\"100\",\"bairro\":\"Centro\",\"complemento\":\"Apto 1\",\"uf\":\"SP\",\"cidade\":\"São Paulo\",\"cpf\":\"12345678901\",\"rg\":\"1234567\",\"sexo\":\"masculino\",\"data_nascimento\":\"1990-01-01\"}"
+curl -X POST "http://127.0.0.1:5000/criar_cliente" -H "Content-Type: application/json" -d "{\"nome\":\"Maria Oliveira\",\"tipo\":\"fisico\",\"email\":\"maria.oliveira@example.com\",\"telefone\":\"11999990002\",\"cep\":\"02002000\",\"logradouro\":\"Av B\",\"numero\":\"200\",\"bairro\":\"Jardim\",\"complemento\":\"Casa\",\"uf\":\"SP\",\"cidade\":\"São Paulo\",\"cpf\":\"10987654321\",\"rg\":\"7654321\",\"sexo\":\"feminino\",\"data_nascimento\":\"1985-05-20\"}"
+curl -X POST "http://127.0.0.1:5000/criar_cliente" -H "Content-Type: application/json" -d "{\"nome\":\"Empresa X Ltda\",\"tipo\":\"juridico\",\"email\":\"contato@empresax.com\",\"telefone\":\"11999990003\",\"cep\":\"03003000\",\"logradouro\":\"Rua C\",\"numero\":\"50\",\"bairro\":\"Industrial\",\"complemento\":\"Sala 10\",\"uf\":\"SP\",\"cidade\":\"Guarulhos\",\"cnpj\":\"12345678000199\"}"
+"""

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -35,6 +35,23 @@ export default function EditarEncomenda({ onClose, encomenda }) {
   const [dataEntrega, setDataEntrega] = useState(encomenda.dataEntrega || "");
   const [frete, setFrete] = useState(0);
 
+  const [form, setForm] = useState({
+    nomeCliente: "",
+    itensVendidos: [],
+    formaEntrega: "Entrega",
+    formaPagamento: "Pix",
+    localEntrega: "",
+    dataEntrega: "",
+    subtotal: 0,
+    desconto: 0,
+    valorTotal: 0,
+    idpedido: "",
+    cpfcliente: "",
+    dataVenda: "",
+    status: "",
+    pago: false,
+  });
+
   const subtotal = produtos.reduce(
     (acc, p) => acc + p.valorUnit * p.quantidade,
     0
@@ -57,12 +74,34 @@ export default function EditarEncomenda({ onClose, encomenda }) {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!encomenda) return;
+    setForm({
+      nomeCliente: encomenda.nomeCliente || "",
+      itensVendidos: encomenda.itensVendidos.map((item) => ({
+        nome: item.nome,
+        quantidade: item.quantidade,
+        valorUnit: parseFloat(item.valorUnitario) || 0,
+      })),
+      formaEntrega: encomenda.formaEntrega || "Entrega",
+      formaPagamento: encomenda.formaPagamento || "Pix",
+      localEntrega: encomenda.localEntrega || "",
+      dataEntrega: encomenda.dataEntrega || "",
+      subtotal: parseFloat(encomenda.subtotal) || 0,
+      desconto: parseFloat(encomenda.desconto) || 0,
+      valorTotal: parseFloat(encomenda.valorTotal) || 0,
+      idpedido: encomenda.idpedido,
+      cpfcliente: encomenda.cpfcliente,
+      dataVenda: encomenda.dataVenda,
+      status: encomenda.status,
+      pago: encomenda.pago ?? false,
+    });
+  }, [encomenda]);
 
-    const encomendaAtualizada = {
-      ...encomenda,
-      nomeCliente: cliente,
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const payload = {
+      nomeCliente: form.nomeCliente,
       itensVendidos: produtos.map((p) => ({
         nome: p.nome,
         quantidade: p.quantidade,
@@ -80,11 +119,12 @@ export default function EditarEncomenda({ onClose, encomenda }) {
       cpfcliente: encomenda.cpfcliente,
       dataVenda: encomenda.dataVenda,
       status: encomenda.status,
+      pago: !!form.pago,
     };
 
-    console.log("Encomenda atualizada:", encomendaAtualizada);
+    console.log("Encomenda atualizada:", payload);
     onClose();
-  };
+  }
 
   return (
     <div className={styles.overlay}>
@@ -321,6 +361,20 @@ export default function EditarEncomenda({ onClose, encomenda }) {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Pago</label>
+            <select
+              className={styles.select}
+              value={form.pago ? "true" : "false"}
+              onChange={(e) =>
+                setForm({ ...form, pago: e.target.value === "true" })
+              }
+            >
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
           </div>
 
           <button type="submit" className={styles.confirmarVenda}>
