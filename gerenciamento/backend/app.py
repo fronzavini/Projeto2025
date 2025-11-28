@@ -134,8 +134,13 @@ def criar_funcionario():
     dados = request.json
     funcionario_data = {
         "nome": dados.get("nome"),
+        "cpf": dados.get("cpf"),
+        "rg": dados.get("rg"),
+        "dataNasc": dados.get("data_nascimento"),
+        "sexo": dados.get("sexo"),
         "email": dados.get("email"),
-        #"senha": dados.get("senha", "func123"),
+        #"senha": dados.get("senha", "funcionario123") if dados.get("senha") else None,
+        "estado": True,  # Adicione aqui, se sempre for ativo ao criar
         "telefone": dados.get("telefone"),
         "endCep": dados.get("cep"),
         "endRua": dados.get("logradouro"),
@@ -144,10 +149,6 @@ def criar_funcionario():
         "endComplemento": dados.get("complemento"),
         "endUF": dados.get("uf"),
         "endMunicipio": dados.get("cidade"),
-        "cpf": dados.get("cpf"),
-        "rg": dados.get("rg"),
-        "sexo": dados.get("sexo"),
-        "dataNasc": dados.get("data_nascimento"),
         "funcao": dados.get("funcao"),
         "salario": dados.get("salario"),
         "dataContratacao": dados.get("dataContratacao"),
@@ -180,7 +181,7 @@ def editar_funcionario(id):
         rg=dados.get("rg"),
         sexo=dados.get("sexo"),
         dataNasc=dados.get("data_nascimento"),
-        #funcao=dados.get("funcao"),
+        funcao=dados.get("funcao"),
         salario=dados.get("salario"),
         dataContratacao=dados.get("dataContratacao"),
     )

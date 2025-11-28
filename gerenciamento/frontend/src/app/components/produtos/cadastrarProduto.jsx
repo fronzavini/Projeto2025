@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function CadastrarProduto({ onClose }) {
@@ -13,6 +13,40 @@ export default function CadastrarProduto({ onClose }) {
     fornecedor_id: "",
     imagem: "",
   });
+
+  const [fornecedores, setFornecedores] = useState([]);
+  const API = "http://localhost:5000";
+
+  useEffect(() => {
+    async function carregarFornecedores() {
+      try {
+        const res = await fetch(`${API}/listar_fornecedores`);
+        if (!res.ok) throw new Error("Erro ao carregar fornecedores");
+        const body = await res.json();
+        // Suporta {detalhes: [...] } ou array direto
+        const listaBruta = Array.isArray(body) ? body : body.detalhes ?? [];
+        // Padronizar como no TabelaFornecedores:
+        const lista = listaBruta.map((f) => {
+          if (Array.isArray(f)) {
+            // ordem: id, nome_empresa, ...
+            return {
+              id: f[0],
+              nome_empresa: f[1],
+            };
+          }
+          return {
+            id: f.id ?? f[0],
+            nome_empresa: f.nome_empresa ?? f.nome ?? "",
+          };
+        });
+        setFornecedores(lista);
+      } catch (err) {
+        console.error("Carregar fornecedores:", err);
+        setFornecedores([]);
+      }
+    }
+    carregarFornecedores();
+  }, []);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -30,11 +64,15 @@ export default function CadastrarProduto({ onClose }) {
       categoria: form.categoria,
       marca: form.marca,
       preco: parseFloat(form.preco),
-      quantidadeEstoque: parseInt(form.quantidade_estoque), // adapte para o nome esperado pelo backend
+      quantidadeEstoque: parseInt(form.quantidade_estoque, 10),
+      estoqueMinimo: parseInt(form.estoque_minimo, 10),
+      estado: form.estado,
+      fornecedor_id: form.fornecedor_id ? parseInt(form.fornecedor_id, 10) : null,
+      // imagem etc se necessário
     };
 
     try {
-      const response = await fetch("http://localhost:5000/criar_produto", {
+      const response = await fetch(`${API}/criar_produto`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -49,7 +87,6 @@ export default function CadastrarProduto({ onClose }) {
       alert(result.message || "Produto cadastrado com sucesso!");
       onClose();
 
-      // Limpar formulário
       setForm({
         nome: "",
         categoria: "",
@@ -59,7 +96,7 @@ export default function CadastrarProduto({ onClose }) {
         estoque_minimo: "",
         estado: true,
         fornecedor_id: "",
-        /*imagem: "",*/
+        imagem: "",
       });
     } catch (error) {
       console.error(error);
@@ -174,33 +211,25 @@ export default function CadastrarProduto({ onClose }) {
           </div>
         </div>
 
-        {/* <div className={styles.formGroup}>
-          <label htmlFor="imagem" className={styles.label}>
-            URL da Imagem
-          </label>
-          <input
-            className={styles.input}
-            id="imagem"
-            name="imagem"
-            type="text"
-            value={form.imagem}
-            onChange={handleChange}
-          />
-        </div>*/}
-
         <div className={styles.row}>
           <div className={styles.formGroup}>
             <label htmlFor="fornecedor_id" className={styles.label}>
-              ID do Fornecedor
+              Fornecedor
             </label>
-            <input
+            <select
               className={styles.input}
               id="fornecedor_id"
               name="fornecedor_id"
-              type="number"
               value={form.fornecedor_id}
               onChange={handleChange}
-            />
+            >
+              <option value="">-- Selecionar fornecedor --</option>
+              {fornecedores.map((f, idx) => (
+                <option key={f.id || idx} value={f.id || ""}>
+                  {(f.id ? `${f.id} - ` : "") + (f.nome_empresa || "Sem nome")}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className={styles.formGroup}>

@@ -33,7 +33,7 @@ export default function CadastrarCliente({ onClose }) {
       data_nascimento: form.dataNascimento,
       /*cidade: form.cidade,*/
       cnpj: form.tipo === "juridico" ? form.cpf : "",
-      senha: "cliente123",
+      /*senha: "cliente123",*/
       /*uf: form.uf,*/
       estado: true,
     };

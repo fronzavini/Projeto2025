@@ -1,6 +1,15 @@
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function VisualizarFuncionario({ onClose, funcionario }) {
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    // Se já estiver no formato yyyy-mm-dd, retorna direto
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    // Caso venha yyyy-mm-ddTHH:mm:ss, pega só a data
+    if (dateStr.length >= 10) return dateStr.substring(0, 10);
+    return dateStr;
+  }
+
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
@@ -28,7 +37,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="nome"
                 name="nome"
                 type="text"
-                value={funcionario.nome}
+                value={funcionario.nome || ""}
                 disabled
               />
             </div>
@@ -43,7 +52,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cpf"
                   name="cpf"
                   type="text"
-                  value={funcionario.cpf}
+                  value={funcionario.cpf || ""}
                   disabled
                 />
               </div>
@@ -56,7 +65,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="rg"
                   name="rg"
                   type="text"
-                  value={funcionario.rg}
+                  value={funcionario.rg || ""}
                   disabled
                 />
               </div>
@@ -71,7 +80,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="data_nascimento"
                 name="data_nascimento"
                 type="date"
-                value={funcionario.data_nascimento}
+                value={formatDate(funcionario.data_nascimento)}
                 disabled
               />
             </div>
@@ -85,7 +94,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="sexo"
                 name="sexo"
                 type="text"
-                value={funcionario.sexo}
+                value={funcionario.sexo || ""}
                 disabled
               />
             </div>
@@ -99,7 +108,35 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="funcao"
                 name="funcao"
                 type="text"
-                value={funcionario.funcao}
+                value={funcionario.funcao || ""}
+                disabled
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="salario" className={styles.label}>
+                Salário
+              </label>
+              <input
+                className={styles.input}
+                id="salario"
+                name="salario"
+                type="number"
+                value={funcionario.salario || ""}
+                disabled
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="data_contratacao" className={styles.label}>
+                Data de Contratação
+              </label>
+              <input
+                className={styles.inputDate}
+                id="data_contratacao"
+                name="data_contratacao"
+                type="date"
+                value={formatDate(funcionario.data_contratacao)}
                 disabled
               />
             </div>
@@ -113,7 +150,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="email"
                 name="email"
                 type="email"
-                value={funcionario.email}
+                value={funcionario.email || ""}
                 disabled
               />
             </div>
@@ -127,7 +164,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="telefone"
                 name="telefone"
                 type="text"
-                value={funcionario.telefone}
+                value={funcionario.telefone || ""}
                 disabled
               />
             </div>
@@ -142,7 +179,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cep"
                   name="cep"
                   type="text"
-                  value={funcionario.cep}
+                  value={funcionario.cep || ""}
                   disabled
                 />
               </div>
@@ -155,7 +192,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="numero"
                   name="numero"
                   type="text"
-                  value={funcionario.numero}
+                  value={funcionario.numero || ""}
                   disabled
                 />
               </div>
@@ -171,7 +208,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cidade"
                   name="cidade"
                   type="text"
-                  value={funcionario.cidade}
+                  value={funcionario.cidade || ""}
                   disabled
                 />
               </div>
@@ -184,7 +221,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="bairro"
                   name="bairro"
                   type="text"
-                  value={funcionario.bairro}
+                  value={funcionario.bairro || ""}
                   disabled
                 />
               </div>
@@ -199,7 +236,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="logradouro"
                 name="logradouro"
                 type="text"
-                value={funcionario.logradouro}
+                value={funcionario.logradouro || ""}
                 disabled
               />
             </div>
@@ -213,7 +250,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="complemento"
                 name="complemento"
                 type="text"
-                value={funcionario.complemento}
+                value={funcionario.complemento || ""}
                 disabled
               />
             </div>
@@ -227,7 +264,21 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="uf"
                 name="uf"
                 type="text"
-                value={funcionario.uf}
+                value={funcionario.uf || ""}
+                disabled
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="estado" className={styles.label}>
+                Estado (Ativo/Inativo)
+              </label>
+              <input
+                className={styles.input}
+                id="estado"
+                name="estado"
+                type="text"
+                value={funcionario.estado ? "Ativo" : "Inativo"}
                 disabled
               />
             </div>

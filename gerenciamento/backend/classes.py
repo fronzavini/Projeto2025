@@ -209,7 +209,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
             "cnpj": getattr(self, "cnpj", None),
             "rg": getattr(self, "rg", None),
             "email": self.email,
-            "senha": self.senha,
+            #"senha": self.senha,
             "telefone": self.telefone,
             "data_nascimento": str(getattr(self, "dataNasc", None)) if getattr(self, "dataNasc", None) else None,
             "data_cadastro": str(self.dataCadastro),
@@ -231,14 +231,23 @@ class Funcionario(PessoaFisica):
         #self.senha = senha
 
     @staticmethod
-    def criarFuncionario(nome, email,telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, cpf, rg, sexo, dataNasc, funcao, salario, dataContratacao):
+    def criarFuncionario(
+        nome, cpf, rg, dataNasc, sexo, email, estado, telefone,
+        endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio,
+        funcao, salario, dataContratacao
+    ):
         conexao = conectar_banco()
         cursor = conexao.cursor()
         query = '''
-            INSERT INTO funcionarios (nome, cpf, rg, data_nascimento, sexo, email, estado, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO funcionarios
+            (nome, cpf, rg, data_nascimento, sexo, email, estado, telefone, endCep, endRua,
+            endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao, salario, dataContratacao)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         '''
-        cursor.execute(query, (nome, cpf, rg, dataNasc, sexo, email, True, telefone, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio, funcao))
+        cursor.execute(query, (
+            nome, cpf, rg, dataNasc, sexo, email, estado, telefone, endCep, endRua, endNumero,
+            endBairro, endComplemento, endUF, endMunicipio, funcao, salario, dataContratacao
+        ))
         conexao.commit()
         cursor.close()
         conexao.close()

@@ -41,28 +41,29 @@ export default function TabelaFuncionario() {
 
       // Formata o resultado caso venha como array de arrays
       const funcionariosFormatados = Array.isArray(resultado)
-      ? resultado.map((f) => ({
-          id: f[0],
-          nome: f[1],
-          cpf: f[2],
-          rg: f[3],
-          data_nascimento: f[4],
-          sexo: f[5],
-          email: f[6],
-          senha: f[7],
-          estado: f[8],
-          telefone: f[9],
-          cep: f[10],
-          logradouro: f[11],
-          numero: f[12],
-          bairro: f[13],
-          complemento: f[14],
-          uf: f[15],
-          funcao: f[17],
-          cidade: f[16], // adicionado
-        }))
-      : [];
-
+        ? resultado.map((f) => ({
+            id: f[0],
+            nome: f[1],
+            cpf: f[2],
+            rg: f[3],
+            data_nascimento: f[4],
+            sexo: f[5],
+            email: f[6],
+            //senha: f[7],             // Pode remover se não usar
+            estado: f[7],
+            telefone: f[8],
+            cep: f[9],
+            logradouro: f[10],
+            numero: f[11],
+            bairro: f[12],
+            complemento: f[13],
+            uf: f[14],
+            cidade: f[15],
+            funcao: f[18],            // Agora está correto!
+            salario: f[16],           // Opcional
+            data_contratacao: f[17],  // Opcional
+          }))
+        : [];
 
       setFuncionarios(funcionariosFormatados);
     } catch (error) {

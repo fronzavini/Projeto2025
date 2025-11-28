@@ -10,7 +10,7 @@ export default function CadastrarFuncionario({ onClose }) {
     data_nascimento: "",
     sexo: "masculino",
     email: "",
-    senha: "",
+    /*senha: "",*/
     telefone: "",
     cep: "",
     numero: "",
@@ -62,7 +62,7 @@ export default function CadastrarFuncionario({ onClose }) {
         data_nascimento: "",
         sexo: "masculino",
         email: "",
-        senha: "",
+       /* senha: "",*/
         telefone: "",
         cep: "",
         numero: "",
@@ -192,7 +192,7 @@ export default function CadastrarFuncionario({ onClose }) {
             required
           />
         </div>
-        <div className={styles.formGroup}>
+        {/* <div className={styles.formGroup}>
           <label htmlFor="senha" className={styles.label}>Senha</label>
           <input
             className={styles.input}
@@ -203,7 +203,7 @@ export default function CadastrarFuncionario({ onClose }) {
             onChange={handleChange}
             required
           />
-        </div>
+        </div> */}
 
         {/* Telefone */}
         <div className={styles.formGroup}>

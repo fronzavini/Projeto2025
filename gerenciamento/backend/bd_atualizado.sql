@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS funcionarios (
     endComplemento VARCHAR(50) NOT NULL,
     endUF CHAR(2) NOT NULL,
     endMunicipio VARCHAR(50) NOT NULL,
-    #--funcao VARCHAR(50) NOT NULL,
+    funcao VARCHAR(50) NOT NULL,
     salario DECIMAL(10,2),
     dataContratacao DATE
 );
