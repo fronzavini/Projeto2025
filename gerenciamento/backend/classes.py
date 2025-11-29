@@ -1045,7 +1045,7 @@ class TransacaoFinanceira:
             campos.append("valor = %s")
             valores.append(valor)
         if data:
-            campos.append("data = %s")
+            campos.append("data_transacao = %s")
             valores.append(data)
         if not campos:
             return "Nenhuma informação para atualizar"
@@ -1095,6 +1095,295 @@ class TransacaoFinanceira:
 
 
 
+class UsuarioSistema:
+    def __init__(self, id=None, funcionario_id=None, tipo_usuario=None, usuario=None, senha=None, tema_preferido='claro'):
+        self.id = id
+        self.funcionario_id = funcionario_id
+        self.tipo_usuario = tipo_usuario  # 'Administrador', 'Vendedor' ou 'Estoque'
+        self.usuario = usuario
+        self.senha = senha
+        self.tema_preferido = tema_preferido
+
+    @staticmethod
+    def criarUsuarioSistema(funcionario_id, tipo_usuario, usuario, senha, tema_preferido='claro'):
+        """
+        Insere um novo registro em usuarios_sistema.
+        Observação: não faz hashing de senha aqui — armazene o valor que for passado.
+        """
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            query = '''
+                INSERT INTO usuarios_sistema
+                (funcionario_id, tipo_usuario, usuario, senha, tema_preferido)
+                VALUES (%s, %s, %s, %s, %s)
+            '''
+            cursor.execute(query, (funcionario_id, tipo_usuario, usuario, senha, tema_preferido))
+            conexao.commit()
+            return "Usuário do sistema adicionado com sucesso"
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao criar usuário do sistema: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def editarUsuarioSistema(id, funcionario_id=None, tipo_usuario=None, usuario=None, senha=None, tema_preferido=None):
+        """
+        Atualiza campos fornecidos do usuário do sistema identificado por id.
+        """
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            campos = []
+            valores = []
+            if funcionario_id is not None:
+                campos.append("funcionario_id = %s")
+                valores.append(funcionario_id)
+            if tipo_usuario is not None:
+                campos.append("tipo_usuario = %s")
+                valores.append(tipo_usuario)
+            if usuario is not None:
+                campos.append("usuario = %s")
+                valores.append(usuario)
+            if senha is not None:
+                campos.append("senha = %s")
+                valores.append(senha)
+            if tema_preferido is not None:
+                campos.append("tema_preferido = %s")
+                valores.append(tema_preferido)
+            if not campos:
+                print("Nenhuma informação fornecida para atualização.")
+                return "Nenhuma alteração realizada"
+
+            cursor.execute("SELECT id FROM usuarios_sistema WHERE id = %s", (id,))
+            if not cursor.fetchone():
+                print("Usuário do sistema não encontrado.")
+                return "Usuário não encontrado"
+
+            query = f"UPDATE usuarios_sistema SET {', '.join(campos)} WHERE id = %s"
+            valores.append(id)
+            cursor.execute(query, valores)
+            conexao.commit()
+            return f"Usuário do sistema com ID {id} atualizado com sucesso!"
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao editar usuário do sistema: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def excluirUsuarioSistema(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute("DELETE FROM usuarios_sistema WHERE id = %s", (id,))
+            conexao.commit()
+            return f"Usuário do sistema com ID {id} excluído."
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao excluir usuário do sistema: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def listarUsuarios():
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            query = "SELECT id, funcionario_id, tipo_usuario, usuario, senha, tema_preferido FROM usuarios_sistema"
+            cursor.execute(query)
+            resultados = cursor.fetchall()
+            usuarios = []
+            for row in resultados:
+                usuarios.append({
+                    "id": row[0],
+                    "funcionario_id": row[1],
+                    "tipo_usuario": row[2],
+                    "usuario": row[3],
+                    "senha": row[4],
+                    "tema_preferido": row[5]
+                })
+            return usuarios
+        except MySQLError as e:
+            print(f"Erro ao listar usuários do sistema: {e}")
+            return []
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def buscarPorId(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute("SELECT id, funcionario_id, tipo_usuario, usuario, senha, tema_preferido FROM usuarios_sistema WHERE id = %s", (id,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return UsuarioSistema(id=row[0], funcionario_id=row[1], tipo_usuario=row[2], usuario=row[3], senha=row[4], tema_preferido=row[5])
+        except MySQLError as e:
+            print(f"Erro ao buscar usuário por id: {e}")
+            return None
+        finally:
+            cursor.close()
+            conexao.close()
+
+    def json(self):
+        return {
+            "id": self.id,
+            "funcionario_id": self.funcionario_id,
+            "tipo_usuario": self.tipo_usuario,
+            "usuario": self.usuario,
+            "senha": self.senha,
+            "tema_preferido": self.tema_preferido
+        }
 
 
+
+
+class UsuarioLoja:
+    def __init__(self, id=None, cliente_id=None, usuario=None, senha=None):
+        self.id = id
+        self.cliente_id = cliente_id
+        self.usuario = usuario
+        self.senha = senha  # atenção: armazenamento/retorno da senha deve ser tratado com cuidado (hash)
+
+    @staticmethod
+    def criarUsuarioLoja(cliente_id, usuario, senha):
+        """
+        Insere um novo registro em usuarios_loja.
+        Observação: não faz hashing de senha aqui — armazene o valor que for passado.
+        """
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            query = '''
+                INSERT INTO usuarios_loja (cliente_id, usuario, senha)
+                VALUES (%s, %s, %s)
+            '''
+            cursor.execute(query, (cliente_id, usuario, senha))
+            conexao.commit()
+            return "Usuário da loja adicionado com sucesso"
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao criar usuário da loja: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def editarUsuarioLoja(id, cliente_id=None, usuario=None, senha=None):
+        """
+        Atualiza campos fornecidos do usuário da loja identificado por id.
+        """
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            campos = []
+            valores = []
+            if cliente_id is not None:
+                campos.append("cliente_id = %s")
+                valores.append(cliente_id)
+            if usuario is not None:
+                campos.append("usuario = %s")
+                valores.append(usuario)
+            if senha is not None:
+                campos.append("senha = %s")
+                valores.append(senha)
+            if not campos:
+                print("Nenhuma informação fornecida para atualização.")
+                return "Nenhuma alteração realizada"
+
+            cursor.execute("SELECT id FROM usuarios_loja WHERE id = %s", (id,))
+            if not cursor.fetchone():
+                print("Usuário da loja não encontrado.")
+                return "Usuário não encontrado"
+
+            query = f"UPDATE usuarios_loja SET {', '.join(campos)} WHERE id = %s"
+            valores.append(id)
+            cursor.execute(query, valores)
+            conexao.commit()
+            return f"Usuário da loja com ID {id} atualizado com sucesso!"
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao editar usuário da loja: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def excluirUsuarioLoja(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute("DELETE FROM usuarios_loja WHERE id = %s", (id,))
+            conexao.commit()
+            return f"Usuário da loja com ID {id} excluído."
+        except MySQLError as e:
+            conexao.rollback()
+            print(f"Erro ao excluir usuário da loja: {e}")
+            return f"Erro: {e}"
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def listarUsuariosLoja():
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            query = "SELECT id, cliente_id, usuario, senha FROM usuarios_loja"
+            cursor.execute(query)
+            resultados = cursor.fetchall()
+            usuarios = []
+            for row in resultados:
+                usuarios.append({
+                    "id": row[0],
+                    "cliente_id": row[1],
+                    "usuario": row[2],
+                    "senha": row[3]
+                })
+            return usuarios
+        except MySQLError as e:
+            print(f"Erro ao listar usuários da loja: {e}")
+            return []
+        finally:
+            cursor.close()
+            conexao.close()
+
+    @staticmethod
+    def buscarPorId(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute("SELECT id, cliente_id, usuario, senha FROM usuarios_loja WHERE id = %s", (id,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return UsuarioLoja(id=row[0], cliente_id=row[1], usuario=row[2], senha=row[3])
+        except MySQLError as e:
+            print(f"Erro ao buscar usuário da loja por id: {e}")
+            return None
+        finally:
+            cursor.close()
+            conexao.close()
+
+    def json(self):
+        return {
+            "id": self.id,
+            "cliente_id": self.cliente_id,
+            "usuario": self.usuario,
+            "senha": self.senha
+        }
+
+        
 conectar_banco()

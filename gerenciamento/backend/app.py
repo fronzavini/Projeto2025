@@ -5,7 +5,7 @@ import csv
 import io
 import json
 import re
-from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira
+from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira, UsuarioSistema,UsuarioLoja
 from flask_cors import CORS
 from pymysql.err import MySQLError
 
@@ -208,48 +208,132 @@ def listar_funcionarios():
     funcionarios = Funcionario.listarFuncionarios()
     return jsonify(funcionarios)
 
-
 @app.route('/login', methods=['POST'])
 def login():
-    dados = request.json
-    email = dados.get('email')
-    # senha não armazenada no schema atual de funcionarios; validar apenas email por enquanto
-    if not email:
-        return jsonify({'resultado': 'erro', 'detalhes': 'email é obrigatório'}), 400
+    dados = request.json or {}
+
+    usuario = dados.get('usuario')
+    senha = dados.get('senha')
+
+    if not usuario or not senha:
+        return jsonify({
+            'resultado': 'erro',
+            'detalhes': 'usuario e senha são obrigatórios'
+        }), 400
 
     conexao = conectar_banco()
     if not conexao:
         return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
+
     cursor = conexao.cursor()
     try:
-        # busca por email; se existir, retorna dados (sem verificação de senha)
-        cursor.execute('SELECT id, nome, email, funcao, perfil_id FROM funcionarios WHERE email = %s', (email,))
+        # =============================
+        # 1. VALIDAR LOGIN EM usuarios_sistema
+        # =============================
+        query_user = '''
+            SELECT id, funcionario_id, tipo_usuario, usuario, senha, tema_preferido
+            FROM usuarios_sistema
+            WHERE usuario = %s
+        '''
+        cursor.execute(query_user, (usuario,))
         row = cursor.fetchone()
+
         if not row:
             return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 401
-        funcionario = {'id': row[0], 'nome': row[1], 'email': row[2], 'funcao': row[3], 'perfil_id': row[4]}
 
-        # load user settings
-        cursor.execute('SELECT chave, valor FROM configuracoes WHERE chave LIKE %s', (f'user:{funcionario["id"]}:%',))
+        # Dados do usuário do sistema
+        usuario_sistema = {
+            'id': row[0],
+            'funcionario_id': row[1],
+            'tipo_usuario': row[2],
+            'usuario': row[3],
+            'senha': row[4],  # se futuramente for hash, aqui você verifica
+            'tema_preferido': row[5]
+        }
+
+        # =============================
+        # 2. VALIDAR SENHA
+        # =============================
+        if senha != usuario_sistema['senha']:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Senha incorreta'}), 401
+
+        # =============================
+        # 3. CARREGAR FUNCIONÁRIO
+        # =============================
+        query_func = '''
+            SELECT id, nome, email, funcao, estado, telefone
+            FROM funcionarios
+            WHERE id = %s
+        '''
+        cursor.execute(query_func, (usuario_sistema['funcionario_id'],))
+        func = cursor.fetchone()
+
+        if not func:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Funcionário vinculado não encontrado'}), 500
+
+        funcionario = {
+            'id': func[0],
+            'nome': func[1],
+            'email': func[2],
+            'funcao': func[3],
+            'estado': bool(func[4]),
+            'telefone': func[5]
+        }
+
+        # =============================
+        # 4. CARREGAR CONFIGURAÇÕES (SE USADAS NO SEU SISTEMA)
+        # =============================
+        cursor.execute(
+            'SELECT chave, valor FROM configuracoes WHERE chave LIKE %s',
+            (f'user:{usuario_sistema["id"]}:%',)
+        )
         rows = cursor.fetchall()
+
         settings = {}
         for r in rows:
             key = r[0].split(':', 2)[-1]
             settings[key] = r[1]
 
-        # load perfil if exists
+        # =============================
+        # 5. CARREGAR PERFIL (CASO EXISTA MESMO NA SUA TABELA)
+        # =============================
         perfil = None
         if funcionario.get('perfil_id'):
-            cursor.execute('SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s', (funcionario['perfil_id'],))
+            cursor.execute(
+                'SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s',
+                (funcionario['perfil_id'],)
+            )
             p = cursor.fetchone()
             if p:
-                perfil = {'id': p[0], 'nome': p[1], 'permissoes': p[2], 'ativo': bool(p[3])}
+                perfil = {
+                    'id': p[0],
+                    'nome': p[1],
+                    'permissoes': p[2],
+                    'ativo': bool(p[3])
+                }
 
-        return jsonify({'resultado': 'ok', 'funcionario': funcionario, 'perfil': perfil, 'settings': settings})
+        # =============================
+        # 6. RESPOSTA FINAL
+        # =============================
+        return jsonify({
+            'resultado': 'ok',
+            'usuario_sistema': {
+                'id': usuario_sistema['id'],
+                'usuario': usuario_sistema['usuario'],
+                'tipo_usuario': usuario_sistema['tipo_usuario'],
+                'tema_preferido': usuario_sistema['tema_preferido'],
+            },
+            'funcionario': funcionario,
+            'perfil': perfil,
+            'settings': settings
+        })
+
     except Exception as e:
         return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+
     finally:
-        cursor.close(); conexao.close()
+        cursor.close()
+        conexao.close()
 
 
 
@@ -695,6 +779,109 @@ def listar_transacaofinanceira():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000) # , debug=True)
 
+
+# Rotas para usuarios_sistema
+# curl -X POST http://127.0.0.1:5000/criar_usuario_sistema -H "Content-Type: application/json" -d '{"funcionario_id":1,"tipo_usuario":"Vendedor","usuario":"joao","senha":"senha123","tema_preferido":"escuro"}'
+@app.route('/criar_usuario_sistema', methods=['POST'])
+def criar_usuario_sistema():
+    dados = request.json or {}
+    funcionario_id = dados.get("funcionario_id")
+    tipo_usuario = dados.get("tipo_usuario")
+    usuario = dados.get("usuario")
+    senha = dados.get("senha")
+    tema_preferido = dados.get("tema_preferido", "claro")
+
+    resultado = UsuarioSistema.criarUsuarioSistema(
+        funcionario_id=funcionario_id,
+        tipo_usuario=tipo_usuario,
+        usuario=usuario,
+        senha=senha,
+        tema_preferido=tema_preferido
+    )
+    return jsonify({"message": resultado})
+
+# curl -X PUT http://127.0.0.1:5000/editar_usuario_sistema/1 -H "Content-Type: application/json" -d '{"tipo_usuario":"Administrador","usuario":"joao_novo","senha":"nova_senha","tema_preferido":"claro"}'
+@app.route('/editar_usuario_sistema/<int:id>', methods=['PUT'])
+def editar_usuario_sistema(id):
+    dados = request.json or {}
+    resultado = UsuarioSistema.editarUsuarioSistema(
+        id=id,
+        funcionario_id=dados.get("funcionario_id"),
+        tipo_usuario=dados.get("tipo_usuario"),
+        usuario=dados.get("usuario"),
+        senha=dados.get("senha"),
+        tema_preferido=dados.get("tema_preferido")
+    )
+    return jsonify({"message": resultado})
+
+# curl -X DELETE http://127.0.0.1:5000/deletar_usuario_sistema/1
+@app.route('/deletar_usuario_sistema/<int:id>', methods=['DELETE'])
+def deletar_usuario_sistema(id):
+    resultado = UsuarioSistema.excluirUsuarioSistema(id)
+    return jsonify({"message": resultado})
+
+# curl -X GET http://127.0.0.1:5000/listar_usuarios_sistema
+@app.route('/listar_usuarios_sistema', methods=['GET'])
+def listar_usuarios_sistema():
+    usuarios = UsuarioSistema.listarUsuarios()
+    return jsonify(usuarios)
+
+# curl -X GET http://127.0.0.1:5000/buscar_usuario_sistema/1
+@app.route('/buscar_usuario_sistema/<int:id>', methods=['GET'])
+def buscar_usuario_sistema(id):
+    usuario = UsuarioSistema.buscarPorId(id)
+    if not usuario:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 404
+    return jsonify(usuario.json())
+
+
+# Rotas para usuarios_loja
+# curl -X POST http://127.0.0.1:5000/criar_usuario_loja -H "Content-Type: application/json" -d '{"cliente_id":1,"usuario":"cliente1","senha":"senha123"}'
+@app.route('/criar_usuario_loja', methods=['POST'])
+def criar_usuario_loja():
+    dados = request.json or {}
+    cliente_id = dados.get("cliente_id")
+    usuario = dados.get("usuario")
+    senha = dados.get("senha")
+
+    resultado = UsuarioLoja.criarUsuarioLoja(
+        cliente_id=cliente_id,
+        usuario=usuario,
+        senha=senha
+    )
+    return jsonify({"message": resultado})
+
+# curl -X PUT http://127.0.0.1:5000/editar_usuario_loja/1 -H "Content-Type: application/json" -d '{"cliente_id":2,"usuario":"cliente_novo","senha":"nova_senha"}'
+@app.route('/editar_usuario_loja/<int:id>', methods=['PUT'])
+def editar_usuario_loja(id):
+    dados = request.json or {}
+    resultado = UsuarioLoja.editarUsuarioLoja(
+        id=id,
+        cliente_id=dados.get("cliente_id"),
+        usuario=dados.get("usuario"),
+        senha=dados.get("senha")
+    )
+    return jsonify({"message": resultado})
+
+# curl -X DELETE http://127.0.0.1:5000/deletar_usuario_loja/1
+@app.route('/deletar_usuario_loja/<int:id>', methods=['DELETE'])
+def deletar_usuario_loja(id):
+    resultado = UsuarioLoja.excluirUsuarioLoja(id)
+    return jsonify({"message": resultado})
+
+# curl -X GET http://127.0.0.1:5000/listar_usuarios_loja
+@app.route('/listar_usuarios_loja', methods=['GET'])
+def listar_usuarios_loja():
+    usuarios = UsuarioLoja.listarUsuariosLoja()
+    return jsonify(usuarios)
+
+# curl -X GET http://127.0.0.1:5000/buscar_usuario_loja/1
+@app.route('/buscar_usuario_loja/<int:id>', methods=['GET'])
+def buscar_usuario_loja(id):
+    usuario = UsuarioLoja.buscarPorId(id)
+    if not usuario:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 404
+    return jsonify(usuario.json())
 
 
 

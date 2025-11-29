@@ -37,8 +37,8 @@ export default function LoginForm() {
             document.body.setAttribute('data-theme', tema === 'escuro' ? 'dark' : 'light');
             localStorage.setItem('tema', tema);
           }
-          const idioma = settings && settings.idioma ? settings.idioma : localStorage.getItem('idioma');
-          if (idioma) localStorage.setItem('idioma', idioma);
+          /*const idioma = settings && settings.idioma ? settings.idioma : localStorage.getItem('idioma');
+          if (idioma) localStorage.setItem('idioma', idioma);*/
         } catch (err) {
           console.error('Erro ao aplicar settings:', err);
         }
