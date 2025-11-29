@@ -100,14 +100,16 @@ CREATE TABLE IF NOT EXISTS vendas (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     cliente INT,
     funcionario INT,
+    pedido INT
     produtos TEXT NOT NULL,
     valorTotal DECIMAL(10,2) NOT NULL,
     dataVenda DATE,
-    entrega VARCHAR(100),
-    dataEntrega DATE,
+    #--entrega VARCHAR(100),
+    #--dataEntrega DATE,
     pago BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (cliente) REFERENCES clientes(id),
-    FOREIGN KEY (funcionario) REFERENCES funcionarios(id)
+    FOREIGN KEY (funcionario) REFERENCES funcionarios(id),
+    FOREIGN KEY (pedido) REFERENCES pedidos(id)
 );
 
 CREATE TABLE IF NOT EXISTS cupons (
@@ -129,7 +131,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
     cliente_id INT,
     funcionario_id INT,
     data_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
-    forma_pagamento ENUM('dinheiro', 'pix', 'cartao_credito', 'cartao_debito'),
+    forma_pagamento ENUM('dinheiro', 'pix'),#--, 'cartao_credito', 'cartao_debito'),
     estado ENUM('recebido', 'em_preparacao', 'enviado', 'entregue', 'cancelado'),
     canal ENUM('presencial', 'online'),
     valor_total DECIMAL(10,2),
