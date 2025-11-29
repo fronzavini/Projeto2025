@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/loginPopup.module.css";
@@ -11,7 +12,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     console.log("Dados de Login:", { email, password });
     alert(`Tentativa de Login com Email: ${email}`);
   };
@@ -19,7 +19,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
   return (
     <div className={styles.overlay}>
       <div className={styles.popup}>
-        {/* Botão X */}
         <button className={styles.closeBtn} onClick={fechar}>
           <FontAwesomeIcon icon={faTimes} />
         </button>
@@ -27,7 +26,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
         <div className={styles.loginContainer}>
           <h2 className={styles.title}>Acesse sua conta</h2>
 
-          {/* Formulário */}
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
               <label htmlFor="email" className={styles.label}>
@@ -47,7 +45,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
               <label htmlFor="password" className={styles.label}>
                 Senha:
               </label>
-
               <div className={styles.passwordWrapper}>
                 <input
                   type={mostrarSenha ? "text" : "password"}
@@ -57,8 +54,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
                   className={styles.input}
                   required
                 />
-
-                {/* Botão de mostrar senha */}
                 <button
                   type="button"
                   className={styles.showPasswordBtn}
@@ -67,7 +62,6 @@ export default function LoginPopup({ fechar, irParaRegister }) {
                   <FontAwesomeIcon icon={mostrarSenha ? faEyeSlash : faEye} />
                 </button>
               </div>
-
               <span className={styles.forgotPassword}>Esqueceu sua senha?</span>
             </div>
 
@@ -84,24 +78,24 @@ export default function LoginPopup({ fechar, irParaRegister }) {
           </div>
 
           {/* Login Google */}
-          <button
-            type="button"
-            className={`${styles.socialButton} ${styles.googleButton}`}
-          >
-            Login com Google
-          </button>
+          <div className={styles.googleWrapper}>
+            <GoogleLogin
+              onSuccess={(credenciais) => {
+                console.log("LOGIN GOOGLE SUCESSO:", credenciais);
+                alert("Login com Google realizado!");
+              }}
+              onError={() => {
+                console.log("Erro no login com Google");
+                alert("Erro no Google Login.");
+              }}
+            />
+          </div>
 
-          {/* Registro */}
           <p className={styles.registerText}>
             Ainda não tem uma conta?{" "}
             <span
               className={styles.registerLink}
-              onClick={() => {
-                if (typeof irParaRegister === "function") {
-                  irParaRegister();
-                }
-                fechar();
-              }}
+              onClick={() => irParaRegister && irParaRegister()}
             >
               Registre-se
             </span>

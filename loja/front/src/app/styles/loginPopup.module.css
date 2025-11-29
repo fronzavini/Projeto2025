@@ -8,6 +8,7 @@
   align-items: center;
   z-index: 999;
   backdrop-filter: blur(4px);
+  padding: 10px; /* garante espaço em telas pequenas */
 }
 
 /* --- POPUP --- */
@@ -16,9 +17,28 @@
   padding: 28px 32px;
   border-radius: 12px;
   width: 360px;
+  max-width: 90vw; /* nunca ultrapassar 90% da largura da tela */
+  max-height: 90vh; /* nunca ultrapassar 90% da altura da tela */
   position: relative;
   animation: fadeIn 0.2s ease-out;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+  overflow-y: auto; /* scroll vertical se necessário */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #a38756 #f1f1f1;
+}
+
+/* Scrollbar para Chrome, Edge, Safari */
+.popup::-webkit-scrollbar {
+  width: 8px;
+}
+
+.popup::-webkit-scrollbar-thumb {
+  background-color: #a38756;
+  border-radius: 4px;
+}
+
+.popup::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
 }
 
 /* --- FECHAR --- */
@@ -49,7 +69,7 @@
   }
 }
 
-/* --- CONTAINER DO LOGIN --- */
+/* --- CONTAINER DO LOGIN/REGISTER --- */
 .loginContainer {
   font-family: "Cormorant Garamond", serif;
   text-align: center;
@@ -71,7 +91,7 @@
   gap: 16px;
 }
 
-/* LABEL + INPUT */
+/* --- LABEL + INPUT --- */
 .inputGroup {
   text-align: left;
 }
@@ -151,7 +171,7 @@
   color: #a38756;
 }
 
-/* --- SOCIAL BUTTON --- */
+/* --- SOCIAL BUTTON / Google --- */
 .socialButton {
   width: 100%;
   padding: 12px;
@@ -170,13 +190,13 @@
   border-color: #a38756;
 }
 
-/* Botão Google */
-.googleButton {
-  border-color: #753838;
-  color: #753838;
+.googleWrapper {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
 }
 
-/* --- REGISTRO --- */
+/* --- REGISTRO / LOGIN SWITCH --- */
 .registerText {
   margin-top: 18px;
   font-size: 0.95rem;
@@ -187,6 +207,7 @@
   font-weight: 700;
   color: #753838;
   text-decoration: none;
+  cursor: pointer;
   transition: 0.25s ease;
 }
 
@@ -195,6 +216,7 @@
   text-decoration: underline;
 }
 
+/* --- PASSWORD SHOW/HIDE --- */
 .passwordWrapper {
   position: relative;
   display: flex;
@@ -218,4 +240,25 @@
 
 .showPasswordBtn:hover {
   opacity: 0.7;
+}
+
+/* --- RESPONSIVO MOBILE --- */
+@media (max-width: 400px) {
+  .popup {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 1.6em;
+  }
+
+  .input {
+    padding: 10px;
+  }
+
+  .submitButton {
+    padding: 10px;
+    font-size: 1em;
+  }
 }

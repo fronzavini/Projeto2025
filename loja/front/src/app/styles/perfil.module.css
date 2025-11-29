@@ -1,0 +1,125 @@
+/* Container geral da página de perfil */
+.perfilContainer {
+  padding: 24px;
+  max-width: 900px;
+  margin: auto;
+  font-family: "Cormorant Garamond", serif;
+  color: #3f2121;
+}
+
+/* Abas */
+.abas {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.abas button {
+  padding: 10px 20px;
+  border: 1px solid #753838;
+  background: #fff;
+  color: #753838;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.abas button:hover {
+  background: #f5f0ef;
+}
+
+.abas button.ativa {
+  background: #753838;
+  color: #fff;
+}
+
+/* Conteúdo da aba */
+.conteudoAba {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Formulário de perfil */
+.perfilForm {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  flex: 1;
+}
+
+.perfilForm h2 {
+  margin-bottom: 16px;
+  font-size: 1.5em;
+}
+
+.perfilForm form label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.perfilForm form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.perfilForm form button {
+  margin-top: 16px;
+  padding: 12px;
+  width: 100%;
+  background-color: #753838;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.perfilForm form button:hover {
+  background-color: #a38756;
+}
+
+/* Lista de pedidos */
+.pedidosList {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  flex: 1;
+}
+
+.pedidosList h2 {
+  margin-bottom: 16px;
+  font-size: 1.5em;
+}
+
+.pedidoItem {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pedidoItem button {
+  align-self: flex-start;
+  padding: 6px 12px;
+  background-color: #753838;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.pedidoItem button:hover {
+  background-color: #a38756;
+}
