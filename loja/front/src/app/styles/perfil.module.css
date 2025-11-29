@@ -1,204 +1,239 @@
-/* =======================
-   Container geral da página
-======================= */
-.perfilContainer {
-  padding: 40px 20px;
-  max-width: 1000px;
-  margin: auto;
-  font-family: "Inter", sans-serif;
-  color: #333;
-  background: #f9f9f9;
-  min-height: 100vh;
-  box-sizing: border-box;
+/* ---- NOVO WRAPPER PRINCIPAL (Para centralizar e envolver o Breadcrumb) ---- */
+.perfilWrapper {
+  width: 100%;
+  max-width: 1200px; /* Limite máximo de largura */
+  margin: 0 auto; /* Centraliza na página */
+  padding: 20px 0;
 }
 
-/* Botão Voltar */
-.botaoVoltar {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  color: #753838;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 24px;
-  font-size: 1rem;
-  transition: 0.2s;
+/* ---- BREADCRUMB HOME > PEDIDOS ---- */
+.breadcrumb {
+  font-size: 14px;
+  color: #707070;
+  margin-bottom: 15px;
+  /* Alinha o Breadcrumb com o conteúdo real da sidebar */
+  padding-left: 20px;
 }
 
-.botaoVoltar:hover {
-  color: #a38756;
+.breadcrumbLink {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumbLink:hover {
+  color: #0056b3;
   text-decoration: underline;
 }
 
-/* =======================
-   Abas
-======================= */
-.abas {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
+.breadcrumbSeparator {
+  margin: 0 8px;
+  color: #aaa;
 }
 
-.abas button {
-  padding: 12px 28px;
-  border: none;
+.breadcrumbCurrent {
+  font-weight: bold;
+  color: #333;
+}
+
+/* ---- CONTAINER DO LAYOUT FLEX (SIDEBAR + MAIN) ---- */
+.container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* ---- SIDEBAR ---- */
+.sidebar {
+  width: 250px;
+  /* Removendo a borda e o padding original para usar o novo design */
+  padding: 0;
   background: #fff;
-  color: #753838;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Item padrão do menu */
+.sidebar ul li {
+  font-size: 16.5px;
+  /* Espaçamento conforme ajuste visual */
+  padding: 12px 20px;
   cursor: pointer;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.abas button:hover {
-  background: #f3e7e0;
-}
-
-.abas button.ativa {
-  background: #753838;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* =======================
-   Conteúdo da aba
-======================= */
-.conteudoAba {
+  transition: background-color 0.2s;
   display: flex;
-  flex-direction: column;
-  gap: 32px;
+  align-items: center;
+  gap: 15px; /* Espaço entre ícone e texto */
+  color: #555;
+  border-left: 4px solid transparent; /* Base para a barra ativa */
 }
 
-/* =======================
-   Formulário de perfil
-======================= */
-.perfilForm {
-  background: #fff;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+/* Estilo para os ícones (SVG ou i.fas) */
+.sidebar ul li svg,
+.sidebar ul li i {
+  font-size: 18px;
+  width: 20px; /* Garante alinhamento consistente */
+  text-align: center;
+}
+
+/* Efeito hover para os itens ATIVOS (com funcionalidade) */
+.sidebar ul li:hover:not(.sair):not(.menuItemPlaceholder) {
+  background: #f7f7f7;
+}
+
+.sidebar ul li.active {
+  font-weight: bold;
+  color: #333;
+  border-left: 4px solid #007bff;
+  background-color: transparent;
+}
+
+/* Novo: Separador Visual (Linha fina entre seções) */
+.menuSeparator {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 8px 0;
+}
+
+/* Novo: Estilo para itens placeholder (Trocas e Vales) - Sem funcionalidade */
+.menuItemPlaceholder {
+  color: #555;
+  font-size: 16.5px;
+  padding: 12px 20px;
+  cursor: default;
+  background: none !important;
+}
+
+/* Sair */
+.sair {
+  margin-top: 30px;
+  color: #cc4444;
+}
+
+.sairBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  font-size: 16.5px;
+  color: #cc4444;
+  cursor: pointer;
+  padding: 14px 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+  text-align: left;
+}
+
+.sairBtn:hover {
+  background: #fbeaea;
+}
+
+/* ---- MAIN ---- */
+.main {
   flex: 1;
-  transition: all 0.3s ease;
+  padding: 40px;
+  /* Borda vertical que separa a sidebar do main content */
+  border-left: 1px solid #e5e5e5;
+}
+
+/* CONTAINER GERAL */
+.perfilFormContainer {
+  max-width: 650px;
+  background: #ffffff;
+}
+
+.titulo {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* --- FORM STYLING --- */
+.perfilForm {
+  width: 100%;
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 25px 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  border-top: 3px solid #3b82f6;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
 }
 
 .perfilForm h2 {
-  margin-bottom: 24px;
-  font-size: 1.75rem;
-  color: #753838;
-}
-
-.perfilForm form label {
-  display: block;
-  margin-top: 16px;
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #555;
-}
-
-.perfilForm form input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.perfilForm form input:focus {
-  border-color: #753838;
-  outline: none;
-  box-shadow: 0 0 6px rgba(117, 56, 56, 0.2);
-}
-
-.perfilForm form button {
-  margin-top: 24px;
-  padding: 14px;
-  width: 100%;
-  background-color: #753838;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 22px;
   font-weight: 600;
-  font-size: 1.1rem;
-  transition: 0.3s;
 }
 
-.perfilForm form button:hover {
-  background-color: #a38756;
-  transform: translateY(-2px);
-}
-
-/* =======================
-   Lista de pedidos
-======================= */
-.pedidosList {
-  background: #fff;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  flex: 1;
-}
-
-.pedidosList h2 {
-  margin-bottom: 24px;
-  font-size: 1.75rem;
-  color: #753838;
-}
-
-.pedidoItem {
-  padding: 16px;
-  border-bottom: 1px solid #eee;
+.perfilForm form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: all 0.2s;
+  gap: 18px;
 }
 
-.pedidoItem:hover {
-  background: #fdf4f0;
-  transform: translateX(2px);
+/* --- DUAS COLUNAS --- */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
-.pedidoItem div {
-  font-size: 1rem;
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.perfilForm label {
+  font-size: 14px;
   color: #444;
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
-.pedidoItem button {
-  align-self: flex-start;
-  padding: 8px 16px;
-  background-color: #753838;
-  color: #fff;
+.perfilForm input,
+.perfilForm select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.perfilForm input:focus,
+.perfilForm select:focus {
+  border-color: #3b82f6;
+}
+
+.perfilForm hr {
+  margin: 25px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.perfilForm button {
+  margin-top: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 15px;
   font-weight: 600;
-  transition: 0.3s;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.pedidoItem button:hover {
-  background-color: #a38756;
-  transform: translateY(-2px);
-}
-
-/* =======================
-   Responsividade
-======================= */
-@media (max-width: 768px) {
-  .conteudoAba {
-    flex-direction: column;
-  }
-
-  .abas {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .abas button {
-    width: 100%;
-  }
+.perfilForm button:hover {
+  background: #2563eb;
 }
