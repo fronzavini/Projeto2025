@@ -1,0 +1,536 @@
+/* =======================================================
+    ESTILOS GERAIS DA PÁGINA E LAYOUT
+    ======================================================= */
+.paginaCarrinhoContainer {
+  display: flex;
+  gap: 30px;
+  padding: 30px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f8f8f8;
+}
+
+.colunaCarrinho {
+  flex: 2;
+  background-color: white;
+  padding: 20px;
+}
+
+.colunaResumo {
+  flex: 1;
+}
+
+.tituloSecao {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.separadorLoja {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 20px 0;
+}
+
+/* Consultar Frete */
+.consultarFrete {
+  margin-top: 20px;
+}
+
+.tituloSecaoMenor {
+  font-size: 1em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.inputFreteGrupo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inputCep {
+  padding: 10px;
+  border: 1px solid #ccc;
+  width: 120px;
+  font-size: 0.9em;
+}
+
+.botaoConsultar {
+  background-color: #2196f3;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.linkNaoSeiCep {
+  font-size: 0.8em;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* =======================================================
+    ESTILOS DO ITEM DE PRODUTO
+    ======================================================= */
+.itemProduto {
+  border: 1px solid #f0f0f0;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.produtoHeader {
+  display: flex;
+  gap: 15px;
+  position: relative;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.imagemProduto {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.detalhesProduto {
+  flex-grow: 1;
+  padding-right: 30px;
+}
+
+.nomeProduto {
+  font-weight: 600;
+  font-size: 1em;
+  margin-bottom: 5px;
+}
+
+.refProduto {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.botaoRemover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #999;
+  padding: 0;
+}
+
+.produtoFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.grupoQuantidade {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- NOVO: Estilos de Controle de Quantidade (para igualar a imagem) --- */
+.controleQuantidade {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre os elementos */
+}
+
+/* Estilo Base dos Botões (Circular) */
+.botaoMenos,
+.botaoMais {
+  /* Reset */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  border: 2px solid;
+  border-radius: 50%;
+
+  /* Sizing and Alignment */
+  width: 36px; /* Tamanho do círculo para melhor toque */
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Estilo do Botão Menos (Cinza/Desabilitado) */
+.botaoMenos {
+  border-color: #999;
+  color: #999;
+}
+
+/* Efeito hover para o menos ativo */
+.botaoMenos:not(:disabled):hover {
+  border-color: #666;
+  color: #666;
+}
+
+/* Estilo para quando o botão 'Menos' estiver desabilitado */
+.botaoMenos:disabled {
+  cursor: not-allowed;
+  opacity: 0.6; /* Leve transparência para indicar inatividade */
+}
+
+/* Estilo do Botão Mais (Vermelho/Primário) */
+.botaoMais {
+  border-color: #dc3545; /* Usando o vermelho do botão "Finalizar" */
+  color: #dc3545;
+}
+
+.botaoMais:hover {
+  background-color: #f7e8eb;
+}
+
+/* Estilo do Input de Quantidade (Caixa Arredondada) */
+.inputQuantidade {
+  width: 48px;
+  height: 48px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #444;
+  outline: none;
+  padding: 0;
+
+  /* Remover setas padrão em navegadores */
+  -moz-appearance: textfield;
+}
+
+.inputQuantidade::-webkit-inner-spin-button,
+.inputQuantidade::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* --- FIM NOVO: Estilos de Controle de Quantidade --- */
+
+.precoProduto {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.linkExplorarMais {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.85em;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* =======================================================
+    ESTILOS DO RESUMO DA COMPRA
+    ======================================================= */
+.resumoCompraContainer {
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.linhaResumo {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 1em;
+  color: #333;
+}
+
+.linhaFrete {
+  border-top: 1px solid #e9e9e9;
+  padding: 15px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.freteDetalhes {
+  display: flex;
+  flex-direction: column;
+}
+
+.freteGratisTag {
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 5px;
+  font-size: 0.75em;
+  font-weight: bold;
+  display: inline-block;
+  border-radius: 3px;
+  margin-top: 5px;
+}
+
+.linkExplorarOpcoes {
+  font-size: 0.8em;
+  color: #007bff;
+  margin: 5px 0;
+}
+
+.prazoEntrega {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.valorFrete {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.linhaCupom {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 15px;
+  padding-top: 5px;
+}
+
+.linkAdicionarCupom {
+  color: #dc3545;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.divisorTotal {
+  height: 1px;
+  background-color: #e9e9e9;
+  margin: 10px 0 20px 0;
+}
+
+.valorTotal {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #333;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.parcelamento {
+  text-align: right;
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.botaoFinalizar {
+  width: 100%;
+  background-color: #dc3545; /* Vermelho forte da imagem */
+  color: white;
+  padding: 15px 0;
+  border: none;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.botaoEscolherMais {
+  width: 100%;
+  background-color: white;
+  color: #333;
+  padding: 15px 0;
+  border: 1px solid #ccc;
+  font-size: 1.1em;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.botaoVoltar {
+  display: block;
+  margin: 20px 30px 30px 175px;
+  background: none;
+  border: none;
+  color: #444;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* --- Cupom de desconto --- */
+.linhaCupom {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column; /* Label em cima */
+  gap: 8px;
+}
+
+.cupomLabel {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #333;
+}
+
+.cupomInputGrupo {
+  display: flex;
+  gap: 10px;
+}
+
+.inputCupom {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95em;
+  outline: none;
+}
+
+.inputCupom:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.botaoAplicar {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.botaoAplicar:hover {
+  background-color: #b71c1c;
+}
+
+/* Responsivo: mobile */
+@media (max-width: 600px) {
+  .cupomInputGrupo {
+    flex-direction: column; /* Botão abaixo do input em telas pequenas */
+  }
+
+  .botaoAplicar {
+    width: 100%;
+  }
+}
+
+/* =======================================================
+   RESPONSIVIDADE GERAL
+   ======================================================= */
+@media (max-width: 1024px) {
+  .paginaCarrinhoContainer {
+    flex-direction: column;
+    padding: 20px 10px;
+    gap: 20px;
+  }
+
+  .colunaCarrinho,
+  .colunaResumo {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .botaoVoltar {
+    margin: 20px 0;
+    text-align: left;
+  }
+}
+
+@media (max-width: 768px) {
+  .tituloSecao {
+    font-size: 1.5em;
+  }
+
+  .tituloSecaoMenor {
+    font-size: 0.95em;
+  }
+
+  .precoProduto {
+    font-size: 1.1em;
+  }
+
+  .inputCep {
+    width: 100px;
+  }
+
+  .botaoConsultar {
+    padding: 8px 12px;
+    font-size: 0.85em;
+  }
+
+  .inputQuantidade {
+    width: 40px;
+    height: 40px;
+    font-size: 1em;
+  }
+
+  .botaoMenos,
+  .botaoMais {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .botaoFinalizar,
+  .botaoEscolherMais {
+    padding: 12px 0;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .paginaCarrinhoContainer {
+    padding: 15px 5px;
+    gap: 15px;
+  }
+
+  .produtoHeader {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .detalhesProduto {
+    padding-right: 0;
+  }
+
+  .grupoQuantidade {
+    gap: 10px;
+  }
+
+  .linhaResumo,
+  .linhaFrete,
+  .linhaCupom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .valorSubtotal,
+  .valorFrete,
+  .valorFinal {
+    text-align: left;
+  }
+
+  .cupomInputGrupo {
+    flex-direction: column;
+  }
+
+  .botaoAplicar {
+    width: 100%;
+  }
+
+  .botaoVoltar {
+    margin: 15px 0;
+    font-size: 14px;
+  }
+}

@@ -127,7 +127,9 @@ export default function Nav() {
           </li>
 
           <li>
-            <FontAwesomeIcon icon={faCartShopping} />
+            <Link href="/carrinho">
+               <FontAwesomeIcon icon={faCartShopping} />   
+            </Link>
           </li>
         </ul>
 

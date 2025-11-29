@@ -205,3 +205,112 @@
 .detailsButton:hover {
   background-color: #f5f5f5;
 }
+
+/* =======================================================
+   RESPONSIVIDADE GERAL
+   ======================================================= */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    padding: 15px;
+    gap: 20px;
+  }
+
+  .productColumn,
+  .summaryColumn {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+  }
+
+  .trackingColumn {
+    padding: 0 0;
+  }
+
+  .progressBar {
+    left: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trackingColumn {
+    padding: 0;
+  }
+
+  .step {
+    width: 25%;
+    font-size: 11px;
+  }
+
+  .stepIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+
+  .stepInfo {
+    font-size: 11px;
+  }
+
+  .stepDate {
+    font-size: 10px;
+  }
+
+  .stepName {
+    font-size: 12px;
+  }
+
+  .deliveryForecast,
+  .sellerInfo,
+  .summaryColumn p {
+    font-size: 13px;
+  }
+
+  .detailsButton,
+  .cancelButton {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .steps {
+    gap: 5px;
+  }
+
+  .step {
+    width: auto;
+    flex: 1;
+    min-width: 50px;
+  }
+
+  .stepIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .stepInfo,
+  .stepDate,
+  .stepName {
+    font-size: 10px;
+  }
+
+  .trackingColumn {
+    padding: 0 5px;
+  }
+
+  .deliveryForecast,
+  .sellerInfo,
+  .summaryColumn p {
+    font-size: 12px;
+  }
+
+  .detailsButton,
+  .cancelButton {
+    font-size: 13px;
+    padding: 6px 0;
+  }
+}

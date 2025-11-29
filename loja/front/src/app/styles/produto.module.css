@@ -56,3 +56,87 @@
   width: 270px;
   margin-left: 0.8rem;
 }
+
+/* --- Responsividade Produto --- */
+
+/* Tablets e telas médias */
+@media (max-width: 1024px) {
+  .produto {
+    width: 220px;
+    padding: 14px;
+  }
+
+  .imagem {
+    width: 220px;
+    height: 320px;
+  }
+
+  .nome {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
+
+  .preco {
+    font-size: 1.05rem;
+  }
+
+  .alinhar {
+    width: 210px;
+    margin-left: 0.5rem;
+    gap: 8px;
+  }
+}
+
+/* Mobile (telas pequenas) */
+@media (max-width: 768px) {
+  .produto {
+    width: 160px;
+    padding: 12px;
+  }
+
+  .imagem {
+    width: 160px;
+    height: 220px;
+  }
+
+  .nome {
+    font-size: 0.95rem;
+    margin-left: 0.3rem;
+  }
+
+  .preco {
+    font-size: 1rem;
+  }
+
+  .alinhar {
+    width: 150px;
+    margin-left: 0.3rem;
+    gap: 6px;
+  }
+}
+
+/* Extra small devices (menos de 480px) */
+@media (max-width: 480px) {
+  .produto {
+    width: 140px;
+    padding: 10px;
+  }
+
+  .imagem {
+    width: 140px;
+    height: 200px;
+  }
+
+  .nome {
+    font-size: 0.9rem;
+  }
+
+  .preco {
+    font-size: 0.95rem;
+  }
+
+  .alinhar {
+    width: 130px;
+    gap: 5px;
+  }
+}

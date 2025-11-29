@@ -237,3 +237,150 @@
 .perfilForm button:hover {
   background: #2563eb;
 }
+
+/* =======================================================
+   RESPONSIVIDADE PERFIL
+   ======================================================= */
+
+/* Tablets e telas médias */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column; /* Sidebar em cima do main */
+  }
+
+  .sidebar {
+    width: 100%;
+    border-left: none;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .main {
+    padding: 20px;
+    border-left: none;
+  }
+
+  .perfilWrapper {
+    padding: 15px 10px;
+  }
+
+  .perfilForm {
+    padding: 20px;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+}
+
+/* Mobile (telas pequenas) */
+@media (max-width: 768px) {
+  .breadcrumb {
+    padding-left: 10px;
+    font-size: 13px;
+  }
+
+  .breadcrumbSeparator {
+    margin: 0 5px;
+  }
+
+  .sidebar ul li {
+    font-size: 15px;
+    padding: 10px 15px;
+  }
+
+  .sidebar ul li svg,
+  .sidebar ul li i {
+    font-size: 16px;
+    width: 18px;
+  }
+
+  .sairBtn {
+    font-size: 15px;
+    padding: 12px 8px;
+  }
+
+  .main {
+    padding: 15px;
+  }
+
+  .perfilFormContainer {
+    max-width: 100%;
+  }
+
+  .perfilForm {
+    padding: 20px;
+    margin: 20px 10px;
+  }
+
+  .titulo,
+  .perfilForm h2 {
+    font-size: 20px;
+  }
+
+  .row {
+    grid-template-columns: 1fr; /* Coluna única no mobile */
+    gap: 12px;
+  }
+
+  .perfilForm label {
+    font-size: 13px;
+  }
+
+  .perfilForm input,
+  .perfilForm select {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .perfilForm button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Extra small devices (menos de 480px) */
+@media (max-width: 480px) {
+  .breadcrumb {
+    font-size: 12px;
+  }
+
+  .sidebar ul li {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .sairBtn {
+    font-size: 14px;
+    padding: 10px 6px;
+  }
+
+  .main {
+    padding: 10px;
+  }
+
+  .perfilForm {
+    margin: 15px 5px;
+    padding: 15px;
+  }
+
+  .titulo,
+  .perfilForm h2 {
+    font-size: 18px;
+  }
+
+  .perfilForm label {
+    font-size: 12px;
+  }
+
+  .perfilForm input,
+  .perfilForm select {
+    font-size: 12px;
+    padding: 7px 8px;
+  }
+
+  .perfilForm button {
+    font-size: 13px;
+    padding: 8px;
+  }
+}

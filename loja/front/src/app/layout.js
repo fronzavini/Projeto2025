@@ -24,7 +24,9 @@ export default function RootLayout({ children }) {
 
   // ✔ Agora funciona para /pedido, /pedido/1, /pedido/qualquer-coisa
   const ocultarNavHeader =
-    pathname.startsWith("/perfil") || pathname.startsWith("/pedido");
+    pathname.startsWith("/perfil") ||
+    pathname.startsWith("/pedido") ||
+    pathname.startsWith("/carrinho");
 
   return (
     <html lang="pt-br">
