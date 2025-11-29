@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/header";
 import Nav from "./components/nav";
+import Footer from "./components/footer"; // ⬅️ ADICIONE AQUI
 import { usePathname } from "next/navigation";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -21,9 +22,7 @@ const slides = [
 export default function RootLayout({ children }) {
   const pathname = usePathname();
 
-  // Páginas que NÃO devem ter Nav/Header
   const semNavHeader = ["/perfil"];
-
   const mostrarNavHeader = !semNavHeader.includes(pathname);
 
   return (
@@ -35,6 +34,7 @@ export default function RootLayout({ children }) {
             {mostrarNavHeader && <Header slides={slides} interval={3000} />}
             {children}
           </main>
+          {mostrarNavHeader && <Footer />} {/* ⬅️ ADICIONADO AQUI */}
         </GoogleOAuthProvider>
       </body>
     </html>

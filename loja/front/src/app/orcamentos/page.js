@@ -6,6 +6,7 @@ import Banner from "../components/banner";
 import Relevancia from "../components/relevancia";
 import styles from "../styles/page.module.css";
 import ProdutoDetalhe from "../components/produtoDetalhe";
+import ProdutoSlider from "../components/produtoSlider";
 
 export default function Orcamentos() {
   const florProduto = {
@@ -39,6 +40,8 @@ export default function Orcamentos() {
         // Prop de Ação (função)
         addToCart={handleAddToCart}
       />
+
+      <ProdutoSlider />
     </div>
   );
 }
