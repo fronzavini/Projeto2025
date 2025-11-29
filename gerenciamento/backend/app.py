@@ -250,7 +250,7 @@ def login():
             'senha': row[4],  # se futuramente for hash, aqui você verifica
             'tema_preferido': row[5]
         }
-
+        print(usuario_sistema)
         # =============================
         # 2. VALIDAR SENHA
         # =============================
@@ -280,19 +280,6 @@ def login():
             'telefone': func[5]
         }
 
-        # =============================
-        # 4. CARREGAR CONFIGURAÇÕES (SE USADAS NO SEU SISTEMA)
-        # =============================
-        cursor.execute(
-            'SELECT chave, valor FROM configuracoes WHERE chave LIKE %s',
-            (f'user:{usuario_sistema["id"]}:%',)
-        )
-        rows = cursor.fetchall()
-
-        settings = {}
-        for r in rows:
-            key = r[0].split(':', 2)[-1]
-            settings[key] = r[1]
 
         # =============================
         # 5. CARREGAR PERFIL (CASO EXISTA MESMO NA SUA TABELA)
@@ -320,15 +307,16 @@ def login():
             'usuario_sistema': {
                 'id': usuario_sistema['id'],
                 'usuario': usuario_sistema['usuario'],
+                'senha': usuario_sistema['senha'],
                 'tipo_usuario': usuario_sistema['tipo_usuario'],
                 'tema_preferido': usuario_sistema['tema_preferido'],
             },
             'funcionario': funcionario,
             'perfil': perfil,
-            'settings': settings
         })
 
     except Exception as e:
+        print("Erro no login:", e)
         return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
 
     finally:

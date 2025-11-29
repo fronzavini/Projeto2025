@@ -12,42 +12,57 @@ export default function LoginForm() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Call backend login
-    fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: usuario, senha }),
+
+    fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      //
+      // 🔥 Agora envia “usuario” e “senha” conforme sua nova rota
+      //
+      body: JSON.stringify({ usuario, senha }),
     })
       .then(async (res) => {
         const json = await res.json().catch(() => null);
+
         if (!res.ok) {
           setErro(true);
           return;
         }
-        // Successful login: json contains funcionario, settings, perfil
-        const { funcionario, settings } = json;
-        // store basic session info
-        localStorage.setItem('user', JSON.stringify(funcionario));
-        if (settings) localStorage.setItem('settings', JSON.stringify(settings));
 
-        // apply theme immediately if present
+        // json agora contém { usuario_sistema, funcionario, settings }
+        const { usuario_sistema, funcionario, settings } = json;
+
+        // armazena o usuário logado (usuário do sistema)
+        localStorage.setItem("usuario_sistema", JSON.stringify(usuario_sistema));
+
+        // armazena os dados do funcionário vinculado
+        if (funcionario)
+          localStorage.setItem("funcionario", JSON.stringify(funcionario));
+
+        // configurações do usuário
+        if (settings)
+          localStorage.setItem("settings", JSON.stringify(settings));
+
         try {
-          const tema = settings && settings.tema ? settings.tema : localStorage.getItem('tema');
+          const tema =
+            (settings && settings.tema_preferido) ||
+            localStorage.getItem("tema_preferido");
+
           if (tema) {
-            document.body.setAttribute('data-theme', tema === 'escuro' ? 'dark' : 'light');
-            localStorage.setItem('tema', tema);
+            document.body.setAttribute(
+              "data-theme",
+              tema === "escuro" ? "dark" : "light"
+            );
+            localStorage.setItem("tema_preferido", tema);
           }
-          /*const idioma = settings && settings.idioma ? settings.idioma : localStorage.getItem('idioma');
-          if (idioma) localStorage.setItem('idioma', idioma);*/
         } catch (err) {
-          console.error('Erro ao aplicar settings:', err);
+          console.error("Erro ao aplicar settings:", err);
         }
 
-        // redirect to home
-        window.location.href = '/';
+        window.location.href = "/";
       })
       .catch((err) => {
-        console.error('Erro no login:', err);
+        console.error("Erro no login:", err);
         setErro(true);
       });
   };
@@ -63,6 +78,7 @@ export default function LoginForm() {
             type="text"
             placeholder="Digite seu usuário"
             value={usuario}
+            name="usuario"
             onChange={(e) => setUsuario(e.target.value)}
             className={`${styles.input} ${erro ? styles.inputErro : ""}`}
           />
@@ -73,6 +89,7 @@ export default function LoginForm() {
             type={mostrarSenha ? "text" : "password"}
             placeholder="Digite sua senha"
             value={senha}
+            name = "senha"
             onChange={(e) => setSenha(e.target.value)}
             className={`${styles.input} ${erro ? styles.inputErro : ""}`}
           />
