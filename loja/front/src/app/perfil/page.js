@@ -1,11 +1,12 @@
-// app/perfil/page.jsx
 "use client";
 import { useState, useEffect } from "react";
-import PerfilForm from "../../components/PerfilForm";
-import PedidosList from "../../components/PedidosList";
-import styles from "../../styles/perfil.module.css";
+import { useRouter } from "next/navigation";
+import PerfilForm from "../components/perfilForm";
+import PedidosList from "../components/pedidosList";
+import styles from "../styles/perfil.module.css";
 
 export default function PerfilPage() {
+  const router = useRouter(); // hook do Next.js para navegação
   const [abaAtiva, setAbaAtiva] = useState("dados"); // 'dados' ou 'pedidos'
   const [usuario, setUsuario] = useState(null);
   const [pedidos, setPedidos] = useState([]);
@@ -29,6 +30,11 @@ export default function PerfilPage() {
 
   return (
     <div className={styles.perfilContainer}>
+      {/* Botão Voltar */}
+      <button className={styles.botaoVoltar} onClick={() => router.back()}>
+        ← Voltar
+      </button>
+
       <h1>Meu Perfil</h1>
 
       {/* --- Abas --- */}

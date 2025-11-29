@@ -284,3 +284,56 @@
   }
 }
 
+/* Pop-up usuário logado */
+.usuarioMenu {
+  position: absolute;
+  top: 60px; /* distância do topo da navbar */
+  right: 8vw; /* alinhado com o padding da navbar */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 1100;
+  animation: fadeSlide 0.25s ease forwards;
+  overflow: hidden;
+}
+
+.usuarioMenu button {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #3f2121;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.usuarioMenu button:hover {
+  background: #f5f0ef;
+  color: #753838;
+}
+
+/* Animação do pop-up */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile: ajustar posição e tamanho */
+@media (max-width: 768px) {
+  .usuarioMenu {
+    right: 20px;
+    top: 55px;
+    min-width: 140px;
+  }
+}

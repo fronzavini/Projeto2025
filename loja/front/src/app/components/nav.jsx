@@ -1,7 +1,8 @@
+// components/Nav.jsx
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import styles from "../styles/nav.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,24 +21,50 @@ export default function Nav() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [abrirBusca, setAbrirBusca] = useState(false);
 
-  // ESTADOS DOS POPUPS
   const [abrirLogin, setAbrirLogin] = useState(false);
   const [abrirRegister, setAbrirRegister] = useState(false);
 
+  const [logado, setLogado] = useState(false);
+  const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false); // NOVO: pop-up de usuário
+
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 150);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 150);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Verifica login
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) setLogado(true);
+  }, []);
+
+  const handleUsuarioClick = () => {
+    if (logado) {
+      setAbrirUsuarioMenu(!abrirUsuarioMenu); // mostra pop-up
+    } else {
+      setAbrirLogin(true);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setLogado(false);
+    setAbrirUsuarioMenu(false);
+    router.push("/");
+  };
+
+  const irParaPerfil = () => {
+    setAbrirUsuarioMenu(false);
+    router.push("/perfil");
+  };
+
   return (
     <>
       <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
-        {/* ÍCONE MENU MOBILE */}
         <div
           className={styles.menuIcon}
           onClick={() => setMenuAberto(!menuAberto)}
@@ -45,7 +72,7 @@ export default function Nav() {
           <FontAwesomeIcon icon={menuAberto ? faTimes : faBars} />
         </div>
 
-        {/* --- MENU DESKTOP --- */}
+        {/* Menu desktop */}
         <ul className={styles.menu}>
           <li>
             <Link href="/" className={pathname === "/" ? styles.active : ""}>
@@ -86,7 +113,7 @@ export default function Nav() {
           </li>
         </ul>
 
-        {/* ÍCONES DIREITA */}
+        {/* Ícones direita */}
         <ul className={styles.user}>
           <li
             onClick={() => setAbrirBusca(!abrirBusca)}
@@ -95,8 +122,7 @@ export default function Nav() {
             <FontAwesomeIcon icon={faMagnifyingGlass} />
           </li>
 
-          {/* ABRE LOGIN */}
-          <li onClick={() => setAbrirLogin(true)} className={styles.iconClick}>
+          <li onClick={handleUsuarioClick} className={styles.iconClick}>
             <FontAwesomeIcon icon={faUser} />
           </li>
 
@@ -105,7 +131,7 @@ export default function Nav() {
           </li>
         </ul>
 
-        {/* BARRA DE BUSCA */}
+        {/* Barra de busca */}
         {abrirBusca && (
           <div className={styles.searchContainer}>
             <div className={styles.searchBox}>
@@ -113,13 +139,11 @@ export default function Nav() {
                 icon={faMagnifyingGlass}
                 className={styles.searchIcon}
               />
-
               <input
                 type="text"
                 placeholder="Estou buscando por..."
                 className={styles.searchInput}
               />
-
               <button
                 className={styles.closeSearch}
                 onClick={() => setAbrirBusca(false)}
@@ -130,7 +154,15 @@ export default function Nav() {
           </div>
         )}
 
-        {/* MENU MOBILE */}
+        {/* Menu usuário (pop-up) */}
+        {abrirUsuarioMenu && (
+          <div className={styles.usuarioMenu}>
+            <button onClick={irParaPerfil}>Meu Perfil</button>
+            <button onClick={handleLogout}>Sair</button>
+          </div>
+        )}
+
+        {/* Menu mobile */}
         {menuAberto && (
           <div className={styles.menuMobile}>
             <ul>
@@ -159,12 +191,22 @@ export default function Nav() {
                   Orçamentos
                 </Link>
               </li>
+              {logado && (
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className={styles.mobileLogoutBtn}
+                  >
+                    Sair
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         )}
       </nav>
 
-      {/* POPUP LOGIN */}
+      {/* Pop-ups login/register */}
       {abrirLogin && (
         <LoginPopup
           fechar={() => setAbrirLogin(false)}
@@ -174,8 +216,6 @@ export default function Nav() {
           }}
         />
       )}
-
-      {/* POPUP REGISTRO */}
       {abrirRegister && (
         <RegisterPopup
           fechar={() => setAbrirRegister(false)}
