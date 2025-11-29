@@ -4,7 +4,7 @@ import { faMoneyBillTransfer } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/checkout.module.css";
 
 const PrincipalCheckout = ({ itens, valoresTotais }) => {
-  const item = itens[0]; // Assumindo um único produto para simplificação
+  const item = itens?.[0] || {};
 
   return (
     <div className={styles.containerPrincipal}>
@@ -16,20 +16,25 @@ const PrincipalCheckout = ({ itens, valoresTotais }) => {
 
         <div className={styles.detalhesItemEntrega}>
           <div className={styles.vendedor}>
-            Vendido por <strong>{item.vendidoPor}</strong> e Enviado por{" "}
-            <strong>{item.enviadoPor}</strong>
+            Vendido por <strong>{item.vendidoPor || "Loja"}</strong> e Enviado
+            por <strong>{item.enviadoPor || "Loja"}</strong>
           </div>
 
           <div className={styles.infoProdutoFrete}>
-            <div className={styles.blocoImagem}>[Imagem do Produto]</div>
+            <div className={styles.blocoImagem}>
+              <img
+                src={item.imagem || "/placeholder.png"}
+                alt={item.nome || "Produto"}
+              />
+            </div>
 
             <div className={styles.detalhesProduto}>
-              <p className={styles.nomeProduto}>{item.nome}</p>
+              <p className={styles.nomeProduto}>{item.nome || "Produto"}</p>
               <p>
-                Cor: <strong>{item.cor}</strong>
+                Cor: <strong>{item.cor || "Padrão"}</strong>
               </p>
               <p>
-                Tamanho: <strong>{item.tamanho}</strong>
+                Tamanho: <strong>{item.tamanho || "Único"}</strong>
               </p>
             </div>
 
@@ -57,29 +62,14 @@ const PrincipalCheckout = ({ itens, valoresTotais }) => {
           Pagar com Pix
         </h3>
 
-        <div className={styles.aprovacao}>Aprovação em minutos</div>
+        <p className={styles.valorPagamento}>
+          R${" "}
+          {Number(valoresTotais.total || 0)
+            .toFixed(2)
+            .replace(".", ",")}
+        </p>
 
-        <p className={styles.valorPagamento}>{valoresTotais.montante}</p>
-
-        <ol className={styles.passosPix}>
-          <li>
-            Após a finalização do pedido, abra o app ou banco de sua
-            preferência. Escolha a opção pagar com código Pix "copia e cola", ou
-            código QR. O código tem validade de 2 horas.
-          </li>
-          <li>
-            Copie e cole o código, ou escaneie o código QR com a câmera do seu
-            celular. Confira todas as informações e autorize o pagamento.
-          </li>
-          <li>
-            Você vai receber a confirmação de pagamento no seu e-mail e através
-            dos nossos canais. É pronto!
-          </li>
-        </ol>
-
-        <button className={styles.botaoFinalizar}>
-          FINALIZAR PEDIDO COM PIX
-        </button>
+        <button className={styles.botaoFinalizar}>FINALIZAR PEDIDO</button>
       </div>
     </div>
   );

@@ -46,7 +46,6 @@ export const CarrinhoProvider = ({ children }) => {
   }, [dadosCheckout]);
 
   // --- Funções para manipular o carrinho ---
-
   const adicionarItem = (item) => {
     if (!item?.id) {
       console.error("Produto sem ID não pode ser adicionado ao carrinho");
@@ -61,12 +60,14 @@ export const CarrinhoProvider = ({ children }) => {
 
       let novosItens;
       if (itemExistente) {
+        // Aumenta quantidade
         novosItens = prev.itensPedido.map((i) =>
           i.id.toString() === itemId
             ? { ...i, quantidade: i.quantidade + (item.quantidade || 1) }
             : i
         );
       } else {
+        // Adiciona novo item
         novosItens = [
           ...prev.itensPedido,
           { ...item, id: itemId, quantidade: item.quantidade || 1 },
@@ -98,6 +99,7 @@ export const CarrinhoProvider = ({ children }) => {
       const novosItens = prev.itensPedido.filter(
         (i) => i?.id != null && i.id.toString() !== idStr
       );
+
       const subtotal = novosItens.reduce(
         (acc, i) => acc + i.quantidade * i.preco,
         0
@@ -141,6 +143,14 @@ export const CarrinhoProvider = ({ children }) => {
     });
   };
 
+  const atualizarEndereco = (novoEndereco) => {
+    if (!novoEndereco || !novoEndereco.nome) return;
+    setDadosCheckout((prev) => ({
+      ...prev,
+      enderecoEntrega: novoEndereco,
+    }));
+  };
+
   const limparCarrinho = () => setDadosCheckout(DADOS_INICIAIS);
 
   return (
@@ -150,6 +160,7 @@ export const CarrinhoProvider = ({ children }) => {
         adicionarItem,
         removerItem,
         atualizarQuantidade,
+        atualizarEndereco,
         limparCarrinho,
       }}
     >
