@@ -1,22 +1,49 @@
 "use client";
 
 import styles from "../styles/header.module.css";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // <- useRouter no App Router
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 function Header() {
   const [modal, setModal] = useState(false);
-  const router = useRouter(); // <- inicializa o router
+  const router = useRouter();
+
+  const [nomeFuncionario, setNomeFuncionario] = useState("Carregando...");
 
   const abrirModal = () => {
     setModal(!modal);
   };
 
   const sair = () => {
-    // Aqui você pode limpar cookies, localStorage, ou token de autenticação se houver
-    router.push("/login"); // <- redireciona para a página de login
+    router.push("/login");
   };
+
+  useEffect(() => {
+    // 1️⃣ Buscar o usuário salvo no login
+    const userLS = localStorage.getItem("usuario_sistema");
+    const funcionarioLS = localStorage.getItem("funcionario");
+
+    if (!userLS || !funcionarioLS) {
+      setNomeFuncionario("Usuário");
+      return;
+    }
+
+        // Carrega o tema salvo no localStorage
+    const tema = localStorage.getItem("tema") || "claro";
+
+    // Aplica o tema
+    document.body.setAttribute("data-theme", tema === "escuro" ? "dark" : "light");
+
+    const funcionario = JSON.parse(funcionarioLS);
+
+    // 2️⃣ Exibir nome do funcionário
+    if (funcionario?.nome) {
+      setNomeFuncionario(funcionario.nome);
+    } else {
+      setNomeFuncionario("Usuário");
+    }
+  }, []);
 
   return (
     <nav className={styles.nav}>
@@ -38,7 +65,8 @@ function Header() {
         <div className={styles.modal}>
           <div className={styles.modal_conteudo}>
             <div className={styles.modal_header}>
-              <h3>Nome usuário</h3>
+              <h3>{nomeFuncionario}</h3>
+
               <button onClick={abrirModal} className={styles.botao_fechar}>
                 X
               </button>
@@ -47,6 +75,7 @@ function Header() {
             <Link href="/configuracoes">
               <span className={styles.link}>Perfil</span>
             </Link>
+
             <button onClick={sair} className={styles.botao_simples}>
               Sair
             </button>

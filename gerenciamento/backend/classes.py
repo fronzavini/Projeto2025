@@ -400,31 +400,34 @@ class Funcionario(PessoaFisica):
         }
 
 class Produto:
-    def __init__(self, id=None, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, status=True):
+    def __init__(self, id=None, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, estoqueMinimo=None, estado=True, fornecedor_id=None):
         self.id = id
         self.nome = nome
         self.categoria = categoria
         self.marca = marca
         self.preco = preco
         self.quantidadeEstoque = quantidadeEstoque
-        self.status = status
+        self.estoqueMinimo = estoqueMinimo
+        self.estado = estado
+        self.fornecedor_id = fornecedor_id
 
     @staticmethod
-    def criarProduto(nome, categoria, marca, preco, quantidadeEstoque):
+    def criarProduto(nome, categoria, marca, preco, quantidadeEstoque, estoqueMinimo, estado, fornecedor_id):
         conexao = conectar_banco()
         cursor = conexao.cursor()
         query = '''
-            INSERT INTO produtos (nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO produtos (nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado, fornecedor_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         '''
-        cursor.execute(query, (nome, categoria, marca, preco, quantidadeEstoque, 0, True))
+        cursor.execute(query, (nome, categoria, marca, preco, quantidadeEstoque, estoqueMinimo, estado, fornecedor_id))
         conexao.commit()
+        produto_id = cursor.lastrowid  # <-- pega o ID do produto criado
         cursor.close()
         conexao.close()
-        return 'Produto adicionado com sucesso'
+        return {"message": "Produto adicionado com sucesso", "id": produto_id}  # <-- retorna ID
 
     @staticmethod
-    def editarProduto(id, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None):
+    def editarProduto(id, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, estoqueMinimo=None, estado=None):
         conexao = conectar_banco()
         cursor = conexao.cursor()
         campos = []
@@ -494,6 +497,35 @@ class Produto:
             cursor.close()
             conexao.close()
 
+    @staticmethod
+    def obterProduto(nome):
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            query = "SELECT * FROM produtos WHERE nome = %s"
+            cursor.execute(query, (nome,))
+            resultado = cursor.fetchone()
+            if resultado:
+                produto = {
+                    "id": resultado[0],
+                    "nome": resultado[1],
+                    "categoria": resultado[2],
+                    "marca": resultado[3],
+                    "preco": float(resultado[4]),
+                    "quantidadeEstoque": resultado[5],
+                    "estoqueMinimo": resultado[6],
+                    "estado": bool(resultado[7])
+                }
+                return produto
+            else:
+                return None
+        except MySQLError as e:
+            print(f"Erro ao obter produto: {e}")
+            return None
+        finally:
+            cursor.close()
+            conexao.close()
+
     def json(self):
         return {
             "id": self.id,
@@ -502,7 +534,123 @@ class Produto:
             "marca": self.marca,
             "preco": self.preco,
             "quantidadeEstoque": self.quantidadeEstoque,
-            "status": self.status
+            "estoqueMinimo": self.estoqueMinimo,
+            "estado": self.estado
+        }
+
+
+class ImagemProduto:
+    def __init__(self, id=None, produto_id=None, url=None):
+        self.id = id
+        self.produto_id = produto_id
+        self.url = url
+
+    # ---------------------------
+    # CRIAR IMAGEM
+    # ---------------------------
+    @staticmethod
+    def criarImagem(produto_id, url):
+        conexao = conectar_banco()
+        if not conexao:
+            return {"error": "Erro ao conectar ao banco"}
+
+        try:
+            cursor = conexao.cursor()
+            query = """
+                INSERT INTO imagens_produto (produto_id, url)
+                VALUES (%s, %s)
+            """
+            cursor.execute(query, (produto_id, url))
+            conexao.commit()
+            return {"message": "Imagem adicionada ao produto com sucesso"}
+        except MySQLError as e:
+            print("Erro ao inserir imagem:", e)
+            conexao.rollback()
+            return {"error": "Erro ao inserir imagem"}
+        finally:
+            cursor.close()
+            conexao.close()
+
+    # ---------------------------
+    # EDITAR IMAGEM
+    # ---------------------------
+    @staticmethod
+    def editarImagem(id, url=None):
+        conexao = conectar_banco()
+        if not conexao:
+            return {"error": "Erro ao conectar ao banco"}
+
+        try:
+            cursor = conexao.cursor()
+            campos = []
+            valores = []
+
+            if url:
+                campos.append("url = %s")
+                valores.append(url)
+
+            if not campos:
+                return {"error": "Nenhuma informação para atualizar"}
+
+            cursor.execute("SELECT id FROM imagens_produto WHERE id = %s", (id,))
+            if not cursor.fetchone():
+                return {"error": "Imagem não encontrada"}
+
+            query = f"UPDATE imagens_produto SET {', '.join(campos)} WHERE id = %s"
+            valores.append(id)
+
+            cursor.execute(query, valores)
+            conexao.commit()
+
+            return {"message": f"Imagem {id} atualizada com sucesso"}
+        except MySQLError as e:
+            print("Erro ao editar imagem:", e)
+            conexao.rollback()
+            return {"error": "Erro ao editar imagem"}
+        finally:
+            cursor.close()
+            conexao.close()
+
+    # ---------------------------
+    # EXCLUIR IMAGEM
+    # ---------------------------
+    @staticmethod
+    def excluirImagem(id):
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+
+        cursor.execute("DELETE FROM imagens_produto WHERE id = %s", (id,))
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+        return {"message": f"Imagem {id} excluída"}
+
+    # ---------------------------
+    # LISTAR IMAGENS DE UM PRODUTO
+    # ---------------------------
+    @staticmethod
+    def listarImagensPorProduto(produto_id):
+        conexao = conectar_banco()
+        try:
+            cursor = conexao.cursor()
+            query = "SELECT * FROM imagens_produto WHERE produto_id = %s"
+            cursor.execute(query, (produto_id,))
+            resultados = cursor.fetchall()
+            return resultados
+        except MySQLError as e:
+            print("Erro ao listar imagens:", e)
+            return []
+        finally:
+            cursor.close()
+            conexao.close()
+
+    def json(self):
+        return {
+            "id": self.id,
+            "produto_id": self.produto_id,
+            "url": self.url
         }
 
 class Fornecedor:
@@ -1093,8 +1241,6 @@ class TransacaoFinanceira:
             "valor": self.valor,
         }
 
-
-
 class UsuarioSistema:
     def __init__(self, id=None, funcionario_id=None, tipo_usuario=None, usuario=None, senha=None, tema_preferido='claro'):
         self.id = id
@@ -1245,9 +1391,6 @@ class UsuarioSistema:
             "tema_preferido": self.tema_preferido
         }
 
-
-
-
 class UsuarioLoja:
     def __init__(self, id=None, cliente_id=None, usuario=None, senha=None):
         self.id = id
@@ -1385,5 +1528,5 @@ class UsuarioLoja:
             "senha": self.senha
         }
 
-        
+
 conectar_banco()

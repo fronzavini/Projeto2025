@@ -12,12 +12,11 @@ import { Column } from "primereact/column";
 
 import VisualizarProduto from "./visualizarProdutos";
 import EditarProduto from "./editarProduto";
-import { deletarItem } from "../deletar";
 
 export default function TabelaProduto() {
   const [produtos, setProdutos] = useState([]);
 
-  // Estados dos filtros
+  // Filtros
   const [filterId, setFilterId] = useState("");
   const [filterNome, setFilterNome] = useState("");
   const [filterTipo, setFilterTipo] = useState("");
@@ -29,46 +28,54 @@ export default function TabelaProduto() {
     { label: "Inativo", value: "inativo" },
   ];
 
-  // Modal e produto selecionado
+  // Modal e edição
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [produtoParaEditar, setProdutoParaEditar] = useState(null);
 
-  // Carregar produtos do backend
+  const API = "http://127.0.0.1:5000";
+
+  // Função para carregar produtos e suas imagens
   const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/listar_produtos", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      // 1️⃣ Buscar todos os produtos
+      const response = await fetch(`${API}/listar_produtos`);
+      if (!response.ok) throw new Error("Erro ao carregar produtos");
+      const produtosArray = await response.json();
 
-      if (!response.ok) throw new Error("Erro ao carregar produtos.");
-      const resultado = await response.json();
+      // 2️⃣ Buscar imagens de cada produto
+      const produtosComImagens = [];
+      for (let p of produtosArray) {
+        let imagens = [];
+        try {
+          const resImg = await fetch(`${API}/listar_imagens_produto/${p[0]}`);
+          if (resImg.ok) {
+            imagens = await resImg.json();
+          }
+        } catch (err) {
+          console.error(`Erro ao buscar imagens do produto ${p[0]}`, err);
+        }
 
-      // Garante que é array
-      const produtosArray = Array.isArray(resultado) ? resultado : [];
-      const produtosFormatados = produtosArray.map((p) => ({
-        id: p[0],
-        nome: p[1],
-        categoria: p[2],
-        marca: p[3],
-        preco: Number(p[4]),
-        quantidade_estoque: p[5],
-        estoque_minimo: p[6],
-        estado: p[7],
-        fornecedor_id: p[8],
-        imagem: p[9] || "",
-      }));
-      setProdutos(produtosFormatados);
+        produtosComImagens.push({
+          id: p[0],
+          nome: p[1],
+          categoria: p[2],
+          marca: p[3],
+          preco: Number(p[4]),
+          quantidade_estoque: p[5],
+          estoque_minimo: p[6],
+          estado: p[7],
+          fornecedor_id: p[8],
+          imagens: imagens, // array de imagens
+          imagemPrincipal: imagens.length > 0 ? imagens[0].url : "", // primeira imagem
+        });
+      }
 
-
-      setProdutos(produtosFormatados);
+      setProdutos(produtosComImagens);
     } catch (error) {
       console.error("Erro ao carregar produtos:", error);
-      setProdutos([]); // evita quebrar a tabela
+      setProdutos([]);
     }
   };
 
@@ -81,10 +88,12 @@ export default function TabelaProduto() {
     label: v,
     value: v,
   }));
-  const categorias = Array.from(
-    new Set(produtos.map((d) => d.categoria))
-  ).map((v) => ({ label: v, value: v }));
+  const categorias = Array.from(new Set(produtos.map((d) => d.categoria))).map((v) => ({
+    label: v,
+    value: v,
+  }));
 
+  // Filtragem
   const filteredData = produtos.filter((item) => {
     const statusStr = item.estado ? "ativo" : "inativo";
     return (
@@ -96,6 +105,7 @@ export default function TabelaProduto() {
     );
   });
 
+  // Templates para colunas
   const statusTemplate = (rowData) => {
     const status = rowData.estado ? "ativo" : "inativo";
     return <span className={`${styles["status-badge"]} ${styles[status]}`}>{status}</span>;
@@ -134,16 +144,10 @@ export default function TabelaProduto() {
           if (!confirm(`Deseja realmente deletar o produto "${rowData.nome}"?`)) return;
 
           try {
-            const response = await fetch(
-              `http://127.0.0.1:5000/deletar_produto/${rowData.id}`,
-              { method: "DELETE" }
-            );
-
-            if (!response.ok) throw new Error("Erro ao deletar produto.");
-
+            const response = await fetch(`${API}/deletar_produto/${rowData.id}`, { method: "DELETE" });
+            if (!response.ok) throw new Error("Erro ao deletar produto");
             const result = await response.json();
             alert(result.message || "Produto deletado com sucesso!");
-            // Atualiza a lista de produtos
             setProdutos((prev) => prev.filter((p) => p.id !== rowData.id));
           } catch (error) {
             console.error("Erro ao deletar produto:", error);
@@ -157,10 +161,20 @@ export default function TabelaProduto() {
     </div>
   );
 
+  const imagemTemplate = (rowData) => (
+    rowData.imagemPrincipal ? (
+      <img
+        src={rowData.imagemPrincipal}
+        alt={rowData.nome}
+        style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
+      />
+    ) : (
+      <span>Sem imagem</span>
+    )
+  );
+
   return (
     <div>
-
-
       <div className={styles["filters-container"]}>
         <Filtros value={filterNome} onChange={setFilterNome} placeholder="Ex: Rosa" label="Nome" />
         <Filtros value={filterId} onChange={setFilterId} placeholder="# 12345" label="ID Produto" />
@@ -171,7 +185,7 @@ export default function TabelaProduto() {
 
       <div className={styles["custom-table-container"]}>
         <DataTable value={filteredData} paginator rows={5} showGridlines>
-          {/*<Column field="imagem" header="Imagem" body={(rowData) => <img src={rowData.imagem} alt={rowData.nome} style={{ width: 40, height: 40, borderRadius: 8 }} />} />*/}
+          <Column field="imagemPrincipal" header="Imagem" body={imagemTemplate} />
           <Column field="nome" header="Nome" />
           <Column field="id" header="ID" />
           <Column field="marca" header="Tipo" />
@@ -179,21 +193,32 @@ export default function TabelaProduto() {
           <Column
             field="preco"
             header="Valor"
-            body={(rowData) => {
-              const preco = parseFloat(rowData.preco) || 0;
-              return `R$ ${preco.toFixed(2)}`;
-            }}
+            body={(rowData) => `R$ ${parseFloat(rowData.preco || 0).toFixed(2)}`}
           />
           <Column field="estado" header="Status" body={statusTemplate} />
           <Column body={actionTemplate} header="Ações" style={{ width: 150 }} />
         </DataTable>
 
         {isModalOpen && produtoSelecionado && (
-          <VisualizarProduto produto={produtoSelecionado} onClose={() => { setIsModalOpen(false); setProdutoSelecionado(null); carregarProdutos();}} />
+          <VisualizarProduto
+            produto={produtoSelecionado}
+            onClose={() => {
+              setIsModalOpen(false);
+              setProdutoSelecionado(null);
+              carregarProdutos();
+            }}
+          />
         )}
 
         {isEditModalOpen && produtoParaEditar && (
-          <EditarProduto produto={produtoParaEditar} onClose={() => { setIsEditModalOpen(false); setProdutoParaEditar(null); carregarProdutos(); carregarProdutos(); }} />
+          <EditarProduto
+            produto={produtoParaEditar}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setProdutoParaEditar(null);
+              carregarProdutos();
+            }}
+          />
         )}
       </div>
     </div>

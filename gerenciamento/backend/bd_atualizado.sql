@@ -76,8 +76,7 @@ CREATE TABLE IF NOT EXISTS produtos (
 CREATE TABLE IF NOT EXISTS imagens_produto (
     id INT AUTO_INCREMENT PRIMARY KEY,
     produto_id INT NOT NULL,
-    imagem LONGBLOB NOT NULL,
-    principal BOOLEAN DEFAULT FALSE,
+    url VARCHAR(255) NOT NULL,
     FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
 
@@ -178,3 +177,11 @@ CREATE TABLE IF NOT EXISTS usuarios_loja (
     senha VARCHAR(100) NOT NULL,
     FOREIGN KEY (cliente_id) REFERENCES clientes(id)
 );
+
+
+#--CREATE TABLE perfil  (
+#--    id INT AUTO_INCREMENT PRIMARY KEY,
+#--    nome VARCHAR(100) NOT NULL,
+#--    permissoes JSON NOT NULL,
+#--    status ENUM('Ativo', 'Inativo') NOT NULL DEFAULT 'Ativo'
+#--);
