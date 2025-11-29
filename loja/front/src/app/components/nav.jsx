@@ -1,4 +1,3 @@
-// components/Nav.jsx
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 
 import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
+import { useCarrinho } from "../context/carrinhoContext"; // IMPORT DO CARRINHO
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -25,10 +25,17 @@ export default function Nav() {
   const [abrirRegister, setAbrirRegister] = useState(false);
 
   const [logado, setLogado] = useState(false);
-  const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false); // NOVO: pop-up de usuário
+  const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
+
+  // USO DO CARRINHO
+  const { dadosCheckout } = useCarrinho();
+  const totalItens = dadosCheckout.itensPedido.reduce(
+    (acc, item) => acc + item.quantidade,
+    0
+  );
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 150);
@@ -36,7 +43,6 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Verifica login
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) setLogado(true);
@@ -44,7 +50,7 @@ export default function Nav() {
 
   const handleUsuarioClick = () => {
     if (logado) {
-      setAbrirUsuarioMenu(!abrirUsuarioMenu); // mostra pop-up
+      setAbrirUsuarioMenu(!abrirUsuarioMenu);
     } else {
       setAbrirLogin(true);
     }
@@ -103,14 +109,6 @@ export default function Nav() {
               Arranjos
             </Link>
           </li>
-          <li>
-            <Link
-              href="/orcamentos"
-              className={pathname === "/orcamentos" ? styles.active : ""}
-            >
-              Orçamentos
-            </Link>
-          </li>
         </ul>
 
         {/* Ícones direita */}
@@ -126,9 +124,13 @@ export default function Nav() {
             <FontAwesomeIcon icon={faUser} />
           </li>
 
-          <li>
+          {/* Ícone carrinho com contador */}
+          <li className={styles.cartIcon}>
             <Link href="/carrinho">
-               <FontAwesomeIcon icon={faCartShopping} />   
+              <FontAwesomeIcon icon={faCartShopping} />
+              {totalItens > 0 && (
+                <span className={styles.cartBadge}>{totalItens}</span>
+              )}
             </Link>
           </li>
         </ul>
