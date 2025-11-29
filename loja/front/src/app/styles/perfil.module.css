@@ -1,4 +1,9 @@
 /* ---- NOVO WRAPPER PRINCIPAL (Para centralizar e envolver o Breadcrumb) ---- */
+
+body {
+  background-color: white;
+}
+
 .perfilWrapper {
   width: 100%;
   max-width: 1200px; /* Limite máximo de largura */

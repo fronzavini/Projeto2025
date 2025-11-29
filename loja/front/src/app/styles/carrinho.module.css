@@ -1,6 +1,10 @@
 /* =======================================================
     ESTILOS GERAIS DA PÁGINA E LAYOUT
     ======================================================= */
+body {
+  background-color: white;
+}
+
 .paginaCarrinhoContainer {
   display: flex;
   gap: 30px;
@@ -211,6 +215,7 @@
   color: #444;
   outline: none;
   padding: 0;
+  background-color: white;
 
   /* Remover setas padrão em navegadores */
   -moz-appearance: textfield;
@@ -382,6 +387,7 @@
 .cupomInputGrupo {
   display: flex;
   gap: 10px;
+  background-color: white;
 }
 
 .inputCupom {
@@ -391,6 +397,14 @@
   border-radius: 6px;
   font-size: 0.95em;
   outline: none;
+  background-color: #fff; /* Fundo branco garantido */
+  color: #000; /* Texto digitado em preto */
+}
+
+/* Placeholder do cupom */
+.inputCupom::placeholder {
+  color: #666; /* Cor do placeholder */
+  opacity: 1; /* Garante visibilidade */
 }
 
 .inputCupom:focus {
@@ -459,8 +473,16 @@
     font-size: 1.1em;
   }
 
+  /* Texto digitado no input */
   .inputCep {
-    width: 100px;
+    color: #000; /* Cor do texto digitado */
+    background-color: white;
+  }
+
+  /* Placeholder */
+  .inputCep::placeholder {
+    color: #666; /* Cor do placeholder */
+    opacity: 1; /* Para garantir visibilidade em todos os navegadores */
   }
 
   .botaoConsultar {

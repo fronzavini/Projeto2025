@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import styles from "../styles/carrinho.module.css";
 
 function ResumoCompra({ dadosResumo }) {
@@ -62,10 +63,12 @@ function ResumoCompra({ dadosResumo }) {
         </span>
       </div>
 
-      <button className={styles.botaoFinalizar}>Finalizar</button>
-      <button className={styles.botaoEscolherMais}>
-        Escolher mais produtos
-      </button>
+      <button className={styles.botaoFinalizar}>Próxima etapa</button>
+      <Link href="/flores">
+        <button className={styles.botaoEscolherMais}>
+          Escolher mais produtos
+        </button>
+      </Link>
     </div>
   );
 }

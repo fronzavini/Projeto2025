@@ -24,3 +24,7 @@
   gap: 4.3rem; /* espaço entre os cards */
   width: 100%;
 }
+
+body {
+  background-color: white;
+}
