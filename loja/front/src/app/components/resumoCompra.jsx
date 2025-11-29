@@ -3,15 +3,26 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "../styles/carrinho.module.css";
+import { useCarrinho } from "../context/carrinhoContext"; // <<-- NOVO: Importa o hook
 
-function ResumoCompra({ dadosResumo }) {
+// REMOVIDA A PROP { dadosResumo }
+function ResumoCompra() {
+  // PEGA OS DADOS DO ESTADO GLOBAL
+  const { dadosCheckout } = useCarrinho();
+  const { valoresTotais, itensPedido } = dadosCheckout;
+
   const [cupom, setCupom] = useState("");
 
-  const formatCurrency = (value) => value.toFixed(2).replace(".", ",");
+  // Garante que o valor seja formatado
+  const formatCurrency = (value) =>
+    value?.toFixed(2).replace(".", ",") || "0,00";
 
-  const numItens = 1; // ou calcular dinamicamente se quiser
+  // Usamos o número real de itens do Contexto
+  const numItens = itensPedido.length;
 
+  // Função fictícia para aplicar cupom
   const handleAplicarCupom = () => {
+    // Em um app real, isso atualizaria o estado global via atualizarDadosCheckout
     alert(`Cupom aplicado: ${cupom}`);
     setCupom("");
   };
@@ -21,9 +32,12 @@ function ResumoCompra({ dadosResumo }) {
       <h2 className={styles.tituloSecao}>Resumo da compra</h2>
 
       <div className={styles.linhaResumo}>
-        <span>Subtotal ({numItens} item)</span>
+        <span>
+          Subtotal ({numItens} item{numItens > 1 ? "s" : ""})
+        </span>
         <span className={styles.valorSubtotal}>
-          R$ {formatCurrency(dadosResumo.subtotal)}
+          {/* Usamos o valor numérico para formatação */}
+          R$ {formatCurrency(valoresTotais.subtotal)}
         </span>
       </div>
 
@@ -34,7 +48,7 @@ function ResumoCompra({ dadosResumo }) {
             Chega dia <strong>23 de Dezembro</strong>
           </p>
         </div>
-        <span className={styles.valorFrete}>Grátis</span>
+        <span className={styles.valorFrete}>{valoresTotais.frete}</span>
       </div>
 
       {/* Cupom direto com input */}
@@ -59,11 +73,14 @@ function ResumoCompra({ dadosResumo }) {
       <div className={`${styles.linhaResumo} ${styles.valorTotal}`}>
         <span>Valor total</span>
         <span className={styles.valorFinal}>
-          R$ {formatCurrency(dadosResumo.total)}
+          R$ {formatCurrency(valoresTotais.total)}
         </span>
       </div>
 
-      <button className={styles.botaoFinalizar}>Próxima etapa</button>
+      {/* O Link apenas navega, pois os dados já estão no Contexto */}
+      <Link href="/checkout">
+        <button className={styles.botaoFinalizar}>Próxima etapa</button>
+      </Link>
       <Link href="/flores">
         <button className={styles.botaoEscolherMais}>
           Escolher mais produtos

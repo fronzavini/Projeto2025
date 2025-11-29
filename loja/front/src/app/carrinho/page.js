@@ -1,57 +1,37 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import ItemCarrinho from "../components/itemCarrinho";
 import ResumoCompra from "../components/resumoCompra";
 import styles from "../styles/carrinho.module.css";
 import { useRouter } from "next/navigation";
-
-// Dados iniciais fictícios
-const initialProdutos = [
-  {
-    id: 1,
-    nome: "Boné New Era 9Forty Chicago Red Bulls Metallic P25...",
-    referencia: "BRJ-7724-006-01",
-    cor: "Preto",
-    tamanho: "Único",
-    quantidade: 1,
-    preco: 279.9,
-    imagem: "caminho/para/imagem.png",
-  },
-];
-
-// Função auxiliar para cálculo
-const calcularResumo = (produtos) => {
-  const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
-  const frete = 0;
-  const desconto = 0;
-  const total = subtotal + frete - desconto;
-
-  const parcelas = 4;
-  const valorParcela = total / parcelas;
-
-  return { subtotal, frete, desconto, total, parcelas, valorParcela };
-};
+import { useCarrinho } from "../context/carrinhoContext"; // <-- import
 
 export default function Carrinho() {
   const router = useRouter();
-  const [produtos, setProdutos] = useState(initialProdutos);
+  const { dadosCheckout } = useCarrinho(); // pega os itens do carrinho global
 
-  const dadosResumo = useMemo(() => calcularResumo(produtos), [produtos]);
+  const produtos = dadosCheckout.itensPedido;
 
-  const handleQuantidadeChange = (produtoId, novaQuantidade) => {
-    const quantidadeValida = Math.max(1, novaQuantidade);
-
-    setProdutos((prev) =>
-      prev.map((p) =>
-        p.id === produtoId ? { ...p, quantidade: quantidadeValida } : p
-      )
+  // Função para calcular resumo
+  const dadosResumo = useMemo(() => {
+    const subtotal = produtos.reduce(
+      (acc, p) => acc + p.preco * p.quantidade,
+      0
     );
-  };
+    const frete = 0;
+    const desconto = 0;
+    const total = subtotal + frete - desconto;
+
+    const parcelas = 4;
+    const valorParcela = total / parcelas;
+
+    return { subtotal, frete, desconto, total, parcelas, valorParcela };
+  }, [produtos]);
 
   return (
     <>
-      {/* 🔙 BOTÃO VOLTAR (agora fica no topo, fora do flex!) */}
+      {/* 🔙 BOTÃO VOLTAR */}
       <button className={styles.botaoVoltar} onClick={() => router.back()}>
         Voltar
       </button>
@@ -62,13 +42,13 @@ export default function Carrinho() {
           <h2 className={styles.tituloSecao}>Meu carrinho</h2>
 
           <div className={styles.listaProdutos}>
-            {produtos.map((produto) => (
-              <ItemCarrinho
-                key={produto.id}
-                produto={produto}
-                onQuantidadeChange={handleQuantidadeChange}
-              />
-            ))}
+            {produtos.length === 0 ? (
+              <p>Seu carrinho está vazio.</p>
+            ) : (
+              produtos.map((produto) => (
+                <ItemCarrinho key={produto.id} produto={produto} />
+              ))
+            )}
           </div>
 
           <hr className={styles.separadorLoja} />

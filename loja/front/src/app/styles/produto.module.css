@@ -140,3 +140,22 @@
     gap: 5px;
   }
 }
+
+.mensagemAdicionado {
+  color: green;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
