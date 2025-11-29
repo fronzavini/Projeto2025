@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import styles from "../../styles/cadastrarCliente.module.css"; // CSS existente
+import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function CadastrarFuncionario({ onClose }) {
   const [form, setForm] = useState({
@@ -10,15 +10,14 @@ export default function CadastrarFuncionario({ onClose }) {
     data_nascimento: "",
     sexo: "masculino",
     email: "",
-    /*senha: "",*/
     telefone: "",
-    cep: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
-    logradouro: "",
-    complemento: "",
-    uf: "",
+    endCep: "",
+    endRua: "",
+    endNumero: "",
+    endBairro: "",
+    endComplemento: "",
+    endUF: "",
+    endMunicipio: "",
     funcao: "",
     salario: "",
     dataContratacao: "",
@@ -49,10 +48,13 @@ export default function CadastrarFuncionario({ onClose }) {
 
       const resultado = await response.json();
       if (!response.ok) {
-        const msg = (resultado && resultado.detalhes) || 'Erro ao cadastrar funcionário.';
+        const msg =
+          (resultado && resultado.detalhes) ||
+          "Erro ao cadastrar funcionário.";
         throw new Error(msg);
       }
-      alert('Funcionário cadastrado com sucesso!');
+
+      alert("Funcionário cadastrado com sucesso!");
       onClose();
 
       setForm({
@@ -62,22 +64,23 @@ export default function CadastrarFuncionario({ onClose }) {
         data_nascimento: "",
         sexo: "masculino",
         email: "",
-       /* senha: "",*/
         telefone: "",
-        cep: "",
-        numero: "",
-        bairro: "",
-        cidade: "",
-        logradouro: "",
-        complemento: "",
-        uf: "",
+        endCep: "",
+        endRua: "",
+        endNumero: "",
+        endBairro: "",
+        endComplemento: "",
+        endUF: "",
+        endMunicipio: "",
         funcao: "",
         salario: "",
         dataContratacao: "",
       });
     } catch (error) {
       console.error(error);
-      alert("Erro ao cadastrar funcionário. Verifique se o servidor está rodando.");
+      alert(
+        "Erro ao cadastrar funcionário. Verifique se o servidor está rodando."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -87,11 +90,7 @@ export default function CadastrarFuncionario({ onClose }) {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Novo Funcionário</h2>
-        <button
-          className={styles.botaoCancelar}
-          type="button"
-          onClick={onClose}
-        >
+        <button className={styles.botaoCancelar} type="button" onClick={onClose}>
           Cancelar
         </button>
       </div>
@@ -99,10 +98,9 @@ export default function CadastrarFuncionario({ onClose }) {
       <form onSubmit={handleSubmit}>
         {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome" className={styles.label}>Nome</label>
+          <label className={styles.label}>Nome</label>
           <input
             className={styles.input}
-            id="nome"
             name="nome"
             value={form.nome}
             onChange={handleChange}
@@ -113,21 +111,20 @@ export default function CadastrarFuncionario({ onClose }) {
         {/* CPF e RG */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cpf" className={styles.label}>CPF</label>
+            <label className={styles.label}>CPF</label>
             <input
               className={styles.input}
-              id="cpf"
               name="cpf"
               value={form.cpf}
               onChange={handleChange}
               required
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="rg" className={styles.label}>RG</label>
+            <label className={styles.label}>RG</label>
             <input
               className={styles.input}
-              id="rg"
               name="rg"
               value={form.rg}
               onChange={handleChange}
@@ -136,24 +133,24 @@ export default function CadastrarFuncionario({ onClose }) {
           </div>
         </div>
 
-        {/* Data de Nascimento e Sexo */}
+        {/* Data de nascimento */}
         <div className={styles.formGroup}>
-          <label htmlFor="data_nascimento" className={styles.label}>Data de Nascimento</label>
+          <label className={styles.label}>Data de Nascimento</label>
           <input
             className={styles.inputDate}
-            id="data_nascimento"
-            name="data_nascimento"
             type="date"
+            name="data_nascimento"
             value={form.data_nascimento}
             onChange={handleChange}
             required
           />
         </div>
+
+        {/* Sexo */}
         <div className={styles.formGroup}>
-          <label htmlFor="sexo" className={styles.label}>Sexo</label>
+          <label className={styles.label}>Sexo</label>
           <select
             className={styles.input}
-            id="sexo"
             name="sexo"
             value={form.sexo}
             onChange={handleChange}
@@ -164,12 +161,11 @@ export default function CadastrarFuncionario({ onClose }) {
           </select>
         </div>
 
-        {/* Função, Email e Senha */}
+        {/* Função */}
         <div className={styles.formGroup}>
-          <label htmlFor="funcao" className={styles.label}>Função</label>
+          <label className={styles.label}>Função</label>
           <select
             className={styles.input}
-            id="funcao"
             name="funcao"
             value={form.funcao}
             onChange={handleChange}
@@ -180,37 +176,25 @@ export default function CadastrarFuncionario({ onClose }) {
             <option value="estoque">Estoque</option>
           </select>
         </div>
+
+        {/* Email */}
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>Email</label>
+          <label className={styles.label}>Email</label>
           <input
             className={styles.input}
-            id="email"
-            name="email"
             type="email"
+            name="email"
             value={form.email}
             onChange={handleChange}
             required
           />
         </div>
-        {/* <div className={styles.formGroup}>
-          <label htmlFor="senha" className={styles.label}>Senha</label>
-          <input
-            className={styles.input}
-            id="senha"
-            name="senha"
-            type="password"
-            value={form.senha}
-            onChange={handleChange}
-            required
-          />
-        </div> */}
 
         {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>Telefone</label>
+          <label className={styles.label}>Telefone</label>
           <input
             className={styles.input}
-            id="telefone"
             name="telefone"
             value={form.telefone}
             onChange={handleChange}
@@ -221,108 +205,117 @@ export default function CadastrarFuncionario({ onClose }) {
         {/* Endereço */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cep" className={styles.label}>CEP</label>
+            <label className={styles.label}>CEP</label>
             <input
               className={styles.input}
-              id="cep"
-              name="cep"
-              value={form.cep}
+              name="endCep"
+              value={form.endCep}
               onChange={handleChange}
+              required
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="numero" className={styles.label}>Número</label>
+            <label className={styles.label}>Número</label>
             <input
               className={styles.input}
-              id="numero"
-              name="numero"
-              value={form.numero}
+              name="endNumero"
+              value={form.endNumero}
               onChange={handleChange}
+              required
             />
           </div>
         </div>
 
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="bairro" className={styles.label}>Bairro</label>
+            <label className={styles.label}>Rua</label>
             <input
               className={styles.input}
-              id="bairro"
-              name="bairro"
-              value={form.bairro}
+              name="endRua"
+              value={form.endRua}
               onChange={handleChange}
+              required
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="cidade" className={styles.label}>Cidade</label>
+            <label className={styles.label}>Bairro</label>
             <input
               className={styles.input}
-              id="cidade"
-              name="cidade"
-              value={form.cidade}
+              name="endBairro"
+              value={form.endBairro}
               onChange={handleChange}
+              required
             />
           </div>
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="logradouro" className={styles.label}>Logradouro</label>
+          <label className={styles.label}>Complemento</label>
           <input
             className={styles.input}
-            id="logradouro"
-            name="logradouro"
-            value={form.logradouro}
+            name="endComplemento"
+            value={form.endComplemento}
             onChange={handleChange}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="complemento" className={styles.label}>Complemento</label>
-          <input
-            className={styles.input}
-            id="complemento"
-            name="complemento"
-            value={form.complemento}
-            onChange={handleChange}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label htmlFor="uf" className={styles.label}>UF</label>
-          <input
-            className={styles.input}
-            id="uf"
-            name="uf"
-            value={form.uf}
-            onChange={handleChange}
-            maxLength={2}
           />
         </div>
 
-        {/* Salário e Data de Contratação */}
+        <div className={styles.row}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>UF</label>
+            <input
+              className={styles.input}
+              name="endUF"
+              value={form.endUF}
+              onChange={handleChange}
+              maxLength={2}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Município</label>
+            <input
+              className={styles.input}
+              name="endMunicipio"
+              value={form.endMunicipio}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        </div>
+
+        {/* Salário */}
         <div className={styles.formGroup}>
-          <label htmlFor="salario" className={styles.label}>Salário</label>
+          <label className={styles.label}>Salário</label>
           <input
             className={styles.input}
-            id="salario"
-            name="salario"
             type="number"
             step="0.01"
+            name="salario"
             value={form.salario}
             onChange={handleChange}
           />
         </div>
+
+        {/* Data contratação */}
         <div className={styles.formGroup}>
-          <label htmlFor="dataContratacao" className={styles.label}>Data de Contratação</label>
+          <label className={styles.label}>Data de Contratação</label>
           <input
             className={styles.inputDate}
-            id="dataContratacao"
-            name="dataContratacao"
             type="date"
+            name="dataContratacao"
             value={form.dataContratacao}
             onChange={handleChange}
           />
         </div>
 
-        <button type="submit" className={styles.botaoEnviar} disabled={isSubmitting}>
+        <button
+          type="submit"
+          className={styles.botaoEnviar}
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Cadastrando..." : "Cadastrar funcionário"}
         </button>
       </form>

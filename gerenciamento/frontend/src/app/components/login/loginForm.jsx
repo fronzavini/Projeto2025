@@ -45,7 +45,7 @@ export default function LoginForm() {
 
         try {
           const tema =
-            (settings && settings.tema_preferido) ||
+            (usuario_sistema.tema_preferido) ||
             localStorage.getItem("tema_preferido");
 
           if (tema) {
@@ -53,7 +53,7 @@ export default function LoginForm() {
               "data-theme",
               tema === "escuro" ? "dark" : "light"
             );
-            localStorage.setItem("tema_preferido", tema);
+            localStorage.setItem("tema", tema);
           }
         } catch (err) {
           console.error("Erro ao aplicar settings:", err);

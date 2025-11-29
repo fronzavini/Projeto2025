@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import styles from "../styles/cards.module.css";
 
 export default function Cards() {
@@ -7,6 +8,14 @@ export default function Cards() {
     { title: "Total de vendas", value: "21 R$2.200" },
     { title: "Em estoque mínimo", value: 5 },
   ];
+
+  useEffect(() => {
+    // Carrega o tema salvo no localStorage
+    const tema = localStorage.getItem("tema") || "claro";
+
+    // Aplica o tema
+    document.body.setAttribute("data-theme", tema === "escuro" ? "dark" : "light");
+  }, []);
 
   return (
     <div className={styles.cardsContainer}>

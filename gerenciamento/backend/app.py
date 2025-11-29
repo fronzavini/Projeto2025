@@ -131,24 +131,28 @@ def listar_clientes():
 #curl -X POST http://127.0.0.1:5000/criar_funcionario -H "Content-Type: application/json" -d "{\"nome\":\"Maria Souza\",\"cpf\":\"12345678901\",\"rg\":\"1234567\",\"data_nascimento\":\"1990-05-10\",\"sexo\":\"feminino\",\"email\":\"maria.souza@email.com\",\"senha\":\"senha123\",\"telefone\":\"11988887777\",\"cep\":\"12345678\",\"logradouro\":\"Rua X\",\"numero\":\"200\",\"bairro\":\"Centro\",\"complemento\":\"Apto 5\",\"uf\":\"SP\",\"cidade\":\"São Paulo\",\"funcao\":\"vendedora\",\"salario\":2500.00,\"dataContratacao\":\"2023-01-15\"}"
 @app.route('/criar_funcionario', methods=['POST'])
 def criar_funcionario():
-    dados = request.json
+    dados = request.json or {}
+
     funcionario_data = {
         "nome": dados.get("nome"),
         "cpf": dados.get("cpf"),
         "rg": dados.get("rg"),
-        "dataNasc": dados.get("data_nascimento"),
+        "data_nascimento": dados.get("data_nascimento"),  # nome correto
         "sexo": dados.get("sexo"),
         "email": dados.get("email"),
-        #"senha": dados.get("senha", "funcionario123") if dados.get("senha") else None,
-        "estado": True,  # Adicione aqui, se sempre for ativo ao criar
+        "estado": True,
         "telefone": dados.get("telefone"),
-        "endCep": dados.get("cep"),
-        "endRua": dados.get("logradouro"),
-        "endNumero": dados.get("numero"),
-        "endBairro": dados.get("bairro"),
-        "endComplemento": dados.get("complemento"),
-        "endUF": dados.get("uf"),
-        "endMunicipio": dados.get("cidade"),
+
+        # Endereço (nomes corrigidos)
+        "endCep": dados.get("endCep"),
+        "endRua": dados.get("endRua"),
+        "endNumero": dados.get("endNumero"),
+        "endBairro": dados.get("endBairro"),
+        "endComplemento": dados.get("endComplemento"),
+        "endUF": dados.get("endUF"),
+        "endMunicipio": dados.get("endMunicipio"),
+
+        # Outros campos
         "funcao": dados.get("funcao"),
         "salario": dados.get("salario"),
         "dataContratacao": dados.get("dataContratacao"),
@@ -156,6 +160,7 @@ def criar_funcionario():
 
     resultado = Funcionario.criarFuncionario(**funcionario_data)
     return jsonify({"message": resultado})
+
 
 
 
