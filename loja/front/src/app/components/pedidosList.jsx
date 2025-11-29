@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBox,
@@ -8,139 +11,67 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/pedidos.module.css";
 
-const PedidosList = ({ pedidos = [] }) => {
-  if (pedidos.length === 0) {
-    return <div className={styles.noOrders}>Nenhum pedido encontrado.</div>;
-  }
-
-  const simplePedido = pedidos[0];
-
-  const statusMap = {
-    Entregue: "entregue",
-    "Em transporte": "transporte",
-    "Em separação": "separacao",
-  };
-
-  const detailedOrderData = {
-    productName: "Dália - Flor Unitária",
-    quantity: "1",
-    value: "R$ 14,99",
-    seller: "BellaDonna",
-    orderId: simplePedido.id,
-    orderDate: simplePedido.data,
-    totalValue: simplePedido.valor.toFixed(2),
-    deliveryDate: "10/12/2025",
-
-    // <--- CORREÇÃO DE TESTE: Força o status para "realizado" --->
-    currentStatus: "realizado",
-
-    imageSrc:
-      "https://i.pinimg.com/736x/5b/a3/b5/5ba3b51339575c16e9a4c238f62766ee.jpg",
-  };
-
-  const {
-    productName,
-    quantity,
-    value,
-    seller,
-    orderId,
-    orderDate,
-    totalValue,
-    deliveryDate,
-    currentStatus,
-    imageSrc,
-  } = detailedOrderData;
-
+const PedidoCard = ({ pedido }) => {
   const trackingSteps = [
-    {
-      name: "Pedido realizado",
-      date: "28/11/2025",
-      time: "08:50",
-      icon: faBox,
-      status: "realizado",
-    },
-    {
-      name: "Em separação",
-      date: "28/11/2025",
-      time: "08:50",
-      icon: faWarehouse,
-      status: "separacao",
-    },
-    {
-      name: "Em transporte",
-      date: "",
-      time: "",
-      icon: faTruck,
-      status: "transporte",
-    },
-    {
-      name: "Pedido entregue",
-      date: "",
-      time: "",
-      icon: faHome,
-      status: "entregue",
-    },
+    { name: "Pedido realizado", icon: faBox, status: "realizado" },
+    { name: "Em separação", icon: faWarehouse, status: "separacao" },
+    { name: "Em transporte", icon: faTruck, status: "transporte" },
+    { name: "Pedido entregue", icon: faHome, status: "entregue" },
   ];
 
-  const getStatusClass = (stepStatus) => {
-    const statusOrder = trackingSteps.map((step) => step.status);
-    const currentStatusIndex = statusOrder.indexOf(currentStatus);
-    const stepIndex = statusOrder.indexOf(stepStatus);
+  const firstItem = pedido.itens[0];
+  const currentStatus = pedido.status;
 
-    if (stepIndex <= currentStatusIndex) {
-      return styles.active;
-    }
-    return styles.inactive;
+  const getStatusClass = (stepStatus) => {
+    const order = ["realizado", "separacao", "transporte", "entregue"];
+    return order.indexOf(stepStatus) <= order.indexOf(currentStatus)
+      ? styles.active
+      : styles.inactive;
   };
 
-  const currentStatusIndexForTracking = trackingSteps.findIndex(
-    (step) => step.status === currentStatus
-  );
-
-  const totalSteps = trackingSteps.length - 1;
-  const progressBarWidth = (currentStatusIndexForTracking / totalSteps) * 100;
+  const progressBarWidth = (() => {
+    const order = ["realizado", "separacao", "transporte", "entregue"];
+    const index = order.indexOf(currentStatus);
+    return (index / (order.length - 1)) * 100;
+  })();
 
   return (
     <div className={styles.container}>
-      {/* Coluna do Produto */}
+      {/* COLUNA ESQUERDA - PRODUTO */}
       <div className={styles.productColumn}>
         <div className={styles.productImageWrapper}>
-          <img
-            src={imageSrc}
-            alt={productName}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <img src={firstItem.imageUrl} alt={firstItem.nome} />
         </div>
 
         <p className={styles.productName}>
-          <strong>{productName}</strong>
+          <strong>{firstItem.nome}</strong>
         </p>
 
         <p>
-          Quantidade: <strong>{quantity}</strong>
+          Quantidade: <strong>{firstItem.quantidade}</strong>
         </p>
         <p>
-          Valor: <strong>{value}</strong>
+          Valor unitário:{" "}
+          <strong>R$ {firstItem.valorUnitario.toFixed(2)}</strong>
         </p>
       </div>
 
-      {/* Coluna Central de Acompanhamento */}
+      {/* COLUNA CENTRAL - RASTREAMENTO */}
       <div className={styles.trackingColumn}>
         <p className={styles.sellerInfo}>
-          Vendido e entregue por <strong>{seller}</strong>
+          Vendido e entregue por <strong>Floricultura Lilian</strong>
         </p>
 
-        {/* Barra de Progresso do Rastreamento */}
         <div className={styles.trackingBar}>
           <div className={styles.progressBar}>
             <div
               className={styles.progressFill}
               style={{ width: `${progressBarWidth}%` }}
-            ></div>
+            />
           </div>
 
           <div className={styles.steps}>
-            {trackingSteps.map((step, index) => (
+            {trackingSteps.map((step) => (
               <div
                 key={step.status}
                 className={`${styles.step} ${getStatusClass(step.status)}`}
@@ -148,39 +79,120 @@ const PedidosList = ({ pedidos = [] }) => {
                 <div className={styles.stepIcon}>
                   <FontAwesomeIcon icon={step.icon} />
                 </div>
-                <div className={styles.stepInfo}>
-                  <p className={styles.stepDate}>
-                    {step.date} {step.time}
-                  </p>
-                  <p className={styles.stepName}>{step.name}</p>
-                </div>
+                <p className={styles.stepName}>{step.name}</p>
               </div>
             ))}
           </div>
         </div>
 
         <p className={styles.deliveryForecast}>
-          Previsão de entrega: <strong>até {deliveryDate}</strong>
+          Previsão de entrega: <strong>até {pedido.entrega.previsao}</strong>
         </p>
 
         <button className={styles.cancelButton}>CANCELAR PEDIDO</button>
       </div>
 
-      {/* Coluna de Resumo */}
+      {/* COLUNA DIREITA - RESUMO */}
       <div className={styles.summaryColumn}>
         <h3 className={styles.summaryTitle}>Resumo da compra</h3>
+
         <p>
-          Pedido: <strong>{orderId}</strong>
+          Pedido: <strong>{pedido.id}</strong>
         </p>
         <p>
-          Data do pedido: <strong>{orderDate}</strong>
+          Data do pedido: <strong>{pedido.dataRealizacao}</strong>
         </p>
         <p>
-          Valor total: <strong>R$ {totalValue}</strong>
+          Valor total: <strong>R$ {pedido.resumo.valorTotal.toFixed(2)}</strong>
         </p>
 
-        <button className={styles.detailsButton}>VER DETALHES</button>
+        <Link
+          href={{
+            pathname: `/pedido/${pedido.id}`,
+            query: { dados: JSON.stringify(pedido) }, // ENVIA O PEDIDO COMPLETO
+          }}
+          passHref
+        >
+          <button className={styles.detailsButton}>VER DETALHES</button>
+        </Link>
       </div>
+    </div>
+  );
+};
+
+// -------- MOCK COMPLETO DO PEDIDO --------
+const pedidosMock = [
+  {
+    id: "1",
+    status: "transporte",
+    dataRealizacao: "20/11/2025",
+
+    entrega: {
+      previsao: "25/11/2025",
+      transportadora: "Correios",
+      timeline: [
+        {
+          etapa: "Pedido realizado",
+          data: "20/11/2025",
+          hora: "10:00",
+          completed: true,
+        },
+        {
+          etapa: "Pagamento confirmado",
+          data: "20/11/2025",
+          hora: "10:05",
+          completed: true,
+        },
+        {
+          etapa: "Em separação",
+          data: "21/11/2025",
+          hora: "14:00",
+          completed: true,
+        },
+        {
+          etapa: "Em transporte",
+          data: "22/11/2025",
+          hora: "09:00",
+          completed: true,
+        },
+        { etapa: "Pedido entregue", completed: false },
+      ],
+    },
+
+    endereco: {
+      principal: "Rua das Flores, 123",
+      cidade: "Curitiba - PR",
+      cep: "80000-000",
+    },
+
+    formaPagamento: "Pix",
+
+    resumo: {
+      subtotal: 149.9,
+      frete: 0,
+      descontos: 0,
+      valorTotal: 149.9,
+    },
+
+    itens: [
+      {
+        nome: "Buquê Tulipas Vermelhas",
+        quantidade: 1,
+        valorUnitario: 149.9,
+        cor: "Vermelho",
+        tamanho: "Único",
+        imageUrl: "https://placehold.co/150x150/red/fff?text=Tulipa",
+      },
+    ],
+  },
+];
+
+const PedidosList = () => {
+  return (
+    <div className={styles.listContainer}>
+      {pedidosMock.map((pedido) => (
+        <PedidoCard key={pedido.id} pedido={pedido} />
+      ))}
     </div>
   );
 };

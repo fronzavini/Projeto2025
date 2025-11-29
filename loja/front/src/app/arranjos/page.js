@@ -1,41 +1,39 @@
 "use client";
 
-import React from "react";
 import Produto from "../components/produto";
 import Banner from "../components/banner";
 import Relevancia from "../components/relevancia";
 import styles from "../styles/page.module.css";
 
-export default function Home() {
-  const handleAddToCart = (produto) => {
-    alert(`Produto adicionado: ${produto.nome}`);
-  };
+import { arranjos } from "../data/arranjos.js";
 
+export default function Home() {
   return (
     <div>
       <Banner
         imagem="/imgs/flores2.jpeg"
-        titulo="Arranjos e buquês"
-        texto="Encontre aqui buquês e arranjos frescos, cheios de cores e vida. Perfeitos para presentear ou decorar com charme natural. "
+        titulo="Arranjos e Buquês"
+        texto="Arranjos e buquês frescos, cheios de vida e perfeitos para presentear."
       />
+
       <div className={styles.containerFiltros}>
-        <span className={styles.totalProdutos}>120 produtos</span>
+        <span className={styles.totalProdutos}>{arranjos.length} produtos</span>
+
         <div className={styles.filtros}>
-          <Relevancia
-            onChange={(valor) => {
-              console.log("Ordenação escolhida:", valor);
-              // preco-asc  ou  preco-desc
-            }}
-          />
+          <Relevancia />
         </div>
       </div>
+
       <div className={styles.produtoGrid}>
-        <Produto
-          nome="Copo-de-Leite - Buquê"
-          imagemPrincipal="/imgs/copo-de-leite.jpg"
-          preco="35,00"
-          addToCart={handleAddToCart}
-        />
+        {arranjos.map((item) => (
+          <Produto
+            key={item.id}
+            id={item.id}
+            nome={item.nome}
+            preco={item.preco}
+            imagemPrincipal={item.imagemPrincipal}
+          />
+        ))}
       </div>
     </div>
   );
