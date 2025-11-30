@@ -1,6 +1,8 @@
-/* Container da página */
+/* editarUsuario.module.css */
+
+/* Container principal */
 .container {
-  max-width: 800px;
+  max-width: 400px;
   margin: 2rem auto;
   padding: 2rem;
   background: var(--container-bg);
@@ -12,25 +14,21 @@
   gap: 1rem;
 }
 
-/* Header da página */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header h2 {
+/* Título do formulário */
+.container h2 {
+  font-size: 1.6rem;
   color: var(--header-title-color);
-  font-size: 1.8rem;
+  text-align: center;
 }
 
-/* Labels e inputs */
+/* Labels */
 .container label {
   font-weight: 500;
   color: var(--label-cinza, #666);
 }
-.container input,
-.container select {
+
+/* Inputs */
+.container input {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--input-border-color);
@@ -38,16 +36,16 @@
   background: var(--fundo-branco);
   color: var(--foreground);
   font-size: 1rem;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
-.container input:focus,
-.container select:focus {
+.container input:focus {
   outline: none;
   border-color: var(--input-focus-border-color);
   box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
 }
 
-/* Botão de enviar */
+/* Botão de enviar/atualizar */
 .container button.submit {
   background: var(--botao-enviar-bg);
   color: var(--botao-text-color, #fff);
@@ -67,60 +65,17 @@
 .container p.error {
   color: var(--status-inativo-color, #b91c1c);
   font-size: 0.9rem;
-}
-
-.pageContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1rem;
-}
-
-.pageTitle {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-/* Flex container para as seções de cadastro e tabela */
-.pageSections {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-  flex-wrap: wrap; /* permite quebrar linha em telas pequenas */
-}
-
-/* Cadastro menor à esquerda */
-.cadastrarSection {
-  flex: 1;
-  max-width: 400px;
-}
-
-/* Tabela ocupa o restante */
-.tabelaSection {
-  flex: 2;
-  min-width: 300px;
-}
-
-/* Títulos */
-.cadastrarSection h2,
-.tabelaSection h2 {
-  margin-bottom: 1rem;
-  color: var(--header-title-color);
 }
 
 /* Responsividade */
-@media (max-width: 900px) {
-  .pageSections {
-    flex-direction: column;
+@media (max-width: 500px) {
+  .container {
+    padding: 1.5rem;
+    margin: 1rem;
   }
 
-  .cadastrarSection,
-  .tabelaSection {
-    max-width: 100%;
-    flex: 1 1 100%;
+  .container h2 {
+    font-size: 1.4rem;
   }
 }
-
