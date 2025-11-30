@@ -5,7 +5,7 @@ import csv
 import io
 import json
 import re
-from classes import Cliente, Funcionario, Produto,ImagemProduto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira, UsuarioSistema,UsuarioLoja
+from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira, UsuarioSistema,UsuarioLoja
 from flask_cors import CORS
 from pymysql.err import MySQLError
 
@@ -399,38 +399,6 @@ def obter_produto(nome_produto):
     else:
         return jsonify({"message": "Produto não encontrado"}), 404
 
-@app.route('/criar_imagem_produto', methods=['POST'])
-def criar_imagem_produto():
-    dados = request.json
-    produto_id = dados.get("produto_id")
-    url = dados.get("url")
-
-    resultado = ImagemProduto.criarImagem(produto_id, url)
-    return jsonify(resultado)
-
-
-# curl -X PUT http://127.0.0.1:5000/editar_imagem_produto/1 -H "Content-Type: application/json" -d "{\"url\":\"/imagens/nova.png\"}"
-@app.route('/editar_imagem_produto/<int:id>', methods=['PUT'])
-def editar_imagem_produto(id):
-    dados = request.json
-    url = dados.get("url")
-
-    resultado = ImagemProduto.editarImagem(id, url)
-    return jsonify(resultado)
-
-
-# curl -X DELETE http://127.0.0.1:5000/deletar_imagem_produto/1
-@app.route('/deletar_imagem_produto/<int:id>', methods=['DELETE'])
-def deletar_imagem_produto(id):
-    resultado = ImagemProduto.excluirImagem(id)
-    return jsonify(resultado)
-
-
-# curl -X GET http://127.0.0.1:5000/listar_imagens_produto/1
-@app.route('/listar_imagens_produto', methods=['GET'])
-def listar_imagens_produto():
-    resultado = ImagemProduto.listarImagens()
-    return jsonify(resultado)
 
 #curl -X POST http://127.0.0.1:5000/criar_fornecedor -H "Content-Type: application/json" -d '{"nome_empresa":"Fornecedora X","cnpj":"12345678000199","telefone":"11977776666","email":"fornecedor@email.com","cep":"12345678","logradouro":"Rua Z","numero":"50","bairro":"Centro","complemento":"Sala 2","uf":"SP","cidade":"São Paulo"}'
 @app.route('/criar_fornecedor', methods=['POST'])

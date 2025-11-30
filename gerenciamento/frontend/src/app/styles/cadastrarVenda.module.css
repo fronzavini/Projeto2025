@@ -665,3 +665,27 @@
     max-width: 90%;
   }
 }
+
+/* Autocomplete dropdown */
+.dropdown {
+  position: absolute;
+  background-color: var(--fundo-cinza-claro); /* não branco */
+  border: 1px solid var(--cinza-borda);
+  border-radius: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 100%;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.dropdownItem {
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--foreground);
+}
+
+.dropdownItem:hover {
+  background-color: var(--botao-bg);
+  color: white;
+}

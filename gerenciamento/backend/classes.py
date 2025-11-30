@@ -556,7 +556,6 @@ class Produto:
             "estado": self.estado
         }
 
-
 class Fornecedor:
     def __init__(self, id=None, nome_empresa=None, cnpj=None, telefone=None, email=None, endCep=None, endRua=None,
                  endNumero=None, endBairro=None, endComplemento=None, endUF=None, endMunicipio=None):
