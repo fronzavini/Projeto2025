@@ -17,14 +17,17 @@ export default function FuncionariosPage() {
     <div className={styles.pageContainer}>
       <h1 className={styles.pageTitle}>Gerenciar Usuários do Sistema</h1>
 
-      <section className={styles.cadastrarSection}>
-        <CadastrarUsuario onUsuarioCadastrado={handleUsuarioCadastrado} />
-      </section>
+      <div className={styles.pageSections}>
+        <section className={styles.cadastrarSection}>
+          <h2>Cadastrar Novo Usuário</h2>
+          <CadastrarUsuario onUsuarioCadastrado={handleUsuarioCadastrado} />
+        </section>
 
-      <section className={styles.tabelaSection}>
-        <h2>Usuários Cadastrados</h2>
-        <TabelaUsuarios key={refresh} />
-      </section>
+        <section className={styles.tabelaSection}>
+          <h2>Usuários Cadastrados</h2>
+          <TabelaUsuarios key={refresh} />
+        </section>
+      </div>
     </div>
   );
 }

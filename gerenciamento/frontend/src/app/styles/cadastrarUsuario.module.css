@@ -46,6 +46,7 @@
   border-color: var(--input-focus-border-color);
   box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
 }
+
 /* Botão de enviar */
 .container button.submit {
   background: var(--botao-enviar-bg);
@@ -66,4 +67,59 @@
 .container p.error {
   color: var(--status-inativo-color, #b91c1c);
   font-size: 0.9rem;
+}
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.pageTitle {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* Flex container para as seções de cadastro e tabela */
+.pageSections {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap; /* permite quebrar linha em telas pequenas */
+}
+
+/* Cadastro menor à esquerda */
+.cadastrarSection {
+  flex: 1;
+  max-width: 400px;
+}
+
+/* Tabela ocupa o restante */
+.tabelaSection {
+  flex: 2;
+  min-width: 300px;
+}
+
+/* Títulos */
+.cadastrarSection h2,
+.tabelaSection h2 {
+  margin-bottom: 1rem;
+  color: var(--header-title-color);
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .pageSections {
+    flex-direction: column;
+  }
+
+  .cadastrarSection,
+  .tabelaSection {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
 }
