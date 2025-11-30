@@ -380,6 +380,29 @@ def listar_produtos():
     produtos = Produto.listarProdutos()
     return jsonify(produtos)
 
+@app.route('/produto_id/<int:produto_id>', methods=['GET'])
+def obter_produto_id(produto_id):
+    conexao = conectar_banco()
+    try:
+        cursor = conexao.cursor()
+        cursor.execute("SELECT * FROM produtos WHERE id=%s", (produto_id,))
+        resultado = cursor.fetchone()  # vai retornar uma tupla
+        if resultado:
+            # mapeando manualmente os campos do banco para um dicionário
+            colunas = [desc[0] for desc in cursor.description]
+            produto = dict(zip(colunas, resultado))
+        else:
+            produto = None
+    finally:
+        cursor.close()
+        conexao.close()
+
+    if produto:
+        return jsonify(produto)
+    else:
+        return jsonify({"message": "Produto não encontrado"}), 404
+
+
 @app.route('/obter_produto/<nome_produto>', methods=['GET'])
 def obter_produto(nome_produto):
     produto = Produto.obterProduto(nome_produto)
@@ -387,6 +410,9 @@ def obter_produto(nome_produto):
         return jsonify(produto)
     else:
         return jsonify({"message": "Produto não encontrado"}), 404
+    
+
+
 
 
 #curl -X POST http://127.0.0.1:5000/criar_fornecedor -H "Content-Type: application/json" -d '{"nome_empresa":"Fornecedora X","cnpj":"12345678000199","telefone":"11977776666","email":"fornecedor@email.com","cep":"12345678","logradouro":"Rua Z","numero":"50","bairro":"Centro","complemento":"Sala 2","uf":"SP","cidade":"São Paulo"}'

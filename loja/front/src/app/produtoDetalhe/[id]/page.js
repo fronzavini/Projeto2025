@@ -1,40 +1,47 @@
 "use client";
 
-import React from "react";
-import { produtos } from "../../data/produtos";
-import { arranjos } from "../../data/arranjos";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import ProdutoDetalhe from "../../components/produtoDetalhe";
-import ProdutoSlider from "../../components/produtoSlider";
 
-export default function ProdutoDetalhePage({ params }) {
-  // ⬅️ Next 15: params é uma Promise, precisa de React.use()
-  const resolvedParams = React.use(params);
-  const { id } = resolvedParams;
+export default function ProdutoDetalhePage() {
+  const params = useParams(); // pega os params da URL
+  const { id } = params; // id do produto
+  const [produto, setProduto] = useState(null);
+  const [carregando, setCarregando] = useState(true);
 
-  const produtoId = Number(id);
+  useEffect(() => {
+    const fetchProduto = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/produto_id/${id}`);
+        const data = await res.json();
+        if (res.ok) {
+          setProduto(data);
+        } else {
+          console.error(data.message);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar produto:", error);
+      } finally {
+        setCarregando(false);
+      }
+    };
 
-  // Procura em todas as categorias
-  const produto =
-    produtos.find((p) => p.id === produtoId) ||
-    arranjos.find((p) => p.id === produtoId);
+    fetchProduto();
+  }, [id]);
 
-  if (!produto) {
-    return <h1>Produto não encontrado.</h1>;
-  }
+  if (carregando) return <p>Carregando produto...</p>;
+  if (!produto) return <h1>Produto não encontrado</h1>;
 
   return (
-    <div>
-      <ProdutoDetalhe
-        id={produto.id} // essencial para carrinho
-        nome={produto.nome}
-        preco={produto.preco}
-        descricao={produto.descricao}
-        imagemPrincipal={produto.imagemPrincipal}
-        imagemSecundaria={produto.imagemSecundaria}
-        imagemTerciaria={produto.imagemTerciaria}
-      />
-
-      <ProdutoSlider />
-    </div>
+    <ProdutoDetalhe
+      id={produto.id}
+      nome={produto.nome}
+      preco={produto.preco}
+      descricao={produto.descricao || "Sem descrição"}
+      imagemPrincipal={produto.imagem_1}
+      imagemSecundaria={produto.imagem_2}
+      imagemTerciaria={produto.imagem_3}
+    />
   );
 }

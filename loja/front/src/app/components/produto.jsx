@@ -2,10 +2,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import styles from "../styles/produto.module.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBagShopping } from "@fortawesome/free-solid-svg-icons";
-
 import { useCarrinho } from "../context/carrinhoContext";
 
 export default function Produto({ id, imagemPrincipal, nome, preco }) {
@@ -13,30 +11,16 @@ export default function Produto({ id, imagemPrincipal, nome, preco }) {
   const [adicionado, setAdicionado] = useState(false);
 
   const handleAddToCart = () => {
-    // Checa se já existe no carrinho
     const itemExistente = dadosCheckout.itensPedido.find((i) => i.id === id);
 
-    if (itemExistente) {
-      // Já existe: apenas aumenta a quantidade
-      adicionarItem({
-        id,
-        nome,
-        preco: preco.toString().replace(",", "."),
-        quantidade: 1,
-        imagem: imagemPrincipal,
-      });
-    } else {
-      // Novo item
-      adicionarItem({
-        id,
-        nome,
-        preco: preco.toString().replace(",", "."),
-        quantidade: 1,
-        imagem: imagemPrincipal,
-      });
-    }
+    adicionarItem({
+      id: id.toString(),
+      nome,
+      preco: Number(preco),
+      quantidade: 1,
+      imagem: imagemPrincipal,
+    });
 
-    // Mensagem temporária
     setAdicionado(true);
     setTimeout(() => setAdicionado(false), 2000);
   };
@@ -63,7 +47,6 @@ export default function Produto({ id, imagemPrincipal, nome, preco }) {
         </button>
       </div>
 
-      {/* Mensagem de feedback */}
       {adicionado && (
         <p className={styles.mensagemAdicionado}>
           Produto adicionado ao carrinho!

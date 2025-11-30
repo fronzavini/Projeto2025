@@ -1,13 +1,34 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Produto from "../components/produto";
 import Banner from "../components/banner";
 import Relevancia from "../components/relevancia";
 import styles from "../styles/page.module.css";
 
-import { arranjos } from "../data/arranjos.js";
-
 export default function Home() {
+  const [produtos, setProdutos] = useState([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/listar_produtos")
+      .then((res) => res.json())
+      .then((data) => {
+        // A tabela produtos retorna array de arrays
+        // id, nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado, fornecedor_id, imagem_1, imagem_2, imagem_3
+        const produtosFormatados = data
+          .filter((produto) => produto[2]?.toLowerCase() === "arranjo") // índice 2 = categoria
+          .map((produto) => ({
+            id: produto[0], // id
+            nome: produto[1], // nome
+            preco: produto[4], // preço
+            imagemPrincipal: produto[9], // imagem_1
+          }));
+
+        setProdutos(produtosFormatados);
+      })
+      .catch((err) => console.error("Erro ao carregar produtos:", err));
+  }, []);
+
   return (
     <div>
       <Banner
@@ -17,7 +38,7 @@ export default function Home() {
       />
 
       <div className={styles.containerFiltros}>
-        <span className={styles.totalProdutos}>{arranjos.length} produtos</span>
+        <span className={styles.totalProdutos}>{produtos.length} produtos</span>
 
         <div className={styles.filtros}>
           <Relevancia />
@@ -25,7 +46,7 @@ export default function Home() {
       </div>
 
       <div className={styles.produtoGrid}>
-        {arranjos.map((item) => (
+        {produtos.map((item) => (
           <Produto
             key={item.id}
             id={item.id}

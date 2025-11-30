@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import styles from "../styles/produtoDetalhe.module.css";
 import { useCarrinho } from "../context/carrinhoContext";
@@ -14,23 +15,27 @@ export default function ProdutoDetalhe({
 }) {
   const [imagemAtual, setImagemAtual] = useState(imagemPrincipal);
   const [adicionado, setAdicionado] = useState(false);
-
   const { adicionarItem } = useCarrinho();
+  const [cep, setCep] = useState("");
 
-  const handleTrocarImagem = (novaImagemSrc) => {
-    setImagemAtual(novaImagemSrc);
+  const imagens = [imagemPrincipal, imagemSecundaria, imagemTerciaria].filter(
+    Boolean
+  );
+
+  const handleTrocarImagem = (novaImagem) => {
+    setImagemAtual(novaImagem);
   };
 
-  const precoFormatado = Number(preco).toFixed(2).replace(".", ",");
+  const precoFormatado = Number(preco).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   const handleAddToCart = () => {
-    if (!id) {
-      console.error("Produto sem ID não pode ser adicionado ao carrinho");
-      return;
-    }
+    if (!id) return;
 
     adicionarItem({
-      id: id.toString(), // garante string
+      id: id.toString(),
       nome,
       preco: Number(preco),
       quantidade: 1,
@@ -41,38 +46,29 @@ export default function ProdutoDetalhe({
     setTimeout(() => setAdicionado(false), 2000);
   };
 
+  const handleCalcularCep = (e) => {
+    e.preventDefault();
+    if (!cep) return alert("Informe um CEP válido");
+    console.log("CEP informado:", cep);
+    // Aqui você pode chamar a API de CEP
+  };
+
   return (
     <div className={styles.container}>
+      {/* Coluna de imagens */}
       <div className={styles.colunaImagens}>
         <div className={styles.imagensMenores}>
-          <img
-            className={`${styles.imagemMenor} ${
-              imagemAtual === imagemPrincipal ? styles.imagemMenorAtiva : ""
-            }`}
-            src={imagemPrincipal}
-            alt={`${nome} - Foto 1`}
-            onClick={() => handleTrocarImagem(imagemPrincipal)}
-          />
-          {imagemSecundaria && (
+          {imagens.map((img, idx) => (
             <img
+              key={idx}
               className={`${styles.imagemMenor} ${
-                imagemAtual === imagemSecundaria ? styles.imagemMenorAtiva : ""
+                imagemAtual === img ? styles.imagemMenorAtiva : ""
               }`}
-              src={imagemSecundaria}
-              alt={`${nome} - Foto 2`}
-              onClick={() => handleTrocarImagem(imagemSecundaria)}
+              src={img}
+              alt={`${nome} - Foto ${idx + 1}`}
+              onClick={() => handleTrocarImagem(img)}
             />
-          )}
-          {imagemTerciaria && (
-            <img
-              className={`${styles.imagemMenor} ${
-                imagemAtual === imagemTerciaria ? styles.imagemMenorAtiva : ""
-              }`}
-              src={imagemTerciaria}
-              alt={`${nome} - Foto 3`}
-              onClick={() => handleTrocarImagem(imagemTerciaria)}
-            />
-          )}
+          ))}
         </div>
 
         <div className={styles.imagemPrincipalContainer}>
@@ -84,15 +80,21 @@ export default function ProdutoDetalhe({
         </div>
       </div>
 
+      {/* Coluna de informações */}
       <div className={styles.colunaInfo}>
         <h1 className={styles.nome}>{nome}</h1>
+
         <div className={styles.precoContainer}>
           <p className={styles.preco}>R$ {precoFormatado}</p>
           <span className={styles.aVista}>à vista</span>
         </div>
 
-        <button onClick={handleAddToCart} className={styles.botaoSacola}>
-          ADICIONAR À SACOLA
+        <button
+          onClick={handleAddToCart}
+          className={styles.botaoSacola}
+          disabled={adicionado}
+        >
+          {adicionado ? "ADICIONADO" : "ADICIONAR À SACOLA"}
         </button>
 
         {adicionado && (
@@ -101,10 +103,32 @@ export default function ProdutoDetalhe({
           </p>
         )}
 
-        <p className={styles.opcoesEntregaTitle}>Opções de entrega</p>
-        {/* ... restante do JSX ... */}
+        {/* Opções de entrega */}
+        <div className={styles.opcaoEntrega}>
+          <span className={styles.entregaTitle}>Receba em casa</span>
+          <p className={styles.entregaDescricao}>
+            Informe seu CEP para consultar os prazos de entrega no seu endereço.
+          </p>
+
+          <form className={styles.formCep} onSubmit={handleCalcularCep}>
+            <input
+              type="text"
+              placeholder="00000-000"
+              className={styles.inputCep}
+              maxLength="9"
+              value={cep}
+              onChange={(e) => setCep(e.target.value)}
+            />
+            <button type="submit" className={styles.botaoCep}>
+              CALCULAR
+            </button>
+          </form>
+
+          <span className={styles.naoSabeCep}>Não sabe seu CEP?</span>
+        </div>
       </div>
 
+      {/* Descrição do produto */}
       <div className={styles.descricaoCompleta}>
         <h3 className={styles.descricaoTitle}>Descrição do produto</h3>
         <p className={styles.descricaoText}>{descricao}</p>
