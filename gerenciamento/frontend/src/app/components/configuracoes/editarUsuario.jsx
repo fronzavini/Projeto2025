@@ -50,7 +50,7 @@ export default function EditarUsuario({ onAtualizado }) {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/atualizar_usuario/${usuario.id}`,
+        `http://localhost:5000('/editar_usuario_sistema/${usuario.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

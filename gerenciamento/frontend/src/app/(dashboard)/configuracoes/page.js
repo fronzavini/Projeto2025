@@ -4,7 +4,7 @@ import styles from "../../styles/configuracoes.module.css";
 
 import VersaoCard from "@/app/components/configuracoes/versaoCard";
 import InterfaceCard from "@/app/components/configuracoes/interfaceCard";
-import EditarUsuario from "@/app/components/usuarios/EditarUsuario";
+import EditarUsuario from "@/app/components/configuracoes/editarUsuario";
 
 export default function Configuracoes() {
   const [tema, setTema] = useState("claro");

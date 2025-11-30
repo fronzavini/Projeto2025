@@ -342,7 +342,10 @@ def criar_produto():
         dados.get("quantidadeEstoque"),
         dados.get("estoqueMinimo"),
         dados.get("estado"),
-        dados.get("fornecedor_id")
+        dados.get("fornecedor_id"),
+        dados.get("imagem_1"),
+        dados.get("imagem_2"),
+        dados.get("imagem_3")
     )
     return jsonify(resultado), 201
 
@@ -357,7 +360,13 @@ def editar_produto(id):
         categoria=dados.get("categoria"),
         marca=dados.get("marca"),
         preco=dados.get("preco"),
-        quantidadeEstoque=dados.get("quantidadeEstoque")
+        quantidadeEstoque=dados.get("quantidadeEstoque"),
+        estoqueMinimo=dados.get("estoqueMinimo"),
+        estado=dados.get("estado"),
+        fornecedor_id=dados.get("fornecedor_id"),
+        imagem_1=dados.get("imagem_1"),
+        imagem_2=dados.get("imagem_2"),
+        imagem_3=dados.get("imagem_3")
     )
     return jsonify({"message": "Produto atualizado com sucesso."})
 
@@ -418,9 +427,9 @@ def deletar_imagem_produto(id):
 
 
 # curl -X GET http://127.0.0.1:5000/listar_imagens_produto/1
-@app.route('/listar_imagens_produto/<int:produto_id>', methods=['GET'])
-def listar_imagens_produto(produto_id):
-    resultado = ImagemProduto.listarImagensPorProduto(produto_id)
+@app.route('/listar_imagens_produto', methods=['GET'])
+def listar_imagens_produto():
+    resultado = ImagemProduto.listarImagens()
     return jsonify(resultado)
 
 #curl -X POST http://127.0.0.1:5000/criar_fornecedor -H "Content-Type: application/json" -d '{"nome_empresa":"Fornecedora X","cnpj":"12345678000199","telefone":"11977776666","email":"fornecedor@email.com","cep":"12345678","logradouro":"Rua Z","numero":"50","bairro":"Centro","complemento":"Sala 2","uf":"SP","cidade":"São Paulo"}'

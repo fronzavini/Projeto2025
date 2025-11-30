@@ -39,12 +39,10 @@ export default function TabelaProduto() {
   // Função para carregar produtos e suas imagens
   const carregarProdutos = async () => {
     try {
-      // 1️⃣ Buscar todos os produtos
       const response = await fetch(`${API}/listar_produtos`);
       if (!response.ok) throw new Error("Erro ao carregar produtos");
       const produtosArray = await response.json();
 
-      // 2️⃣ Buscar imagens de cada produto
       const produtosComImagens = [];
       for (let p of produtosArray) {
         let imagens = [];
@@ -52,17 +50,18 @@ export default function TabelaProduto() {
           const resImg = await fetch(`${API}/listar_imagens_produto/${p[0]}`);
           if (resImg.ok) {
             imagens = await resImg.json();
-            console.log(`Produto ${p[0]} imagens:`, imagens); // log
-          } else {
-            console.warn(`Falha ao carregar imagens do produto ${p[0]}`, resImg.status);
           }
         } catch (err) {
           console.error(`Erro ao buscar imagens do produto ${p[0]}`, err);
         }
 
-        const imagemPrincipal = imagens.length > 0 ? imagens[0].url : "/imagens/default.png"; // fallback
+        // Ajuste: concatenar com URL pública do back-end
+        const imagemPrincipal =
+          imagens.length > 0
+            ? `${API}/uploads/${imagens[0].url}` // certifique-se de que sua rota Flask serve assim
+            : "/imagens/default.png"; // fallback
 
-        produtosComImagens.append({
+        produtosComImagens.push({
           id: p[0],
           nome: p[1],
           categoria: p[2],
@@ -149,7 +148,9 @@ export default function TabelaProduto() {
           if (!confirm(`Deseja realmente deletar o produto "${rowData.nome}"?`)) return;
 
           try {
-            const response = await fetch(`${API}/deletar_produto/${rowData.id}`, { method: "DELETE" });
+            const response = await fetch(`${API}/deletar_produto/${rowData.id}`, {
+              method: "DELETE",
+            });
             if (!response.ok) throw new Error("Erro ao deletar produto");
             const result = await response.json();
             alert(result.message || "Produto deletado com sucesso!");
@@ -167,15 +168,14 @@ export default function TabelaProduto() {
   );
 
   const imagemTemplate = (rowData) => (
-    rowData.imagemPrincipal ? (
-      <img
-        src={rowData.imagemPrincipal}
-        alt={rowData.nome}
-        style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
-      />
-    ) : (
-      <span>Sem imagem</span>
-    )
+    <img
+      src={rowData.imagemPrincipal}
+      alt={rowData.nome}
+      style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover" }}
+      onError={(e) => {
+        e.currentTarget.src = "/imagens/default.png";
+      }}
+    />
   );
 
   return (
