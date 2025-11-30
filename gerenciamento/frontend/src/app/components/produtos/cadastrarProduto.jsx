@@ -13,7 +13,9 @@ export default function CadastrarProduto({ onClose }) {
     estoque_minimo: "",
     estado: true,
     fornecedor_id: "",
-    imagem: "", // URL da imagem
+    imagem_1: "", // URL da imagem 1
+    imagem_2: "", // URL da imagem 2
+    imagem_3: "", // URL da imagem 3
   });
 
   const [fornecedores, setFornecedores] = useState([]);
@@ -62,6 +64,9 @@ export default function CadastrarProduto({ onClose }) {
       estoqueMinimo: parseInt(form.estoque_minimo, 10),
       estado: form.estado,
       fornecedor_id: form.fornecedor_id ? parseInt(form.fornecedor_id, 10) : null,
+      imagem_1: form.imagem_1 || null,
+      imagem_2: form.imagem_2 || null,
+      imagem_3: form.imagem_3 || null,
     };
 
     try {
@@ -76,24 +81,7 @@ export default function CadastrarProduto({ onClose }) {
 
       const produtoCriado = await resProduto.json(); // ID do produto
 
-      // 2️⃣ Cadastrar imagem se houver URL
-      if (form.imagem) {
-        const dadosImagem = {
-          produto_id: produtoCriado.id,
-          url: form.imagem,
-        };
-
-        const resImagem = await fetch(`${API}/criar_imagem_produto`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dadosImagem),
-        });
-
-        if (!resImagem.ok) throw new Error("Erro ao cadastrar imagem do produto");
-      }
-
-      alert("Produto e imagem cadastrados com sucesso!");
-      onClose();
+      // 2️⃣ Cadastrar imagem se houver UR
 
       // Resetar formulário
       setForm({
@@ -105,9 +93,10 @@ export default function CadastrarProduto({ onClose }) {
         estoque_minimo: "",
         estado: true,
         fornecedor_id: "",
-        imagem: "",
+        imagem_1: "",
+        imagem_2: "",
+        imagem_3: "",
       });
-
     } catch (err) {
       console.error(err);
       alert("Erro ao cadastrar produto ou imagem");
@@ -172,8 +161,12 @@ export default function CadastrarProduto({ onClose }) {
 
         {/* Campo da imagem */}
         <div className={styles.formGroup}>
-          <label htmlFor="imagem" className={styles.label}>URL da Imagem</label>
-          <input className={styles.input} id="imagem" name="imagem" type="text" value={form.imagem} onChange={handleChange} placeholder="https://exemplo.com/imagem.jpg" />
+          <label htmlFor="imagem_1" className={styles.label}>URL da Imagem</label>
+          <input className={styles.input} id="imagem_1" name="imagem_1" type="text" value={form.imagem_1} onChange={handleChange} placeholder="https://exemplo.com/imagem.jpg" />
+          <label htmlFor="imagem_2" className={styles.label}>URL da Imagem</label>
+          <input className={styles.input} id="imagem_2" name="imagem_2" type="text" value={form.imagem_2} onChange={handleChange} placeholder="https://exemplo.com/imagem.jpg" />
+          <label htmlFor="imagem_3" className={styles.label}>URL da Imagem</label>
+          <input className={styles.input} id="imagem_3" name="imagem_3" type="text" value={form.imagem_3} onChange={handleChange} placeholder="https://exemplo.com/imagem.jpg" />
         </div>
 
         <button type="submit" className={styles.botaoEnviar}>Cadastrar produto</button>

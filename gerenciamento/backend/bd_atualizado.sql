@@ -70,9 +70,9 @@ CREATE TABLE IF NOT EXISTS produtos (
     estoque_minimo INT NOT NULL,
     estado BOOLEAN DEFAULT TRUE NOT NULL,
     fornecedor_id INT,
-    imagem_1 VARCHAR(255),
-    imagem_2 VARCHAR(255),
-    imagem_3 VARCHAR(255),
+    imagem_1 TEXT,
+    imagem_2 TEXT,
+    imagem_3 TEXT,
     FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id)
 );
 

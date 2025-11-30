@@ -169,12 +169,14 @@ export default function TabelaProduto() {
             header="Imagem"
             body={(rowData) => (
               <div style={{ display: "flex", gap: 4 }}>
-                {rowData.imagens.length > 0 ? (
+                {rowData.imagens && rowData.imagens.length > 0 ? (
                   rowData.imagens.map((img, idx) => (
                     <img
                       key={idx}
                       src={img}
                       alt={rowData.nome}
+                      data-prod-id={rowData.id}          // <<-- aqui
+                      data-img-index={idx}               // <<-- e aqui
                       style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }}
                     />
                   ))
@@ -184,6 +186,7 @@ export default function TabelaProduto() {
               </div>
             )}
           />
+
           <Column field="nome" header="Nome" />
           <Column field="id" header="ID" />
           <Column field="marca" header="Tipo" />
