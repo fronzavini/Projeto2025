@@ -14,7 +14,7 @@ export default function CadastrarCupom({ onClose }) {
     valor_minimo: 0,
     estado: true,
     aplicacao: "produto",
-    produto: "",
+    tipo_produto: "",
   });
 
   const [produtos, setProdutos] = useState([]);
@@ -67,7 +67,9 @@ export default function CadastrarCupom({ onClose }) {
       usos_realizados: parseInt(form.usos_realizados) || 0,
       valor_minimo: parseFloat(form.valor_minimo) || 0,
       estado: form.estado ? 1 : 0,
-      produto: form.produto,
+      aplicacao: form.aplicacao,
+      tipo_produto:
+        form.aplicacao === "tipo_produto" ? form.tipo_produto : form.produto,
     };
 
     try {
@@ -255,7 +257,7 @@ export default function CadastrarCupom({ onClose }) {
             onChange={handleChange}
           >
             <option value="produto">Produto</option>
-            <option value="tipo">Tipo de Produto</option>
+            <option value="tipo_produto">Tipo de Produto</option>
           </select>
         </div>
 
@@ -264,8 +266,8 @@ export default function CadastrarCupom({ onClose }) {
             <label className={styles.label}>Produto</label>
             <select
               className={styles.select}
-              name="produto"
-              value={form.produto}
+              name="tipo_produto"
+              value={form.tipo_produto}
               onChange={handleChange}
             >
               <option value="">Selecione</option>
@@ -278,13 +280,13 @@ export default function CadastrarCupom({ onClose }) {
           </div>
         )}
 
-        {form.aplicacao === "tipo" && (
+        {form.aplicacao === "tipo_produto" && (
           <div className={styles.formGroup}>
             <label className={styles.label}>Tipo de Produto</label>
             <select
               className={styles.select}
-              name="produto"
-              value={form.produto}
+              name="tipo_produto"
+              value={form.tipo_produto}
               onChange={handleChange}
             >
               <option value="">Selecione</option>

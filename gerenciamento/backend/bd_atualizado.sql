@@ -126,8 +126,8 @@ CREATE TABLE IF NOT EXISTS cupons (
     usos_realizados INT DEFAULT 0,
     valor_minimo DECIMAL(10,2),
     estado BOOLEAN DEFAULT TRUE NOT NULL,
-    produto_id INT,
-    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+    aplicacao varchar(64),
+    tipo_produto varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS pedidos (

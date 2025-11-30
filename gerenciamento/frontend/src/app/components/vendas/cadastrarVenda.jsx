@@ -44,13 +44,17 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_produtos");
       const data = await res.json();
+
       const produtosFormatados = (data || []).map((p) => ({
         id: p[0],
         nome: p[1],
+        categoria: p[2],
+        marca: p[3],
         preco: Number(p[4]),
         quantidadeEstoque: Number(p[5]) || 0,
         quantidade: 1,
       }));
+
       setProdutosDisponiveis(produtosFormatados);
     } catch (err) {
       console.error(err);
@@ -62,10 +66,12 @@ export default function CadastrarVenda({ onClose }) {
       const res = await fetch("http://localhost:5000/listar_clientes");
       const data = await res.json();
       const rows = data.detalhes || data;
+
       const clientesFormatados = (rows || []).map((c) => ({
         id: c[0],
         nome: c[2] || c.nome || `Cliente ${c[0]}`,
       }));
+
       setClientesLista(clientesFormatados);
     } catch (err) {
       console.error(err);
@@ -77,10 +83,12 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_funcionarios");
       const data = await res.json();
+
       const funcionariosFormatados = (data || []).map((f) => ({
         id: f[0],
         nome: f[1] || `Funcionário ${f[0]}`,
       }));
+
       setFuncionariosLista(funcionariosFormatados);
     } catch (err) {
       console.error(err);
@@ -88,8 +96,35 @@ export default function CadastrarVenda({ onClose }) {
     }
   };
 
+  const carregarCupons = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_cupons");
+      const data = await res.json();
+
+      const cuponsFormatados = (data || []).map((c) => ({
+        id: c.id || c[0],
+        nome: c.codigo || c.nome || `Cupom ${c.id}`,
+        tipo: c.tipo,
+        descontofixo: c.descontofixo,
+        descontoPorcentagem: c.descontoPorcentagem,
+        descontofrete: c.descontofrete,
+        validade: c.validade,
+        usos_permitidos: c.usos_permitidos,
+        valor_minimo: c.valor_minimo,
+        aplicacao: c.aplicacao,
+        tipo_produto: c.tipo_produto, // categoria OU nome do produto
+      }));
+
+      setCuponsLista(cuponsFormatados);
+    } catch (err) {
+      console.error(err);
+      setCuponsLista([]);
+    }
+  };
+
   const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
 
+  // Controle de produtos
   const handleRemover = (index) => {
     setProdutos(produtos.filter((_, i) => i !== index));
   };
@@ -100,35 +135,116 @@ export default function CadastrarVenda({ onClose }) {
     setProdutos(novos);
   };
 
+  // --------------------------------------------------------------------
+  //  CUPOM: VALIDAÇÃO
+  // --------------------------------------------------------------------
+  const validarCupom = (cupom, produtos, subtotal) => {
+    if (!cupom) return { valido: false, motivo: "Cupom inválido." };
+
+    // 1 - Validar data
+    if (cupom.validade) {
+      const hoje = new Date().toISOString().split("T")[0];
+      if (cupom.validade < hoje) {
+        return { valido: false, motivo: "Cupom expirado." };
+      }
+    }
+
+    // 2 - Valor mínimo
+    if (cupom.valor_minimo && subtotal < cupom.valor_minimo) {
+      return {
+        valido: false,
+        motivo: `Valor mínimo para uso é R$${cupom.valor_minimo}.`,
+      };
+    }
+
+    // 3 - Aplicação
+    let produtosValidos = [];
+
+    if (cupom.aplicacao === "todos") {
+      produtosValidos = produtos;
+    }
+
+    // APLICAR POR CATEGORIA
+    else if (cupom.aplicacao === "tipo_produto") {
+      produtosValidos = produtos.filter(
+        (p) =>
+          p.categoria?.toLowerCase() ===
+          cupom.tipo_produto?.toLowerCase()
+      );
+    }
+
+    // APLICAR POR PRODUTO ESPECÍFICO
+    else if (cupom.aplicacao === "produto") {
+      produtosValidos = produtos.filter(
+        (p) =>
+          p.nome?.toLowerCase() ===
+          cupom.tipo_produto?.toLowerCase()
+      );
+    }
+
+    if (produtosValidos.length === 0) {
+      return {
+        valido: false,
+        motivo: "Cupom não se aplica aos produtos selecionados.",
+      };
+    }
+
+    // --------------------------------------------------------------------
+    //  4 - Cálculo do desconto
+    // --------------------------------------------------------------------
+    let desconto = 0;
+
+    if (cupom.tipo === "fixo") {
+      desconto = Number(cupom.descontofixo || 0);
+
+      const totalValidos = produtosValidos.reduce(
+        (acc, p) => acc + p.preco * p.quantidade,
+        0
+      );
+
+      desconto = Math.min(desconto, totalValidos);
+    }
+
+    if (cupom.tipo === "percentual") {
+      const totalValidos = produtosValidos.reduce(
+        (acc, p) => acc + p.preco * p.quantidade,
+        0
+      );
+      desconto =
+        (totalValidos * (cupom.descontoPorcentagem || 0)) / 100;
+    }
+
+    return { valido: true, desconto };
+  };
+
+  // Aplicar cupom
   const aplicarCupom = (id) => {
     const cupom = cuponsLista.find((c) => c.id === id);
-    if (cupom) {
-      let valorDesconto = 0;
-      if (cupom.tipo === "fixo")
-        valorDesconto = parseFloat(cupom.descontofixo || 0);
-      else if (cupom.tipo === "porcentagem")
-        valorDesconto = (subtotal * (cupom.descontoPorcentagem || 0)) / 100;
 
-      setCupomSelecionado(cupom.id);
-      setCupomBusca(cupom.nome);
-      setDesconto(valorDesconto);
-    } else {
+    if (!cupom) {
       setCupomSelecionado(null);
       setDesconto(0);
+      return;
     }
+
+    const resultado = validarCupom(cupom, produtos, subtotal);
+
+    if (!resultado.valido) {
+      alert(resultado.motivo);
+      setCupomSelecionado(null);
+      setCupomBusca("");
+      setDesconto(0);
+      return;
+    }
+
+    setCupomSelecionado(cupom.id);
+    setCupomBusca(cupom.nome);
+    setDesconto(resultado.desconto);
   };
 
-  const carregarCupons = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/listar_cupons");
-      const data = await res.json();
-      setCuponsLista(data || []);
-    } catch (err) {
-      console.error(err);
-      setCuponsLista([]);
-    }
-  };
-
+  // --------------------------------------------------------------------
+  // SALVAR VENDA
+  // --------------------------------------------------------------------
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
@@ -141,17 +257,21 @@ export default function CadastrarVenda({ onClose }) {
 
     try {
       const dataVenda = new Date().toISOString().split("T")[0];
+
       const payload = {
         cliente: parseInt(clienteSelecionado),
         funcionario: parseInt(funcionarioSelecionado),
-        produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
+        produtos: produtos.map((p) => ({
+          id: p.id,
+          quantidade: p.quantidade,
+        })),
         valorTotal: subtotal - desconto,
         cupom: cupomSelecionado,
         dataVenda,
         entrega: tipoEntrega === "entrega" ? 1 : 0,
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
         formaPagamento,
-        pago: 0, // padrão
+        pago: 0,
       };
 
       const res = await fetch("http://localhost:5000/criar_venda", {
@@ -159,9 +279,10 @@ export default function CadastrarVenda({ onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) throw new Error("Erro ao criar venda");
 
-      // reduzir estoque
+      // Baixar do estoque
       for (const item of produtos) {
         const prod = produtosDisponiveis.find((p) => p.id === item.id);
         if (prod) {
@@ -184,6 +305,9 @@ export default function CadastrarVenda({ onClose }) {
     }
   };
 
+  // --------------------------------------------------------------------
+  // JSX
+  // --------------------------------------------------------------------
   return (
     <div className={styles.overlay}>
       <div className={styles.container}>
@@ -228,6 +352,7 @@ export default function CadastrarVenda({ onClose }) {
 
         {/* PRODUTOS */}
         <h3 className={styles.titulo}>Produtos</h3>
+
         <DropdownProduto
           lista={produtosDisponiveis}
           onAdicionar={(produto) => {
@@ -236,6 +361,7 @@ export default function CadastrarVenda({ onClose }) {
             setProdutos([...produtos, produto]);
           }}
         />
+
         <div className={styles.produtoContainer}>
           <div className={styles.headerProdutos}>
             <span>Produto</span>
@@ -244,6 +370,7 @@ export default function CadastrarVenda({ onClose }) {
             <span>Valor</span>
             <span></span>
           </div>
+
           {produtos.map((produto, index) => (
             <div key={index} className={styles.produtoItem}>
               <span>{produto.nome}</span>
@@ -262,6 +389,7 @@ export default function CadastrarVenda({ onClose }) {
               </button>
             </div>
           ))}
+
           <div className={styles.totalRow}>
             <span className={styles.totalLabel}>Subtotal</span>
             <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
@@ -270,22 +398,21 @@ export default function CadastrarVenda({ onClose }) {
 
         {/* CUPOM */}
         <label className={styles.titulo}>Adicionar Cupom</label>
-        <div className={styles.inlineSearch}>
-          <DropdownSelect
-            label="Cupom"
-            placeholder="Buscar cupom..."
-            lista={cuponsLista}
-            value={cupomBusca}
-            selectedId={cupomSelecionado}
-            onChange={setCupomBusca}
-            onSelect={(id) => aplicarCupom(id)}
-            onClear={() => {
-              setCupomSelecionado(null);
-              setCupomBusca("");
-              setDesconto(0);
-            }}
-          />
-        </div>
+
+        <DropdownSelect
+          label="Cupom"
+          placeholder="Buscar cupom..."
+          lista={cuponsLista}
+          value={cupomBusca}
+          selectedId={cupomSelecionado}
+          onChange={setCupomBusca}
+          onSelect={(id) => aplicarCupom(id)}
+          onClear={() => {
+            setCupomSelecionado(null);
+            setCupomBusca("");
+            setDesconto(0);
+          }}
+        />
 
         {/* RESUMO */}
         <div className={styles.resumo}>
@@ -305,7 +432,7 @@ export default function CadastrarVenda({ onClose }) {
           </div>
         </div>
 
-        {/* ENTREGA / RETIRADA */}
+        {/* ENTREGA */}
         <div className={styles.entregaBox}>
           <div className={styles.radioGroup}>
             <label>
@@ -327,6 +454,7 @@ export default function CadastrarVenda({ onClose }) {
               Retirada
             </label>
           </div>
+
           {tipoEntrega === "entrega" && (
             <div className={styles.entregaCampos}>
               <label className={styles.labelCinza}>Data da entrega</label>

@@ -685,7 +685,8 @@ class Fornecedor:
 
 class Cupom:
     def __init__(self, id=None, codigo=None, tipo=None, descontofixo=0.0, descontoPorcentagem=0.0, descontofrete=0.0,
-                 validade=None, usos_permitidos=0, usos_realizados=0, valor_minimo=0.0, estado='ativo', produto=None):
+                 validade=None, usos_permitidos=0, usos_realizados=0, valor_minimo=0.0, estado='ativo',
+                 aplicacao=None, tipo_produto=None):
         self.id = id
         self.codigo = codigo
         self.tipo = tipo
@@ -697,29 +698,44 @@ class Cupom:
         self.usos_realizados = usos_realizados
         self.valor_minimo = valor_minimo
         self.estado = estado
-        self.produto = produto  # Nome do produto ou tipo
+        self.aplicacao = aplicacao
+        self.tipo_produto = tipo_produto
+
 
     @staticmethod
-    def criarCupom(codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo, produto):
+    def criarCupom(codigo, tipo, descontofixo, descontoPorcentagem, descontofrete,
+                   validade, usos_permitidos, valor_minimo, aplicacao, tipo_produto):
+
         conexao = conectar_banco()
         cursor = conexao.cursor()
+
         query = '''
-            INSERT INTO cupons (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo, estado, produto)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s)
+            INSERT INTO cupons 
+            (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, 
+             usos_permitidos, valor_minimo, estado, aplicacao, tipo_produto)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s)
         '''
-        cursor.execute(query, (codigo, tipo, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo, produto))
+
+        cursor.execute(query, (
+            codigo, tipo, descontofixo, descontoPorcentagem, descontofrete,
+            validade, usos_permitidos, valor_minimo, aplicacao, tipo_produto
+        ))
+
         conexao.commit()
         cursor.close()
         conexao.close()
         return "Cupom criado com sucesso"
 
+
     @staticmethod
     def editarCupom(id, codigo=None, tipo=None, descontofixo=None, descontoPorcentagem=None, descontofrete=None,
-                    validade=None, usos_permitidos=None, valor_minimo=None, produto=None):
+                    validade=None, usos_permitidos=None, valor_minimo=None, aplicacao=None, tipo_produto=None):
+
         conexao = conectar_banco()
         cursor = conexao.cursor()
         campos = []
         valores = []
+
         if codigo:
             campos.append("codigo = %s")
             valores.append(codigo)
@@ -744,16 +760,22 @@ class Cupom:
         if valor_minimo is not None:
             campos.append("valor_minimo = %s")
             valores.append(valor_minimo)
-        if produto is not None:
-            campos.append("produto = %s")
-            valores.append(produto)
+        if aplicacao is not None:
+            campos.append("aplicacao = %s")
+            valores.append(aplicacao)
+        if tipo_produto is not None:
+            campos.append("tipo_produto = %s")
+            valores.append(tipo_produto)
+
         if not campos:
-            return "Nenhuma informacao para atualizar"
+            return "Nenhuma informação para atualizar"
+
         cursor.execute(f"UPDATE cupons SET {', '.join(campos)} WHERE id = %s", valores + [id])
         conexao.commit()
         cursor.close()
         conexao.close()
         return f"Cupom com ID {id} atualizado com sucesso"
+
 
     @staticmethod
     def desativarCupom(id):
@@ -761,13 +783,16 @@ class Cupom:
         cursor = conexao.cursor()
         cursor.execute("SELECT estado FROM cupons WHERE id = %s", (id,))
         resultado = cursor.fetchone()
+
         if resultado:
             novo_estado = not resultado[0]
             cursor.execute("UPDATE cupons SET estado = %s WHERE id = %s", (novo_estado, id))
             conexao.commit()
+
         cursor.close()
         conexao.close()
-        return f"Cupom com ID {id} teve estado alterado."
+        return f"Cupom com ID {id} teve seu estado alterado."
+
 
     @staticmethod
     def excluirCupom(id):
@@ -777,7 +802,8 @@ class Cupom:
         conexao.commit()
         cursor.close()
         conexao.close()
-        return f"Cupom com ID {id} excluido."
+        return f"Cupom com ID {id} excluído."
+
 
     @staticmethod
     def listarCupons():
@@ -786,7 +812,8 @@ class Cupom:
             cursor = conexao.cursor()
             query = """
             SELECT id, codigo, tipo, descontofixo, descontoPorcentagem, descontofrete,
-                validade, estado, produto, usos_permitidos, usos_realizados, valor_minimo
+                   validade, estado, aplicacao, tipo_produto,
+                   usos_permitidos, usos_realizados, valor_minimo
             FROM cupons
             """
             cursor.execute(query)
@@ -803,14 +830,16 @@ class Cupom:
                     "descontofrete": row[5],
                     "validade": row[6].strftime("%Y-%m-%d") if row[6] else None,
                     "estado": "ativo" if row[7] else "inativo",
-                    "produto": row[8],  # Nome do produto ou tipo
-                    "usos_permitidos": row[9] if row[9] is not None else 0,
-                    "usos_realizados": row[10] if row[10] is not None else 0,
-                    "valor_minimo": float(row[11]) if row[11] is not None else 0.0
+                    "aplicacao": row[8],
+                    "tipo_produto": row[9],
+                    "usos_permitidos": row[10] if row[10] is not None else 0,
+                    "usos_realizados": row[11] if row[11] is not None else 0,
+                    "valor_minimo": float(row[12]) if row[12] is not None else 0.0
                 })
 
             return cupons
-        except MySQLError as e:
+
+        except Exception as e:
             print(f"Erro ao listar cupons: {e}")
             return []
         finally:
@@ -831,7 +860,8 @@ class Cupom:
             "usos_realizados": self.usos_realizados,
             "valor_minimo": self.valor_minimo,
             "estado": self.estado,
-            "produto": self.produto  # Nome do produto ou tipo
+            "aplicacao": self.aplicacao,
+            "tipo_produto": self.tipo_produto
         }
 
 class ServicoPersonalizado:

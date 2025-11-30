@@ -702,7 +702,8 @@ def criar_cupom():
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
         valor_minimo=dados.get("valor_minimo"),
-        produto=dados.get("produto")  # Nome do produto ou tipo
+        aplicacao=dados.get("aplicacao"),
+        tipo_produto=dados.get("tipo_produto")
     )
     return jsonify({"message": resultado})
 
@@ -720,6 +721,7 @@ def editar_cupom(id):
         validade=dados.get("validade"),
         usos_permitidos=dados.get("usos_permitidos"),
         valor_minimo=dados.get("valor_minimo"),
+        aplicacao=dados.get("aplicacao"),
         produto=dados.get("produto")  # Nome do produto ou tipo
     )
     return jsonify({"message": resultado})

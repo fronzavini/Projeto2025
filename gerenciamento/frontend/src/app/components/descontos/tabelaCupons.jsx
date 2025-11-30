@@ -18,7 +18,7 @@ export default function TabelaCupons() {
     tipo: "",
     validade: "",
     estado: "",
-    produto: "",
+    tipo_produto: "",
   });
 
   const opcoesEstado = [
@@ -32,25 +32,17 @@ export default function TabelaCupons() {
   const [modalEditar, setModalEditar] = useState(false);
   const [cupomParaEditar, setCupomParaEditar] = useState(null);
 
-  // Função para carregar cupons
+  // Carregar cupons
   const carregarCupons = async () => {
     try {
-      const response = await fetch("http://localhost:5000/listar_cupons", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch("http://localhost:5000/listar_cupons");
 
       if (!response.ok) throw new Error("Erro ao carregar cupons.");
 
       const resultado = await response.json();
 
-      // Filtra apenas cupons com usos_permitidos não nulo
       const cuponsFiltrados = resultado.filter((c) => c.usos_permitidos > 0);
 
-      // Formata os dados recebidos
       const cuponsFormatados = cuponsFiltrados.map((c) => ({
         id: c.id,
         codigo: c.codigo,
@@ -62,8 +54,8 @@ export default function TabelaCupons() {
         usosPermitidos: c.usos_permitidos,
         usosRealizados: c.usos_realizados,
         valorMinimo: c.valor_minimo,
-        estado: c.estado === "ativo" ? "ativo" : "inativo",
-        produto: c.produto,
+        estado: c.estado ? "ativo" : "inativo",
+        tipo_produto: c.tipo_produto || "", // NOVO CAMPO
       }));
 
       setCupons(cuponsFormatados);
@@ -72,14 +64,14 @@ export default function TabelaCupons() {
     }
   };
 
-  // Função para formatar a data no formato dd/mm/yyyy
+  // Formatar data
   const formatarData = (dataISO) => {
     if (!dataISO) return "";
     const [ano, mes, dia] = dataISO.split("-");
     return `${dia}/${mes}/${ano}`;
   };
 
-  // Função para formatar o valor do desconto
+  // Formatar desconto
   const formatarValorDesconto = (rowData) => {
     if (rowData.tipo === "valor_fixo") {
       return `R$${rowData.descontoFixo}`;
@@ -93,7 +85,7 @@ export default function TabelaCupons() {
     carregarCupons();
   }, []);
 
-  // Filtragem
+  // Filtrar
   const filteredData = cupons.filter(
     (item) =>
       (!filtros.id || item.id.toString().startsWith(filtros.id)) &&
@@ -103,11 +95,13 @@ export default function TabelaCupons() {
         item.tipo.toLowerCase().startsWith(filtros.tipo.toLowerCase())) &&
       (!filtros.validade || item.validade.startsWith(filtros.validade)) &&
       (!filtros.estado || item.estado === filtros.estado) &&
-      (!filtros.produto ||
-        item.produto.toLowerCase().startsWith(filtros.produto.toLowerCase()))
+      (!filtros.tipo_produto ||
+        item.tipo_produto
+          .toLowerCase()
+          .startsWith(filtros.tipo_produto.toLowerCase()))
   );
 
-  // Status template
+  // Status visual
   const estadoTemplate = (rowData) => (
     <span
       className={`${styles["status-badge"]} ${
@@ -118,7 +112,7 @@ export default function TabelaCupons() {
     </span>
   );
 
-  // Ações
+  // Botões de ação
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
       <button
@@ -162,7 +156,6 @@ export default function TabelaCupons() {
 
             const result = await response.json();
             alert(result.message || "Cupom deletado com sucesso!");
-            // Atualiza a lista de cupons
             setCupons((prev) => prev.filter((c) => c.id !== rowData.id));
           } catch (error) {
             console.error("Erro ao deletar cupom:", error);
@@ -188,6 +181,7 @@ export default function TabelaCupons() {
             label="ID"
           />
         </div>
+
         <div className={styles.filtro}>
           <Filtros
             value={filtros.codigo}
@@ -196,6 +190,7 @@ export default function TabelaCupons() {
             label="Código"
           />
         </div>
+
         <div className={styles.filtro}>
           <Filtros
             value={filtros.tipo}
@@ -204,6 +199,7 @@ export default function TabelaCupons() {
             label="Tipo"
           />
         </div>
+
         <div className={styles.filtro}>
           <Filtros
             value={filtros.validade}
@@ -212,14 +208,16 @@ export default function TabelaCupons() {
             label="Validade"
           />
         </div>
+
         <div className={styles.filtro}>
           <Filtros
-            value={filtros.produto}
-            onChange={(v) => setFiltros({ ...filtros, produto: v })}
-            placeholder="Filtre por Produto"
-            label="Produto"
+            value={filtros.tipo_produto}
+            onChange={(v) => setFiltros({ ...filtros, tipo_produto: v })}
+            placeholder="Filtre por Tipo do Produto"
+            label="Tipo Produto"
           />
         </div>
+
         <div className={styles.filtro}>
           <FiltroDropdown
             value={filtros.estado}
@@ -237,20 +235,13 @@ export default function TabelaCupons() {
           <Column field="id" header="ID" />
           <Column field="codigo" header="Código" />
           <Column field="tipo" header="Tipo" />
-          <Column field="produto" header="Produto" />
-          <Column
-            header="Valor do Desconto"
-            body={formatarValorDesconto} // Exibe o valor formatado
-          />
+          <Column field="tipo_produto" header="Tipo Produto" />
+          <Column header="Valor do Desconto" body={formatarValorDesconto} />
           <Column field="validade" header="Validade" />
           <Column field="usosPermitidos" header="Usos Permitidos" />
           <Column field="valorMinimo" header="Valor Mínimo" />
           <Column field="estado" header="Estado" body={estadoTemplate} />
-          <Column
-            body={actionTemplate}
-            header="Ações"
-            style={{ width: "150px" }}
-          />
+          <Column body={actionTemplate} header="Ações" style={{ width: "150px" }} />
         </DataTable>
 
         {/* Modais */}
@@ -268,9 +259,7 @@ export default function TabelaCupons() {
           <EditarCupom
             cupomInicial={cupomParaEditar}
             onClose={() => setModalEditar(false)}
-            onConfirm={() => {
-              carregarCupons();
-            }}
+            onConfirm={() => carregarCupons()}
           />
         )}
       </div>
