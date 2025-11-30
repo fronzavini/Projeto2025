@@ -744,6 +744,88 @@ def listar_cupons():
     cupons = Cupom.listarCupons()
     return jsonify(cupons)
 
+# Rota para calcular desconto de um cupom
+@app.route('/calcular_desconto', methods=['POST'])
+def calcular_desconto():
+    dados = request.json or {}
+    valor_total = float(dados.get('valor_total', 0))
+    codigo_cupom = dados.get('codigo_cupom')
+
+    if not codigo_cupom:
+        return jsonify({"resultado": "erro", "detalhes": "Código do cupom não informado"}), 400
+
+    # Buscar cupom no banco
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
+
+    try:
+        cursor = conexao.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT * FROM cupons WHERE codigo=%s AND estado=1", (codigo_cupom,))
+        cupom = cursor.fetchone()
+        if not cupom:
+            return jsonify({"resultado": "erro", "detalhes": "Cupom inválido ou desativado"}), 404
+
+        desconto = 0
+        if cupom['tipo'] == 'percentual' and cupom['descontoPorcentagem']:
+            desconto = valor_total * (cupom['descontoPorcentagem'] / 100)
+        elif cupom['tipo'] == 'fixo' and cupom['descontofixo']:
+            desconto = cupom['descontofixo']
+        elif cupom['tipo'] == 'frete' and cupom['descontofrete']:
+            desconto = cupom['descontofrete']
+
+        valor_final = max(0, valor_total - desconto)
+
+        return jsonify({
+            "resultado": "ok",
+            "valor_total": valor_total,
+            "desconto": desconto,
+            "valor_final": valor_final
+        })
+
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+    finally:
+        cursor.close()
+        conexao.close()
+
+@app.route('/cupons_disponiveis', methods=['GET'])
+def cupons_disponiveis():
+    """
+    Retorna todos os cupons ativos, distinguindo
+    se são para tipo de produto ou produto específico.
+    """
+    try:
+        conexao = conectar_banco()
+        if not conexao:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
+
+        cursor = conexao.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("""
+            SELECT id, codigo, tipo, aplicacao, tipo_produto, produto, descontofixo, descontoPorcentagem, descontofrete, validade, usos_permitidos, valor_minimo
+            FROM cupons
+            WHERE estado = 1 AND validade >= CURDATE()
+        """)
+        cupons = cursor.fetchall()
+
+        # Separar por tipo
+        for c in cupons:
+            if c['aplicacao'] == 'produto_especifico':
+                c['aplicavel'] = c['produto']  # ex: ["Rosa Vermelha", "Lírio"]
+            elif c['aplicacao'] == 'tipo_produto':
+                c['aplicavel'] = c['tipo_produto']  # ex: "flores"
+            else:
+                c['aplicavel'] = "geral"
+
+        return jsonify({'resultado': 'ok', 'cupons': cupons})
+    
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao:
+            conexao.close()
 
 # ROTAS DE SERVIÇO PERSONALIZADO
 
@@ -910,7 +992,6 @@ def atualizar_item(id):
         carrinho.adicionarItem(produto_id, quantidade, preco)
 
     return jsonify({"message": "Item atualizado", "carrinho": carrinho.json()})
-
 # ROTAS DE VENDA
 #curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
 @app.route('/criar_venda', methods=['POST'])
@@ -930,10 +1011,20 @@ def criar_venda():
             cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega, pago
         )
 
-        return jsonify({"message": "Venda criada.", "resultado": resultado}), 201
+        #id_venda = Venda.criarVenda(cliente, funcionario, produtos, valorTotal, dataVenda)
+
+
+        transacao = TransacaoFinanceira.criarTransacao(
+            tipo="entrada",
+            categoria="venda",
+            descricao=f"Venda realizada em {dataVenda}",
+            valor=valorTotal,
+            data=dataVenda
+        )
+
+        return jsonify({"message": "Venda criada.", "resultado": resultado, "transacao": transacao}), 201
     except Exception as e:
         return jsonify({"message": "Erro ao criar venda.", "erro": str(e)}), 500
-
 
 #curl -X DELETE http://127.0.0.1:5000/deletar_venda/1
 @app.route('/deletar_venda/<int:id>', methods=['DELETE'])

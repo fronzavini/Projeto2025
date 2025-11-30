@@ -32,6 +32,9 @@ export default function CadastrarVenda({ onClose }) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
 
+  // Subtotal dos produtos
+  const subtotal = produtos.reduce((acc, p) => acc + Number(p.preco || 0) * Number(p.quantidade || 0), 0);
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarProdutos();
@@ -40,11 +43,21 @@ export default function CadastrarVenda({ onClose }) {
     carregarCupons();
   }, []);
 
+  // Recalcular desconto sempre que produtos ou cupom mudarem
+  useEffect(() => {
+    if (cupomSelecionado) {
+      aplicarCupom(cupomSelecionado);
+    } else {
+      setDesconto(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [produtos, cupomSelecionado]);
+
+  // -------------------- CARREGAR DADOS --------------------
   const carregarProdutos = async () => {
     try {
       const res = await fetch("http://localhost:5000/listar_produtos");
       const data = await res.json();
-
       const produtosFormatados = (data || []).map((p) => ({
         id: p[0],
         nome: p[1],
@@ -54,7 +67,6 @@ export default function CadastrarVenda({ onClose }) {
         quantidadeEstoque: Number(p[5]) || 0,
         quantidade: 1,
       }));
-
       setProdutosDisponiveis(produtosFormatados);
     } catch (err) {
       console.error(err);
@@ -66,12 +78,10 @@ export default function CadastrarVenda({ onClose }) {
       const res = await fetch("http://localhost:5000/listar_clientes");
       const data = await res.json();
       const rows = data.detalhes || data;
-
       const clientesFormatados = (rows || []).map((c) => ({
         id: c[0],
         nome: c[2] || c.nome || `Cliente ${c[0]}`,
       }));
-
       setClientesLista(clientesFormatados);
     } catch (err) {
       console.error(err);
@@ -83,12 +93,10 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_funcionarios");
       const data = await res.json();
-
       const funcionariosFormatados = (data || []).map((f) => ({
         id: f[0],
         nome: f[1] || `Funcionário ${f[0]}`,
       }));
-
       setFuncionariosLista(funcionariosFormatados);
     } catch (err) {
       console.error(err);
@@ -100,21 +108,20 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_cupons");
       const data = await res.json();
-
       const cuponsFormatados = (data || []).map((c) => ({
-        id: c.id || c[0],
-        nome: c.codigo || c.nome || `Cupom ${c.id}`,
-        tipo: c.tipo,
-        descontofixo: c.descontofixo,
-        descontoPorcentagem: c.descontoPorcentagem,
-        descontofrete: c.descontofrete,
-        validade: c.validade,
-        usos_permitidos: c.usos_permitidos,
-        valor_minimo: c.valor_minimo,
-        aplicacao: c.aplicacao,
-        tipo_produto: c.tipo_produto, // categoria OU nome do produto
+        // normaliza vários formatos possíveis do backend
+        id: c.id ?? c[0],
+        nome: c.codigo ?? c.nome ?? String(c.id ?? c[0]),
+        tipo: (c.tipo ?? c.type ?? "").toString(),
+        descontofixo: Number(c.desconto_fixo ?? c.descontofixo ?? c.desconto ?? 0),
+        descontoPorcentagem: Number(c.desconto_percentual ?? c.descontoPorcentagem ?? c.descontoPercent ?? 0),
+        descontofrete: Number(c.desconto_frete ?? c.descontofrete ?? 0),
+        validade: c.validade ?? c.data_validade ?? c.dataValidade ?? null,
+        usos_permitidos: c.usos_permitidos ?? c.usosPermitidos ?? null,
+        valor_minimo: Number(c.valor_minimo ?? c.valorMinimo ?? 0),
+        aplicacao: (c.aplicacao ?? c.aplicacao_tipo ?? c.aplicacaoTipo ?? "todos").toString(),
+        tipo_produto: (c.tipo_produto ?? c.tipoProduto ?? c.produto ?? "").toString(),
       }));
-
       setCuponsLista(cuponsFormatados);
     } catch (err) {
       console.error(err);
@@ -122,114 +129,116 @@ export default function CadastrarVenda({ onClose }) {
     }
   };
 
-  const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
-
-  // Controle de produtos
+  // -------------------- PRODUTOS --------------------
   const handleRemover = (index) => {
     setProdutos(produtos.filter((_, i) => i !== index));
   };
 
   const handleQuantidade = (index, delta) => {
     const novos = [...produtos];
-    novos[index].quantidade = Math.max(1, novos[index].quantidade + delta);
+    novos[index].quantidade = Math.max(1, Number(novos[index].quantidade || 0) + delta);
     setProdutos(novos);
   };
 
-  // --------------------------------------------------------------------
-  //  CUPOM: VALIDAÇÃO
-  // --------------------------------------------------------------------
-  const validarCupom = (cupom, produtos, subtotal) => {
+  // -------------------- CUPOM --------------------
+  // retorna { valido: boolean, motivo?: string, desconto?: number }
+  const validarCupom = (cupom, produtosList, subtotalValue) => {
     if (!cupom) return { valido: false, motivo: "Cupom inválido." };
 
-    // 1 - Validar data
+    const tipoCupom = String(cupom.tipo || "").toLowerCase().trim();
+    const aplicacao = String(cupom.aplicacao || "").toLowerCase().trim();
+    const tipoProdutoCupom = String(cupom.tipo_produto || cupom.tipoProduto || "").toLowerCase().trim();
+
+    // Validade - tenta normalizar datas similares a "YYYY-MM-DD"
     if (cupom.validade) {
-      const hoje = new Date().toISOString().split("T")[0];
-      if (cupom.validade < hoje) {
-        return { valido: false, motivo: "Cupom expirado." };
+      try {
+        const hoje = new Date().toISOString().split("T")[0];
+        const validadeStr = String(cupom.validade).split("T")[0];
+        if (validadeStr < hoje) return { valido: false, motivo: "Cupom expirado." };
+      } catch (e) {
+        // se formato estranho, não bloqueia por validade
       }
     }
 
-    // 2 - Valor mínimo
-    if (cupom.valor_minimo && subtotal < cupom.valor_minimo) {
-      return {
-        valido: false,
-        motivo: `Valor mínimo para uso é R$${cupom.valor_minimo}.`,
-      };
+    // Valor mínimo
+    if (Number(cupom.valor_minimo || cupom.valorMinimo || 0) && subtotalValue < Number(cupom.valor_minimo || cupom.valorMinimo || 0))
+      return { valido: false, motivo: `Valor mínimo R$${Number(cupom.valor_minimo || cupom.valorMinimo || 0).toFixed(2)}` };
+
+    // Filtrar produtos compatíveis
+    const produtosValidos = produtosList.filter((p) => {
+      const nomeProduto = String(p.nome || "").toLowerCase().trim();
+      const categoriaProduto = String(p.categoria || p.categoria_produto || "").toLowerCase().trim();
+
+      if (aplicacao === "todos" || aplicacao === "") return true;
+      if (aplicacao === "tipo_produto" || aplicacao === "categoria") return categoriaProduto === tipoProdutoCupom;
+      if (aplicacao === "produto") return nomeProduto === tipoProdutoCupom;
+      // fallback: verifica se bate por nome ou categoria
+      return categoriaProduto === tipoProdutoCupom || nomeProduto === tipoProdutoCupom;
+    });
+
+    if (produtosValidos.length === 0)
+      return { valido: false, motivo: "Cupom não se aplica aos produtos selecionados." };
+
+    // Calcular total dos produtos válidos
+    const totalValidos = produtosValidos.reduce((acc, p) => acc + Number(p.preco || 0) * Number(p.quantidade || 0), 0);
+
+    // tenta ler desconto nas propriedades possíveis
+    const descontoFixo = Number(cupom.descontofixo ?? cupom.desconto_fixo ?? cupom.desconto ?? 0);
+    const descontoPerc = Number(cupom.descontoPorcentagem ?? cupom.desconto_percentual ?? cupom.descontoPercent ?? 0);
+
+    let descontoCalc = 0;
+    if (tipoCupom.includes("fix") || tipoCupom.includes("valor") || descontoFixo > 0) {
+      descontoCalc = Math.min(descontoFixo, totalValidos);
+    } else if (tipoCupom.includes("percent") || tipoCupom.includes("%") || descontoPerc > 0) {
+      descontoCalc = (totalValidos * descontoPerc) / 100;
+    } else {
+      // se backend não informou tipo, tenta inferir pelos campos
+      if (descontoFixo > 0) descontoCalc = Math.min(descontoFixo, totalValidos);
+      else if (descontoPerc > 0) descontoCalc = (totalValidos * descontoPerc) / 100;
+      else descontoCalc = 0;
     }
 
-    // 3 - Aplicação
-    let produtosValidos = [];
+    if (!isFinite(descontoCalc) || isNaN(descontoCalc)) descontoCalc = 0;
 
-    if (cupom.aplicacao === "todos") {
-      produtosValidos = produtos;
-    }
+    // não pode exceder total válido
+    descontoCalc = Math.max(0, Math.min(descontoCalc, totalValidos));
 
-    // APLICAR POR CATEGORIA
-    else if (cupom.aplicacao === "tipo_produto") {
-      produtosValidos = produtos.filter(
-        (p) =>
-          p.categoria?.toLowerCase() ===
-          cupom.tipo_produto?.toLowerCase()
-      );
-    }
+    // arredonda para 2 casas
+    descontoCalc = Number(descontoCalc.toFixed(2));
 
-    // APLICAR POR PRODUTO ESPECÍFICO
-    else if (cupom.aplicacao === "produto") {
-      produtosValidos = produtos.filter(
-        (p) =>
-          p.nome?.toLowerCase() ===
-          cupom.tipo_produto?.toLowerCase()
-      );
-    }
-
-    if (produtosValidos.length === 0) {
-      return {
-        valido: false,
-        motivo: "Cupom não se aplica aos produtos selecionados.",
-      };
-    }
-
-    // --------------------------------------------------------------------
-    //  4 - Cálculo do desconto
-    // --------------------------------------------------------------------
-    let desconto = 0;
-
-    if (cupom.tipo === "fixo") {
-      desconto = Number(cupom.descontofixo || 0);
-
-      const totalValidos = produtosValidos.reduce(
-        (acc, p) => acc + p.preco * p.quantidade,
-        0
-      );
-
-      desconto = Math.min(desconto, totalValidos);
-    }
-
-    if (cupom.tipo === "percentual") {
-      const totalValidos = produtosValidos.reduce(
-        (acc, p) => acc + p.preco * p.quantidade,
-        0
-      );
-      desconto =
-        (totalValidos * (cupom.descontoPorcentagem || 0)) / 100;
-    }
-
-    return { valido: true, desconto };
+    return { valido: true, desconto: descontoCalc };
   };
 
-  // Aplicar cupom
-  const aplicarCupom = (id) => {
-    const cupom = cuponsLista.find((c) => c.id === id);
+  // aplicarCupom aceita id ou objeto
+  const aplicarCupom = (idOrObj) => {
+    let cupom = null;
+    if (!idOrObj) {
+      setCupomSelecionado(null);
+      setCupomBusca("");
+      setDesconto(0);
+      return;
+    }
+    // se receberam objeto direto
+    if (typeof idOrObj === "object") cupom = idOrObj;
+    else cupom = cuponsLista.find((c) => String(c.id) === String(idOrObj));
 
     if (!cupom) {
+      // pode ser que onSelect passou um código (nome), tenta buscar por nome/codigo
+      const maybe = cuponsLista.find((c) => String(c.nome).toLowerCase() === String(idOrObj).toLowerCase());
+      if (maybe) cupom = maybe;
+    }
+
+    if (!cupom) {
+      // não encontrado -> limpa
       setCupomSelecionado(null);
+      setCupomBusca("");
       setDesconto(0);
       return;
     }
 
     const resultado = validarCupom(cupom, produtos, subtotal);
-
     if (!resultado.valido) {
+      // mostra aviso e limpa seleção
       alert(resultado.motivo);
       setCupomSelecionado(null);
       setCupomBusca("");
@@ -237,20 +246,18 @@ export default function CadastrarVenda({ onClose }) {
       return;
     }
 
+    // se válido, atualiza estado
     setCupomSelecionado(cupom.id);
     setCupomBusca(cupom.nome);
     setDesconto(resultado.desconto);
   };
 
-  // --------------------------------------------------------------------
-  // SALVAR VENDA
-  // --------------------------------------------------------------------
+  // -------------------- SALVAR VENDA --------------------
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
     if (produtos.length === 0) return alert("Adicione pelo menos um produto");
-    if (tipoEntrega === "entrega" && !dataEntrega)
-      return alert("Informe a data de entrega");
+    if (tipoEntrega === "entrega" && !dataEntrega) return alert("Informe a data de entrega");
 
     setLoading(true);
     setErrorMsg(null);
@@ -261,11 +268,8 @@ export default function CadastrarVenda({ onClose }) {
       const payload = {
         cliente: parseInt(clienteSelecionado),
         funcionario: parseInt(funcionarioSelecionado),
-        produtos: produtos.map((p) => ({
-          id: p.id,
-          quantidade: p.quantidade,
-        })),
-        valorTotal: subtotal - desconto,
+        produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
+        valorTotal: Number((subtotal - desconto).toFixed(2)),
         cupom: cupomSelecionado,
         dataVenda,
         entrega: tipoEntrega === "entrega" ? 1 : 0,
@@ -282,9 +286,9 @@ export default function CadastrarVenda({ onClose }) {
 
       if (!res.ok) throw new Error("Erro ao criar venda");
 
-      // Baixar do estoque
+      // Baixar estoque
       for (const item of produtos) {
-        const prod = produtosDisponiveis.find((p) => p.id === item.id);
+        const prod = produtosDisponiveis.find((p) => String(p.id) === String(item.id));
         if (prod) {
           const newQty = Math.max(0, prod.quantidadeEstoque - item.quantidade);
           await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
@@ -305,17 +309,13 @@ export default function CadastrarVenda({ onClose }) {
     }
   };
 
-  // --------------------------------------------------------------------
-  // JSX
-  // --------------------------------------------------------------------
+  // -------------------- JSX --------------------
   return (
     <div className={styles.overlay}>
       <div className={styles.container}>
         <div className={styles.header}>
           <h2 className={styles.title}>Nova venda</h2>
-          <button className={styles.cancelar} onClick={onClose}>
-            Cancelar
-          </button>
+          <button className={styles.cancelar} onClick={onClose}>Cancelar</button>
         </div>
 
         {/* CLIENTE */}
@@ -327,10 +327,7 @@ export default function CadastrarVenda({ onClose }) {
           selectedId={clienteSelecionado}
           onChange={setClienteBusca}
           onSelect={setClienteSelecionado}
-          onClear={() => {
-            setClienteSelecionado(null);
-            setClienteBusca("");
-          }}
+          onClear={() => { setClienteSelecionado(null); setClienteBusca(""); }}
           allowNew
           onNewClick={() => setShowCadastrarCliente(true)}
         />
@@ -344,19 +341,15 @@ export default function CadastrarVenda({ onClose }) {
           selectedId={funcionarioSelecionado}
           onChange={setFuncionarioBusca}
           onSelect={setFuncionarioSelecionado}
-          onClear={() => {
-            setFuncionarioSelecionado(null);
-            setFuncionarioBusca("");
-          }}
+          onClear={() => { setFuncionarioSelecionado(null); setFuncionarioBusca(""); }}
         />
 
         {/* PRODUTOS */}
         <h3 className={styles.titulo}>Produtos</h3>
-
         <DropdownProduto
           lista={produtosDisponiveis}
           onAdicionar={(produto) => {
-            const jaAdicionado = produtos.find((p) => p.id === produto.id);
+            const jaAdicionado = produtos.find((p) => String(p.id) === String(produto.id));
             if (jaAdicionado) return alert("Produto já adicionado!");
             setProdutos([...produtos, produto]);
           }}
@@ -379,12 +372,9 @@ export default function CadastrarVenda({ onClose }) {
                 <span>{produto.quantidade}</span>
                 <button onClick={() => handleQuantidade(index, 1)}>+</button>
               </div>
-              <span>R${produto.preco.toFixed(2)}</span>
-              <span>R${(produto.preco * produto.quantidade).toFixed(2)}</span>
-              <button
-                className={styles.trashButton}
-                onClick={() => handleRemover(index)}
-              >
+              <span>R${Number(produto.preco || 0).toFixed(2)}</span>
+              <span>R${(Number(produto.preco || 0) * Number(produto.quantidade || 0)).toFixed(2)}</span>
+              <button className={styles.trashButton} onClick={() => handleRemover(index)}>
                 <FontAwesomeIcon icon={faTrash} />
               </button>
             </div>
@@ -398,7 +388,6 @@ export default function CadastrarVenda({ onClose }) {
 
         {/* CUPOM */}
         <label className={styles.titulo}>Adicionar Cupom</label>
-
         <DropdownSelect
           label="Cupom"
           placeholder="Buscar cupom..."
@@ -406,12 +395,8 @@ export default function CadastrarVenda({ onClose }) {
           value={cupomBusca}
           selectedId={cupomSelecionado}
           onChange={setCupomBusca}
-          onSelect={(id) => aplicarCupom(id)}
-          onClear={() => {
-            setCupomSelecionado(null);
-            setCupomBusca("");
-            setDesconto(0);
-          }}
+          onSelect={aplicarCupom}
+          onClear={() => { setCupomSelecionado(null); setCupomBusca(""); setDesconto(0); }}
         />
 
         {/* RESUMO */}
@@ -426,9 +411,7 @@ export default function CadastrarVenda({ onClose }) {
           </div>
           <div className={styles.resumoItem}>
             <span>Total</span>
-            <span className={styles.valorDireita}>
-              R${(subtotal - desconto).toFixed(2)}
-            </span>
+            <span className={styles.valorDireita}>R${(subtotal - desconto).toFixed(2)}</span>
           </div>
         </div>
 
@@ -436,21 +419,11 @@ export default function CadastrarVenda({ onClose }) {
         <div className={styles.entregaBox}>
           <div className={styles.radioGroup}>
             <label>
-              <input
-                type="radio"
-                value="entrega"
-                checked={tipoEntrega === "entrega"}
-                onChange={() => setTipoEntrega("entrega")}
-              />
+              <input type="radio" value="entrega" checked={tipoEntrega === "entrega"} onChange={() => setTipoEntrega("entrega")} />
               Entrega
             </label>
             <label>
-              <input
-                type="radio"
-                value="retirada"
-                checked={tipoEntrega === "retirada"}
-                onChange={() => setTipoEntrega("retirada")}
-              />
+              <input type="radio" value="retirada" checked={tipoEntrega === "retirada"} onChange={() => setTipoEntrega("retirada")} />
               Retirada
             </label>
           </div>
@@ -458,36 +431,21 @@ export default function CadastrarVenda({ onClose }) {
           {tipoEntrega === "entrega" && (
             <div className={styles.entregaCampos}>
               <label className={styles.labelCinza}>Data da entrega</label>
-              <input
-                type="date"
-                className={styles.inputEntrega}
-                value={dataEntrega}
-                onChange={(e) => setDataEntrega(e.target.value)}
-              />
+              <input type="date" className={styles.inputEntrega} value={dataEntrega} onChange={(e) => setDataEntrega(e.target.value)} />
             </div>
           )}
         </div>
 
         {/* FORMA DE PAGAMENTO */}
         <label className={styles.titulo}>Forma de Pagamento</label>
-        <select
-          className={styles.select}
-          value={formaPagamento}
-          onChange={(e) => setFormaPagamento(e.target.value)}
-        >
+        <select className={styles.select} value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)}>
           <option>Pix</option>
           <option>Espécie</option>
         </select>
 
-        {errorMsg && (
-          <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>
-        )}
+        {errorMsg && <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>}
 
-        <button
-          className={styles.confirmarVenda}
-          onClick={handleConfirmarVenda}
-          disabled={loading}
-        >
+        <button className={styles.confirmarVenda} onClick={handleConfirmarVenda} disabled={loading}>
           {loading ? "Criando..." : "Confirmar Venda"}
         </button>
 

@@ -35,9 +35,12 @@ export default function DropdownSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredLista = lista.filter((item) =>
-    item.nome.toLowerCase().includes(busca.toLowerCase())
-  );
+  // 🔥 Correção contra undefined + itens sem nome
+  const filteredLista = (lista || [])
+    .filter((item) => item && item.nome) // impede erros
+    .filter((item) =>
+      item.nome.toLowerCase().includes((busca || "").toLowerCase())
+    );
 
   return (
     <div className={styles.inlineSearch} ref={containerRef}>

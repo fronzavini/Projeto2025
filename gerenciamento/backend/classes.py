@@ -528,6 +528,7 @@ class Produto:
             query = "SELECT * FROM produtos WHERE nome = %s"
             cursor.execute(query, (nome,))
             resultado = cursor.fetchone()
+
             if resultado:
                 produto = {
                     "id": resultado[0],
@@ -537,14 +538,16 @@ class Produto:
                     "preco": float(resultado[4]),
                     "quantidadeEstoque": resultado[5],
                     "estoqueMinimo": resultado[6],
-                    "estado": bool(resultado[7])
+                    "estado": bool(resultado[7]),
+                    "fornecedor_id": resultado[8],
+                    "imagem_1": resultado[9],
+                    "imagem_2": resultado[10],
+                    "imagem_3": resultado[11]
                 }
                 return produto
             else:
                 return None
-        except MySQLError as e:
-            print(f"Erro ao obter produto: {e}")
-            return None
+
         finally:
             cursor.close()
             conexao.close()
