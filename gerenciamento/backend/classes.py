@@ -430,7 +430,7 @@ class Produto:
         return {"message": "Produto adicionado com sucesso", "id": produto_id}  # <-- retorna ID
 
     @staticmethod
-    def editarProduto(id, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, estoqueMinimo=None, estado=None, imagem_1=None, imagem_2=None, imagem_3=None):
+    def editarProduto(id, nome=None, categoria=None, marca=None, preco=None, quantidadeEstoque=None, estoqueMinimo=None, estado=None, fornecedor_id=None, imagem_1=None, imagem_2=None, imagem_3=None):
         conexao = conectar_banco()
         cursor = conexao.cursor()
         campos = []
@@ -456,6 +456,9 @@ class Produto:
         if estado is not None:
             campos.append("estado = %s")
             valores.append(estado)
+        if fornecedor_id:
+            campos.append("fornecedor_id = %s")
+            valores.append(fornecedor_id)
         if imagem_1:
             campos.append("imagem_1 = %s")
             valores.append(imagem_1)

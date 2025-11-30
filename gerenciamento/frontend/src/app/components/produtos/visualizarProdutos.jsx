@@ -1,119 +1,92 @@
 import React from "react";
-// O estilo pode ser reutilizado ou adaptado, dependendo da sua estrutura de arquivos.
-// Estou assumindo que 'cadastrarCliente.module.css' tem estilos genéricos para overlay, popup, form, etc.
-import styles from "../../styles/cadastrarCliente.module.css"; 
+import styles from "../../styles/cadastrarCliente.module.css";
 
 /**
  * Componente para visualizar os detalhes de um produto.
- * @param {object} props - As propriedades do componente.
- * @param {function} props.onClose - Função para fechar o modal.
- * @param {object} props.produto - O objeto do produto a ser visualizado.
+ * @param {object} props
+ * @param {function} props.onClose - Função para fechar o modal
+ * @param {object} props.produto - Produto a ser visualizado
  */
 export default function VisualizarProduto({ onClose, produto }) {
-  // Você pode usar o console.log para inspecionar os dados do produto ao abrir o modal.
-  // console.log(produto);
+  const precoFormatado = produto.preco
+    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(produto.preco)
+    : "R$ 0,00";
 
-  // Formatação simples do preço para Reais (BRL)
-  const precoFormatado = produto.preco ? 
-    new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(produto.preco) : 'R$ 0,00';
+  const status = produto.estado ? "Ativo" : "Inativo";
 
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            {/* Exibe o ID do produto no título */}
-            <h2 className={styles.headerTitle}>Produto: {produto.id}</h2>
-            <button
-              className={styles.botaoCancelar}
-              type="button"
-              onClick={onClose}
-            >
+            <h2 className={styles.headerTitle}>Produto: {produto.nome}</h2>
+            <button className={styles.botaoCancelar} type="button" onClick={onClose}>
               Fechar
             </button>
           </div>
 
+          {/* Exibição de imagens */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", flexWrap: "wrap" }}>
+            {produto.imagens && produto.imagens.length > 0 ? (
+              produto.imagens.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`${produto.nome} ${idx + 1}`}
+                  style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: "1px solid #ccc" }}
+                />
+              ))
+            ) : (
+              <span>Sem imagens disponíveis</span>
+            )}
+          </div>
+
           <form>
-            {/* Campo Nome do Produto */}
-            <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>
-                Nome do produto
-              </label>
-              <input
-                className={styles.input}
-                id="nome"
-                name="nome"
-                type="text"
-                value={produto.nome || ""}
-                disabled // Todos os campos são desabilitados para visualização
-              />
+            <div className={styles.row}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>ID</label>
+                <input className={styles.input} type="text" value={produto.id} disabled />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Marca / Tipo</label>
+                <input className={styles.input} type="text" value={produto.marca} disabled />
+              </div>
             </div>
 
             <div className={styles.row}>
-              {/* Campo Preço */}
               <div className={styles.formGroup}>
-                <label htmlFor="preco" className={styles.label}>
-                  Preço
-                </label>
-                <input
-                  className={styles.input}
-                  id="preco"
-                  name="preco"
-                  type="text" // Mantém como texto para exibir o preço formatado
-                  value={precoFormatado}
-                  disabled
-                />
+                <label className={styles.label}>Categoria</label>
+                <input className={styles.input} type="text" value={produto.categoria} disabled />
               </div>
-              
-              {/* Campo Quantidade em Estoque */}
+
               <div className={styles.formGroup}>
-                <label htmlFor="quantidadeEstoque" className={styles.label}>
-                  Qtd. em Estoque
-                </label>
-                <input
-                  className={styles.input}
-                  id="quantidadeEstoque"
-                  name="quantidadeEstoque"
-                  type="number" 
-                  value={produto.quantidadeEstoque || 0}
-                  disabled
-                />
+                <label className={styles.label}>Preço</label>
+                <input className={styles.input} type="text" value={precoFormatado} disabled />
               </div>
             </div>
 
-            {/* Campo Categoria (exemplo com select desabilitado) */}
-            <div className={styles.formGroup}>
-              <label htmlFor="categoria" className={styles.label}>
-                Categoria
-              </label>
-              <input
-                className={styles.input}
-                id="categoria"
-                name="categoria"
-                type="text"
-                value={produto.categoria || ""}
-                disabled 
-              />
+            <div className={styles.row}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Quantidade em Estoque</label>
+                <input className={styles.input} type="number" value={produto.quantidade_estoque} disabled />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Estoque Mínimo</label>
+                <input className={styles.input} type="number" value={produto.estoque_minimo} disabled />
+              </div>
             </div>
 
-            {/* Campo Descrição */}
             <div className={styles.formGroup}>
-              <label htmlFor="descricao" className={styles.label}>
-                Descrição
-              </label>
-              <textarea
-                className={styles.input} // Pode adaptar para um estilo de textarea
-                id="descricao"
-                name="descricao"
-                rows="4"
-                value={produto.descricao || ""}
-                disabled
-              />
+              <label className={styles.label}>Status</label>
+              <input className={styles.input} type="text" value={status} disabled />
             </div>
-            
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Fornecedor ID</label>
+              <input className={styles.input} type="text" value={produto.fornecedor_id || ""} disabled />
+            </div>
           </form>
         </div>
       </div>
