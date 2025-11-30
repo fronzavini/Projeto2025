@@ -69,6 +69,7 @@ def criar_cliente():
     resultado = Cliente.criarCliente(**cliente_data)
     return jsonify(resultado)
 
+
 #lembre de trocar o id caso esteja errado
 #curl -X PUT http://127.0.0.1:5000/editar_cliente/1 -H "Content-Type: application/json" -d "{\"nome\":\"João Silva\",\"email\":\"joao.silva@email.com\",\"telefone\":\"11999999999\",\"cep\":\"12345678\",\"logradouro\":\"Rua B\",\"cpf\":\"12345678900\",\"rg\":\"1234567\",\"sexo\":\"masculino\",\"data_nascimento\":\"2000-01-01\"}"
 @app.route('/editar_cliente/<int:id>', methods=['PUT'])
@@ -217,8 +218,8 @@ def listar_funcionarios():
     funcionarios = Funcionario.listarFuncionarios()
     return jsonify(funcionarios)
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/login_sistema', methods=['POST'])
+def login_sistema():
     dados = request.json or {}
 
     usuario = dados.get('usuario')
@@ -317,6 +318,88 @@ def login():
         cursor.close()
         conexao.close()
 
+@app.route('/login_loja', methods=['POST'])
+def login_loja():
+    dados = request.json or {}
+
+    email = dados.get('email')
+    senha = dados.get('senha')
+
+    if not email or not senha:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Email e senha são obrigatórios'}), 400
+
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
+
+    cursor = conexao.cursor()
+    try:
+        # 1️⃣ Buscar cliente pelo email
+        query_cliente = '''
+            SELECT id, nome, email, estado
+            FROM clientes
+            WHERE email = %s
+        '''
+        cursor.execute(query_cliente, (email,))
+        cliente = cursor.fetchone()
+
+        if not cliente:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Email não encontrado'}), 401
+
+        cliente_id = cliente[0]
+        cliente_nome = cliente[1]
+        cliente_email = cliente[2]
+        cliente_estado = bool(cliente[3])
+
+        if not cliente_estado:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Conta desativada'}), 403
+
+        # 2️⃣ Buscar usuário_loja vinculado ao cliente
+        query_usuario = '''
+            SELECT id, usuario, senha
+            FROM usuarios_loja
+            WHERE cliente_id = %s
+        '''
+        cursor.execute(query_usuario, (cliente_id,))
+        usuario_row = cursor.fetchone()
+
+        if not usuario_row:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 401
+
+        usuario_id = usuario_row[0]
+        usuario_login = usuario_row[1]  # nome de usuário criado automaticamente
+        usuario_senha = usuario_row[2]
+
+        # 3️⃣ Validar senha
+        if senha != usuario_senha:
+            return jsonify({'resultado': 'erro', 'detalhes': 'Senha incorreta'}), 401
+
+        # 4️⃣ Criar token JWT
+        payload = {
+            "usuario_id": usuario_id,
+            "cliente_id": cliente_id,
+            "exp": datetime.utcnow() + timedelta(hours=8)
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+        return jsonify({
+            "resultado": "ok",
+            "token": token,
+            "usuario": {
+                "id": usuario_id,
+                "cliente_id": cliente_id,
+                "nome": cliente_nome,
+                "email": cliente_email,
+                "usuario_login": usuario_login
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conexao.close()
 
 
 # Produto

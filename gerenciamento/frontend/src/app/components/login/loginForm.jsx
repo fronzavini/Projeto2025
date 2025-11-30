@@ -13,7 +13,7 @@ export default function LoginForm() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost:5000/login", {
+    fetch("http://localhost:5000/login_sistema", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ usuario, senha }),

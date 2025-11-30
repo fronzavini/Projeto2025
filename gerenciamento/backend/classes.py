@@ -76,7 +76,9 @@ class Cliente(PessoaFisica, PessoaJuridica):
             )
             cursor.execute(query, valores)
             conexao.commit()
-            return {"message": "Cliente criado com sucesso."}
+            cliente_id = cursor.lastrowid
+            return {"message": "Cliente criado com sucesso.", "id": cliente_id}
+
         except MySQLError as erro:
             print(f"Erro ao inserir cliente no banco de dados: {erro}")
             return {"error": "Erro ao criar cliente no banco de dados."}

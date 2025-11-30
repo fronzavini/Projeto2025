@@ -9,11 +9,44 @@ export default function LoginPopup({ fechar, irParaRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Dados de Login:", { email, password });
-    alert(`Tentativa de Login com Email: ${email}`);
+    setCarregando(true);
+
+    try {
+      const resp = await fetch("http://127.0.0.1:5000/login_loja", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha: password }),
+      });
+
+      const dados = await resp.json();
+
+      if (dados.resultado === "erro") {
+        alert(dados.detalhes);
+        setCarregando(false);
+        return;
+      }
+
+      // Salvar token no localStorage
+      localStorage.setItem("token_loja", dados.token);
+      localStorage.setItem("usuario_loja", JSON.stringify(dados.usuario));
+
+      alert("Login realizado com sucesso!");
+
+      fechar && fechar();
+      
+      window.location.reload();
+
+
+    } catch (error) {
+      console.error("Erro ao tentar login:", error);
+      alert("Erro ao conectar ao servidor.");
+    }
+
+    setCarregando(false);
   };
 
   return (
@@ -28,9 +61,7 @@ export default function LoginPopup({ fechar, irParaRegister }) {
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email:
-              </label>
+              <label htmlFor="email" className={styles.label}>Email:</label>
               <input
                 type="email"
                 id="email"
@@ -42,9 +73,7 @@ export default function LoginPopup({ fechar, irParaRegister }) {
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.label}>
-                Senha:
-              </label>
+              <label htmlFor="password" className={styles.label}>Senha:</label>
               <div className={styles.passwordWrapper}>
                 <input
                   type={mostrarSenha ? "text" : "password"}
@@ -62,22 +91,23 @@ export default function LoginPopup({ fechar, irParaRegister }) {
                   <FontAwesomeIcon icon={mostrarSenha ? faEyeSlash : faEye} />
                 </button>
               </div>
-              <span className={styles.forgotPassword}>Esqueceu sua senha?</span>
             </div>
 
-            <button type="submit" className={styles.submitButton}>
-              Entrar
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={carregando}
+            >
+              {carregando ? "Entrando..." : "Entrar"}
             </button>
           </form>
 
-          {/* Divisor */}
           <div className={styles.divider}>
             <hr className={styles.hr} />
             <span className={styles.orText}>ou</span>
             <hr className={styles.hr} />
           </div>
 
-          {/* Login Google */}
           <div className={styles.googleWrapper}>
             <GoogleLogin
               onSuccess={(credenciais) => {

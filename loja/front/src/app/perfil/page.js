@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-// Importar Link do Next.js para navegação
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -8,53 +7,56 @@ import PerfilForm from "../components/perfilForm";
 import PedidosList from "../components/pedidosList";
 import EnderecoForm from "../components/EnderecoForm";
 
-// Ícones Font Awesome (assumindo que você voltou para eles ou terá um setup híbrido)
 import {
   FaFileInvoice,
   FaUser,
   FaHome,
   FaSignOutAlt,
-  FaTruck, // Ícone de caminhão para Pedidos
+  FaTruck,
 } from "react-icons/fa";
 
 import styles from "../styles/perfil.module.css";
 
 export default function PerfilPage() {
   const router = useRouter();
-  // Começamos na aba "pedidos" para condizer com o breadcrumb
+
   const [aba, setAba] = useState("pedidos");
   const [usuario, setUsuario] = useState(null);
   const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
-    // ... (mock data remain the same)
-    const usuarioMock = {
-      nome: "Maria Silva",
-      email: "maria@email.com",
-      telefone: "11999999999",
-      endereco: {
-        cep: "00000-000",
-        rua: "Rua Exemplo",
-        numero: "123",
-        cidade: "São Paulo",
-        estado: "SP",
-      },
-    };
+    // Busca usuário logado no localStorage
+    const usuarioLogado = localStorage.getItem("usuario_loja");
 
+    if (!usuarioLogado) {
+      router.push("/login"); // se não estiver logado, manda pro login
+      return;
+    }
+
+    const dados = JSON.parse(usuarioLogado);
+    setUsuario(dados);
+
+    // Aqui você vai substituir por sua API real
     const pedidosMock = [
       { id: 1, data: "2025-11-28", status: "Entregue", valor: 120.5 },
       { id: 2, data: "2025-11-29", status: "Em transporte", valor: 80.0 },
     ];
 
-    setUsuario(usuarioMock);
     setPedidos(pedidosMock);
   }, []);
 
+  // Botão de sair
+  function deslogar() {
+    localStorage.removeItem("usuario_loja");
+    localStorage.removeItem("token_loja");
+    router.push("/");
+  }
+
+  if (!usuario) return null; // evita piscar antes de carregar
+
   return (
     <div className={styles.perfilWrapper}>
-      {" "}
-      {/* Novo Wrapper para o Breadcrumb */}
-      {/* BREADCRUMB: Home > Pedidos */}
+      {/* BREADCRUMB */}
       <div className={styles.breadcrumb}>
         <Link href="/" className={styles.breadcrumbLink}>
           Home
@@ -62,6 +64,7 @@ export default function PerfilPage() {
         <span className={styles.breadcrumbSeparator}>&gt;</span>
         <span className={styles.breadcrumbCurrent}>Pedidos</span>
       </div>
+
       <div className={styles.container}>
         {/* MENU LATERAL */}
         <aside className={styles.sidebar}>
@@ -92,10 +95,7 @@ export default function PerfilPage() {
             <hr className={styles.menuSeparator} />
 
             <li className={styles.sair}>
-              <button
-                className={styles.sairBtn}
-                onClick={() => console.log("logout")}
-              >
+              <button className={styles.sairBtn} onClick={deslogar}>
                 <FaSignOutAlt className={styles.icon} />
                 Sair
               </button>

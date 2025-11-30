@@ -11,6 +11,7 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
     tipo: "fisico",
     sexo: "masculino",
     cpf: "",
+    rg: "",
     cnpj: "",
     email: "",
     telefone: "",
@@ -25,28 +26,96 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
     setForm((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
+
+    // valida senha
     if (form.senha !== form.confirmarSenha) {
       alert("As senhas não coincidem!");
       return;
     }
-    if (form.tipo === "fisico" && !form.cpf) {
+
+    // valida CPF/CNPJ
+    if (form.tipo === "fisico" && !form.cpf.trim()) {
       alert("CPF é obrigatório para pessoa física!");
       return;
     }
-    if (form.tipo === "juridico" && !form.cnpj) {
+    if (form.tipo === "juridico" && !form.cnpj.trim()) {
       alert("CNPJ é obrigatório para pessoa jurídica!");
       return;
     }
-    console.log("Dados enviados:", form);
-    alert("Conta registrada com sucesso!");
-  };
+
+    try {
+      // ----------------------------
+      // 1) CRIAR CLIENTE NO BANCO
+      // ----------------------------
+      const clienteResponse = await fetch("http://127.0.0.1:5000/criar_cliente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: form.nome,
+          tipo: form.tipo,
+          email: form.email,
+          telefone: form.telefone,
+          cep: "00000000",        
+          logradouro: "Não informado",
+          numero: "S/N",
+          bairro: "Não informado",
+          complemento: "",
+          uf: "SP",
+          cidade: "Não informado",
+          cpf: form.tipo === "fisico" ? form.cpf : null,
+          rg: null,
+          sexo: form.sexo,
+          data_nascimento: null,
+          cnpj: form.tipo === "juridico" ? form.cnpj : null,
+        }),
+      });
+
+      const clienteData = await clienteResponse.json();
+
+      if (!clienteResponse.ok || !clienteData.id) {
+        console.log(clienteData);
+        alert("Erro ao criar cliente.");
+        return;
+      }
+
+      const cliente_id = clienteData.id;
+
+      // ----------------------------
+      // 2) CRIAR USUARIO_LOJA
+      // ----------------------------
+      const userResponse = await fetch("http://127.0.0.1:5000/criar_usuario_loja", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cliente_id,
+          usuario: form.usuario,
+          senha: form.senha,
+        }),
+      });
+
+      const userData = await userResponse.json();
+
+      if (!userResponse.ok) {
+        console.log(userData);
+        alert("Cliente criado, mas erro ao vincular usuário!");
+        return;
+      }
+
+      alert("Conta criada com sucesso!");
+      if (irParaLogin) irParaLogin();
+      fechar();
+    } catch (erro) {
+      console.error("Erro no registro:", erro);
+      alert("Erro inesperado ao registrar a conta.");
+    }
+  }
 
   return (
     <div className={styles.overlay} onClick={fechar}>
       <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
-        {/* Botão X */}
+        
         <button className={styles.closeBtn} onClick={fechar}>
           <FontAwesomeIcon icon={faTimes} />
         </button>
@@ -55,6 +124,7 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
           <h2 className={styles.title}>Criar Conta</h2>
 
           <form className={styles.form} onSubmit={handleSubmit}>
+
             <div className={styles.inputGroup}>
               <label className={styles.label}>Nome completo:</label>
               <input
@@ -86,6 +156,14 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
                   className={styles.input}
                   value={form.cpf}
                   onChange={(e) => atualizar("cpf", e.target.value)}
+                  required
+                />
+                <label className={styles.label}>RG:</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={form.rg}
+                  onChange={(e) => atualizar("rg", e.target.value)}
                   required
                 />
               </div>
@@ -173,14 +251,12 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
             </button>
           </form>
 
-          {/* Divisor */}
           <div className={styles.divider}>
             <hr className={styles.hr} />
             <span className={styles.orText}>ou</span>
             <hr className={styles.hr} />
           </div>
 
-          {/* Registro Google */}
           <div className={styles.googleWrapper}>
             <GoogleLogin
               onSuccess={(credenciais) => {
@@ -188,7 +264,6 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
                 alert("Conta registrada com Google!");
               }}
               onError={() => {
-                console.log("Erro no registro com Google");
                 alert("Erro no registro com Google.");
               }}
             />

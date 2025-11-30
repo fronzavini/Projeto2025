@@ -14,7 +14,7 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 
 import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
-import { useCarrinho } from "../context/carrinhoContext"; // IMPORT DO CARRINHO
+import { useCarrinho } from "../context/carrinhoContext";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -25,29 +25,41 @@ export default function Nav() {
   const [abrirRegister, setAbrirRegister] = useState(false);
 
   const [logado, setLogado] = useState(false);
+  const [usuario, setUsuario] = useState(null);
   const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
 
-  // USO DO CARRINHO
   const { dadosCheckout } = useCarrinho();
   const totalItens = dadosCheckout.itensPedido.reduce(
     (acc, item) => acc + item.quantidade,
     0
   );
 
+  // Detecta scroll
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 150);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Verifica login ao montar
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) setLogado(true);
+    const token = localStorage.getItem("token_loja");
+    const userData = localStorage.getItem("usuario_loja");
+
+
+    if (token && userData) {
+      setLogado(true);
+      setUsuario(JSON.parse(userData));
+    } else {
+      setLogado(false);
+      setUsuario(null);
+    }
   }, []);
 
+  // Clique no ícone do usuário
   const handleUsuarioClick = () => {
     if (logado) {
       setAbrirUsuarioMenu(!abrirUsuarioMenu);
@@ -56,13 +68,18 @@ export default function Nav() {
     }
   };
 
+  // Logout
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("token_loja");
+    localStorage.removeItem("usuario_loja");
     setLogado(false);
+    setUsuario(null);
     setAbrirUsuarioMenu(false);
+    router.refresh();
     router.push("/");
   };
 
+  // Ir para perfil
   const irParaPerfil = () => {
     setAbrirUsuarioMenu(false);
     router.push("/perfil");
@@ -120,6 +137,7 @@ export default function Nav() {
             <FontAwesomeIcon icon={faMagnifyingGlass} />
           </li>
 
+          {/* Ícone do usuário */}
           <li onClick={handleUsuarioClick} className={styles.iconClick}>
             <FontAwesomeIcon icon={faUser} />
           </li>
@@ -158,9 +176,12 @@ export default function Nav() {
           </div>
         )}
 
-        {/* Menu usuário (pop-up) */}
-        {abrirUsuarioMenu && (
+        {/* Menu do usuário (popup) */}
+        {abrirUsuarioMenu && logado && (
           <div className={styles.usuarioMenu}>
+            <p className={styles.usuarioNome}>
+              Olá, <b>{usuario?.nome}</b>
+            </p>
             <button onClick={irParaPerfil}>Meu Perfil</button>
             <button onClick={handleLogout}>Sair</button>
           </div>
@@ -190,11 +211,7 @@ export default function Nav() {
                   Arranjos
                 </Link>
               </li>
-              <li>
-                <Link href="/orcamentos" onClick={() => setMenuAberto(false)}>
-                  Orçamentos
-                </Link>
-              </li>
+
               {logado && (
                 <li>
                   <button
