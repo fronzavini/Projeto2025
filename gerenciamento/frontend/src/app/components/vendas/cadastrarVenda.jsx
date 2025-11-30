@@ -1,31 +1,43 @@
 "use client";
 import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
-import CadastrarCliente from "../clientes/cadastrarCliente";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import CadastrarCliente from "../clientes/cadastrarCliente";
 import DropdownSelect from "./dropdownSelect";
 import DropdownProduto from "./dropdownProduto";
 
 export default function CadastrarVenda({ onClose }) {
+  // Estados principais
   const [produtos, setProdutos] = useState([]);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
   const [clientesLista, setClientesLista] = useState([]);
   const [funcionariosLista, setFuncionariosLista] = useState([]);
+  const [cuponsLista, setCuponsLista] = useState([]);
+
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+  const [cupomSelecionado, setCupomSelecionado] = useState(null);
+
   const [clienteBusca, setClienteBusca] = useState("");
   const [funcionarioBusca, setFuncionarioBusca] = useState("");
+  const [cupomBusca, setCupomBusca] = useState("");
+
   const [tipoEntrega, setTipoEntrega] = useState("entrega");
   const [dataEntrega, setDataEntrega] = useState("");
+  const [formaPagamento, setFormaPagamento] = useState("Pix");
+
+  const [desconto, setDesconto] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
 
+  // Carregar dados iniciais
   useEffect(() => {
     carregarProdutos();
     carregarClientes();
     carregarFuncionarios();
+    carregarCupons();
   }, []);
 
   const carregarProdutos = async () => {
@@ -37,6 +49,7 @@ export default function CadastrarVenda({ onClose }) {
         nome: p[1],
         preco: Number(p[4]),
         quantidadeEstoque: Number(p[5]) || 0,
+        quantidade: 1,
       }));
       setProdutosDisponiveis(produtosFormatados);
     } catch (err) {
@@ -87,6 +100,35 @@ export default function CadastrarVenda({ onClose }) {
     setProdutos(novos);
   };
 
+  const aplicarCupom = (id) => {
+    const cupom = cuponsLista.find((c) => c.id === id);
+    if (cupom) {
+      let valorDesconto = 0;
+      if (cupom.tipo === "fixo")
+        valorDesconto = parseFloat(cupom.descontofixo || 0);
+      else if (cupom.tipo === "porcentagem")
+        valorDesconto = (subtotal * (cupom.descontoPorcentagem || 0)) / 100;
+
+      setCupomSelecionado(cupom.id);
+      setCupomBusca(cupom.nome);
+      setDesconto(valorDesconto);
+    } else {
+      setCupomSelecionado(null);
+      setDesconto(0);
+    }
+  };
+
+  const carregarCupons = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/listar_cupons");
+      const data = await res.json();
+      setCuponsLista(data || []);
+    } catch (err) {
+      console.error(err);
+      setCuponsLista([]);
+    }
+  };
+
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
@@ -103,10 +145,13 @@ export default function CadastrarVenda({ onClose }) {
         cliente: parseInt(clienteSelecionado),
         funcionario: parseInt(funcionarioSelecionado),
         produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
-        valorTotal: subtotal,
+        valorTotal: subtotal - desconto,
+        cupom: cupomSelecionado,
         dataVenda,
-        entrega: tipoEntrega === "entrega",
+        entrega: tipoEntrega === "entrega" ? 1 : 0,
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
+        formaPagamento,
+        pago: 0, // padrão
       };
 
       const res = await fetch("http://localhost:5000/criar_venda", {
@@ -149,39 +194,37 @@ export default function CadastrarVenda({ onClose }) {
           </button>
         </div>
 
-        <div className={styles.dropdownContainer}>
-          <DropdownSelect
-            label="Cliente"
-            placeholder="Pesquisar cliente..."
-            lista={clientesLista}
-            value={clienteBusca}
-            selectedId={clienteSelecionado}
-            onChange={setClienteBusca}
-            onSelect={setClienteSelecionado}
-            onClear={() => {
-              setClienteSelecionado(null);
-              setClienteBusca("");
-            }}
-            allowNew={true}
-            onNewClick={() => setShowCadastrarCliente(true)}
-          />
-        </div>
+        {/* CLIENTE */}
+        <DropdownSelect
+          label="Cliente"
+          placeholder="Pesquisar cliente..."
+          lista={clientesLista}
+          value={clienteBusca}
+          selectedId={clienteSelecionado}
+          onChange={setClienteBusca}
+          onSelect={setClienteSelecionado}
+          onClear={() => {
+            setClienteSelecionado(null);
+            setClienteBusca("");
+          }}
+          allowNew
+          onNewClick={() => setShowCadastrarCliente(true)}
+        />
 
-        <div className={styles.dropdownContainer}>
-          <DropdownSelect
-            label="Funcionário"
-            placeholder="Pesquisar funcionário..."
-            lista={funcionariosLista}
-            value={funcionarioBusca}
-            selectedId={funcionarioSelecionado}
-            onChange={setFuncionarioBusca}
-            onSelect={setFuncionarioSelecionado}
-            onClear={() => {
-              setFuncionarioSelecionado(null);
-              setFuncionarioBusca("");
-            }}
-          />
-        </div>
+        {/* FUNCIONÁRIO */}
+        <DropdownSelect
+          label="Funcionário"
+          placeholder="Pesquisar funcionário..."
+          lista={funcionariosLista}
+          value={funcionarioBusca}
+          selectedId={funcionarioSelecionado}
+          onChange={setFuncionarioBusca}
+          onSelect={setFuncionarioSelecionado}
+          onClear={() => {
+            setFuncionarioSelecionado(null);
+            setFuncionarioBusca("");
+          }}
+        />
 
         {/* PRODUTOS */}
         <h3 className={styles.titulo}>Produtos</h3>
@@ -193,8 +236,6 @@ export default function CadastrarVenda({ onClose }) {
             setProdutos([...produtos, produto]);
           }}
         />
-
-        {/* LISTA DE PRODUTOS */}
         <div className={styles.produtoContainer}>
           <div className={styles.headerProdutos}>
             <span>Produto</span>
@@ -222,8 +263,45 @@ export default function CadastrarVenda({ onClose }) {
             </div>
           ))}
           <div className={styles.totalRow}>
-            <span className={styles.totalLabel}>Total</span>
+            <span className={styles.totalLabel}>Subtotal</span>
             <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* CUPOM */}
+        <label className={styles.titulo}>Adicionar Cupom</label>
+        <div className={styles.inlineSearch}>
+          <DropdownSelect
+            label="Cupom"
+            placeholder="Buscar cupom..."
+            lista={cuponsLista}
+            value={cupomBusca}
+            selectedId={cupomSelecionado}
+            onChange={setCupomBusca}
+            onSelect={(id) => aplicarCupom(id)}
+            onClear={() => {
+              setCupomSelecionado(null);
+              setCupomBusca("");
+              setDesconto(0);
+            }}
+          />
+        </div>
+
+        {/* RESUMO */}
+        <div className={styles.resumo}>
+          <div className={styles.resumoItem}>
+            <span>Subtotal</span>
+            <span className={styles.valorDireita}>R${subtotal.toFixed(2)}</span>
+          </div>
+          <div className={styles.resumoItem}>
+            <span>Desconto</span>
+            <span className={styles.valorDireita}>R${desconto.toFixed(2)}</span>
+          </div>
+          <div className={styles.resumoItem}>
+            <span>Total</span>
+            <span className={styles.valorDireita}>
+              R${(subtotal - desconto).toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -261,6 +339,17 @@ export default function CadastrarVenda({ onClose }) {
             </div>
           )}
         </div>
+
+        {/* FORMA DE PAGAMENTO */}
+        <label className={styles.titulo}>Forma de Pagamento</label>
+        <select
+          className={styles.select}
+          value={formaPagamento}
+          onChange={(e) => setFormaPagamento(e.target.value)}
+        >
+          <option>Pix</option>
+          <option>Espécie</option>
+        </select>
 
         {errorMsg && (
           <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>

@@ -667,9 +667,10 @@
 }
 
 /* Autocomplete dropdown */
+/* Dropdown */
 .dropdown {
   position: absolute;
-  background-color: var(--fundo-cinza-claro); /* não branco */
+  background-color: var(--cliente-bg); /* fundo cinza claro */
   border: 1px solid var(--cinza-borda);
   border-radius: 6px;
   max-height: 150px;
@@ -687,44 +688,10 @@
 
 .dropdownItem:hover {
   background-color: var(--botao-bg);
-  color: white;
+  color: var(--botao-text-color);
 }
 
 /* Dropdown container comum */
-.inlineSearch,
-.novoProdutoForm {
-  position: relative;
-  display: flex;
-  gap: 0.5rem;
-  flex-direction: column;
-}
-
-/* Inputs */
-.inlineSearch input,
-.novoProdutoForm input[type="text"],
-.novoProdutoForm input[type="number"] {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-/* Botão Novo */
-.botaoRoxo {
-  background-color: #7b4fff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-/* ================= DROPDOWNS & INPUTS ================= */
-
-/* Container comum para inputs e dropdowns */
 .inlineSearch,
 .novoProdutoForm {
   position: relative;
@@ -740,11 +707,11 @@
 .novoProdutoForm input[type="number"] {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #999;
+  border: 1px solid var(--cinza-borda);
   border-radius: 8px;
   font-size: 1rem;
-  color: #fff; /* texto visível em fundo escuro */
-  background-color: #4b367c; /* fundo uniforme */
+  color: var(--foreground);
+  background-color: var(--cliente-bg);
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.2s, background-color 0.2s;
@@ -753,20 +720,37 @@
 /* Placeholder visível */
 .inlineSearch input::placeholder,
 .novoProdutoForm input::placeholder {
-  color: #cfcfea;
+  color: var(--cinza-placeholder);
 }
 
 /* Foco no input */
 .inlineSearch input:focus,
 .novoProdutoForm input:focus {
-  border-color: #a078ff;
-  background-color: #5c459e;
+  border-color: var(--botao-bg);
+  background-color: var(--roxo-escuro-icon);
+}
+
+/* Botão Novo */
+.botaoRoxo {
+  background-color: var(--botao-bg);
+  color: var(--botao-text-color);
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.botaoRoxo:hover {
+  background-color: var(--botao-hover-bg);
 }
 
 /* Botão "Novo" */
+/* Botão roxo */
 .botaoRoxo {
-  background-color: #a078ff;
-  color: #fff;
+  background-color: var(--botao-enviar-bg);
+  color: var(--botao-text-color);
   border: none;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;
@@ -775,8 +759,12 @@
   font-size: 0.95rem;
   transition: background-color 0.2s;
 }
+
 .botaoRoxo:hover {
-  background-color: #7b4fff;
+  background-color: var(
+    --botao-novo-produto-hover-bg,
+    #c78be2
+  ); /* fallback se não houver variável */
 }
 
 /* Dropdown */
@@ -785,15 +773,15 @@
   top: 100%;
   left: 0;
   right: 0;
-  background-color: #4b367c;
-  border: 1px solid #999;
+  background-color: var(--roxo-escuro-icon);
+  border: 1px solid var(--cinza-input-borda);
   border-radius: 8px;
   max-height: 180px;
   overflow-y: auto;
   margin-top: 0.25rem;
   z-index: 10;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--botao-text-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -803,14 +791,15 @@
   cursor: pointer;
   transition: background-color 0.15s;
 }
+
 .dropdownItem:hover {
-  background-color: #6b4fd1;
+  background-color: var(--botao-enviar-bg);
 }
 
 /* Item desabilitado */
 .dropdownItemDisabled {
   padding: 0.55rem 0.75rem;
-  color: #bbb;
+  color: var(--cinza-placeholder);
   cursor: default;
 }
 
@@ -822,17 +811,18 @@
   align-items: center;
   margin-top: 0.4rem;
   padding: 0.5rem 0.75rem;
-  background-color: #6b4fd1;
+  background-color: var(--botao-enviar-bg);
   border-radius: 8px;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--botao-text-color);
 }
+
 .removerCliente,
 .removerFuncionario {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #fff;
+  color: var(--botao-text-color);
   font-size: 1rem;
 }
 
@@ -840,12 +830,14 @@
 .dropdown::-webkit-scrollbar {
   width: 6px;
 }
+
 .dropdown::-webkit-scrollbar-thumb {
-  background-color: #a078ff;
+  background-color: var(--botao-enviar-bg); /* roxo para o "thumb" */
   border-radius: 3px;
 }
+
 .dropdown::-webkit-scrollbar-track {
-  background: #4b367c;
+  background: var(--cliente-bg); /* fundo claro */
 }
 
 /* Container do DropdownSelect */
@@ -866,4 +858,38 @@
 .dropdownContainer .dropdown {
   width: 100%; /* ocupa toda a largura do input */
   box-sizing: border-box;
+}
+
+/* Container do resumo */
+.resumo {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background-color: var(--datatable-footer-bg);
+  border-radius: 6px;
+  border-top: 1px solid var(--cinza-borda);
+  border-bottom: 1px solid var(--cinza-borda);
+}
+
+/* Cada linha do resumo */
+.resumoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold; /* negrito à esquerda */
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+/* Valor à direita sem negrito */
+.resumoItem span:last-child {
+  font-weight: normal;
+  text-align: right;
+  min-width: 60px; /* garante alinhamento uniforme */
+}
+
+/* Linha de total destacado */
+.total {
+  font-size: 1rem;
+  color: var(--foreground);
+  margin-top: 0.5rem;
 }
