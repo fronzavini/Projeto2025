@@ -3,7 +3,21 @@ import React, { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function EditarFuncionario({ onClose, funcionario }) {
-  const [formData, setFormData] = useState(funcionario);
+  // Função para formatar a data no padrão YYYY-MM-DD
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const d = new Date(dateString);
+    const month = `${d.getMonth() + 1}`.padStart(2, "0");
+    const day = `${d.getDate()}`.padStart(2, "0");
+    const year = d.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
+  const [formData, setFormData] = useState({
+    ...funcionario,
+    data_nascimento: formatDate(funcionario.data_nascimento),
+    data_contratacao: formatDate(funcionario.data_contratacao),
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,7 +71,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
           <form onSubmit={handleSubmit}>
             {/* Dados Pessoais */}
             <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>Nome</label>
+              <label htmlFor="nome" className={styles.label}>
+                Nome
+              </label>
               <input
                 className={styles.input}
                 id="nome"
@@ -70,7 +86,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="cpf" className={styles.label}>CPF</label>
+                <label htmlFor="cpf" className={styles.label}>
+                  CPF
+                </label>
                 <input
                   className={styles.input}
                   id="cpf"
@@ -81,7 +99,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="rg" className={styles.label}>RG</label>
+                <label htmlFor="rg" className={styles.label}>
+                  RG
+                </label>
                 <input
                   className={styles.input}
                   id="rg"
@@ -94,7 +114,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="data_nascimento" className={styles.label}>Data de nascimento</label>
+              <label htmlFor="data_nascimento" className={styles.label}>
+                Data de nascimento
+              </label>
               <input
                 className={styles.inputDate}
                 id="data_nascimento"
@@ -106,7 +128,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="sexo" className={styles.label}>Sexo</label>
+              <label htmlFor="sexo" className={styles.label}>
+                Sexo
+              </label>
               <select
                 className={styles.input}
                 id="sexo"
@@ -121,7 +145,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="funcao" className={styles.label}>Função</label>
+              <label htmlFor="funcao" className={styles.label}>
+                Função
+              </label>
               <input
                 className={styles.input}
                 id="funcao"
@@ -133,7 +159,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>Email</label>
+              <label htmlFor="email" className={styles.label}>
+                Email
+              </label>
               <input
                 className={styles.input}
                 id="email"
@@ -145,7 +173,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="telefone" className={styles.label}>Telefone</label>
+              <label htmlFor="telefone" className={styles.label}>
+                Telefone
+              </label>
               <input
                 className={styles.input}
                 id="telefone"
@@ -159,7 +189,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             {/* Endereço */}
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="cep" className={styles.label}>CEP</label>
+                <label htmlFor="cep" className={styles.label}>
+                  CEP
+                </label>
                 <input
                   className={styles.input}
                   id="cep"
@@ -170,7 +202,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="numero" className={styles.label}>Número</label>
+                <label htmlFor="numero" className={styles.label}>
+                  Número
+                </label>
                 <input
                   className={styles.input}
                   id="numero"
@@ -184,7 +218,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="cidade" className={styles.label}>Cidade</label>
+                <label htmlFor="cidade" className={styles.label}>
+                  Cidade
+                </label>
                 <input
                   className={styles.input}
                   id="cidade"
@@ -195,7 +231,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="bairro" className={styles.label}>Bairro</label>
+                <label htmlFor="bairro" className={styles.label}>
+                  Bairro
+                </label>
                 <input
                   className={styles.input}
                   id="bairro"
@@ -208,7 +246,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="logradouro" className={styles.label}>Logradouro</label>
+              <label htmlFor="logradouro" className={styles.label}>
+                Logradouro
+              </label>
               <input
                 className={styles.input}
                 id="logradouro"
@@ -220,7 +260,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="complemento" className={styles.label}>Complemento</label>
+              <label htmlFor="complemento" className={styles.label}>
+                Complemento
+              </label>
               <input
                 className={styles.input}
                 id="complemento"
@@ -232,7 +274,9 @@ export default function EditarFuncionario({ onClose, funcionario }) {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="uf" className={styles.label}>UF</label>
+              <label htmlFor="uf" className={styles.label}>
+                UF
+              </label>
               <input
                 className={styles.input}
                 id="uf"

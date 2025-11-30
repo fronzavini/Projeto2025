@@ -1,8 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
+// Função para formatar a data para YYYY-MM-DD
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function EditarCliente({ onClose, cliente }) {
-  const [formData, setFormData] = useState(cliente);
+  const [formData, setFormData] = useState({
+    ...cliente,
+    dataNascimento: formatDate(cliente.dataNascimento),
+    tipo: cliente.tipo?.toLowerCase() === "juridico" ? "juridico" : "fisico",
+  });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -10,7 +24,7 @@ export default function EditarCliente({ onClose, cliente }) {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "radio" ? e.target.value : value,
+      [name]: type === "radio" ? value : value,
     }));
   };
 
@@ -22,7 +36,7 @@ export default function EditarCliente({ onClose, cliente }) {
     try {
       const payload = {
         ...formData,
-        data_nascimento: formData.dataNascimento,
+        data_nascimento: formData.dataNascimento, // backend espera data_nascimento
       };
       delete payload.dataNascimento;
 
@@ -69,6 +83,7 @@ export default function EditarCliente({ onClose, cliente }) {
           </div>
 
           <form onSubmit={handleSubmit}>
+            {/* Nome */}
             <div className={styles.formGroup}>
               <label htmlFor="nome" className={styles.label}>
                 Nome do cliente
@@ -83,6 +98,7 @@ export default function EditarCliente({ onClose, cliente }) {
               />
             </div>
 
+            {/* Tipo */}
             <div className={styles.radioGroup}>
               <label className={styles.radioLabel}>
                 <input
@@ -92,6 +108,7 @@ export default function EditarCliente({ onClose, cliente }) {
                   checked={formData.tipo === "fisico"}
                   onChange={handleChange}
                   className={styles.radioInput}
+                  disabled
                 />
                 Físico
               </label>
@@ -103,11 +120,13 @@ export default function EditarCliente({ onClose, cliente }) {
                   checked={formData.tipo === "juridico"}
                   onChange={handleChange}
                   className={styles.radioInput}
+                  disabled
                 />
                 Jurídico
               </label>
             </div>
 
+            {/* CPF e RG */}
             <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="cpf" className={styles.label}>
@@ -137,6 +156,7 @@ export default function EditarCliente({ onClose, cliente }) {
               </div>
             </div>
 
+            {/* Email e Telefone */}
             <div className={styles.formGroup}>
               <label htmlFor="email" className={styles.label}>
                 Email
@@ -150,7 +170,6 @@ export default function EditarCliente({ onClose, cliente }) {
                 onChange={handleChange}
               />
             </div>
-
             <div className={styles.formGroup}>
               <label htmlFor="telefone" className={styles.label}>
                 Telefone
@@ -165,6 +184,7 @@ export default function EditarCliente({ onClose, cliente }) {
               />
             </div>
 
+            {/* Data de nascimento */}
             <div className={styles.formGroup}>
               <label htmlFor="dataNascimento" className={styles.label}>
                 Data de nascimento
@@ -179,6 +199,7 @@ export default function EditarCliente({ onClose, cliente }) {
               />
             </div>
 
+            {/* Endereço */}
             <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="cep" className={styles.label}>
@@ -250,7 +271,6 @@ export default function EditarCliente({ onClose, cliente }) {
                 onChange={handleChange}
               />
             </div>
-
             <div className={styles.formGroup}>
               <label htmlFor="complemento" className={styles.label}>
                 Complemento
@@ -265,6 +285,7 @@ export default function EditarCliente({ onClose, cliente }) {
               />
             </div>
 
+            {/* Erro */}
             {errorMsg && (
               <div style={{ color: "red", marginBottom: "1rem" }}>
                 {errorMsg}

@@ -16,6 +16,10 @@ function Header() {
   };
 
   const sair = () => {
+    localStorage.removeItem("usuario_sistema");
+    localStorage.removeItem("funcionario");
+    localStorage.removeItem("token"); // remove o token
+    localStorage.removeItem("tema"); // opcional
     router.push("/login");
   };
 
@@ -29,11 +33,14 @@ function Header() {
       return;
     }
 
-        // Carrega o tema salvo no localStorage
+    // Carrega o tema salvo no localStorage
     const tema = localStorage.getItem("tema") || "claro";
 
     // Aplica o tema
-    document.body.setAttribute("data-theme", tema === "escuro" ? "dark" : "light");
+    document.body.setAttribute(
+      "data-theme",
+      tema === "escuro" ? "dark" : "light"
+    );
 
     const funcionario = JSON.parse(funcionarioLS);
 
