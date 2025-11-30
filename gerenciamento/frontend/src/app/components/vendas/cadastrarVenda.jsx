@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import CadastrarCliente from "../clientes/cadastrarCliente";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,52 +7,41 @@ import {
   faTrash,
   faPlus,
   faMinus,
-  faMagnifyingGlass,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function CadastrarVenda({ onClose }) {
   const [produtos, setProdutos] = useState([]);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
-  const [clienteSelecionado, setClienteSelecionado] = useState(null);
-  const [clienteId, setClienteId] = useState("");
+  const [produtoBusca, setProdutoBusca] = useState("");
   const [clienteBusca, setClienteBusca] = useState("");
+  const [funcionarioBusca, setFuncionarioBusca] = useState("");
   const [clientesLista, setClientesLista] = useState([]);
-  const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
   const [funcionariosLista, setFuncionariosLista] = useState([]);
-  const [funcionarioId, setFuncionarioId] = useState("1");
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState("1");
   const [tipoEntrega, setTipoEntrega] = useState("entrega");
   const [dataEntrega, setDataEntrega] = useState("");
+  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [novoProdutoId, setNovoProdutoId] = useState("");
-  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
-  const [form, setForm] = useState({
-    clienteId: "",
-    data: "",
-    observacoes: "",
-    itens: [],
-    pago: false,
-  });
+  const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
+
+  const produtoInputRef = useRef(null);
+  const clienteInputRef = useRef(null);
+  const funcionarioInputRef = useRef(null);
 
   useEffect(() => {
     carregarProdutos();
-  }, []);
-
-  useEffect(() => {
     carregarClientes();
     carregarFuncionarios();
   }, []);
 
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_produtos", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error("Erro ao carregar produtos");
-      const resultado = await res.json();
-      const produtosFormatados = (resultado || []).map((p) => ({
+      const res = await fetch("http://localhost:5000/listar_produtos");
+      const data = await res.json();
+      const produtosFormatados = (data || []).map((p) => ({
         id: p[0],
         nome: p[1],
         preco: Number(p[4]),
@@ -60,51 +49,37 @@ export default function CadastrarVenda({ onClose }) {
       }));
       setProdutosDisponiveis(produtosFormatados);
     } catch (err) {
-      console.error("Erro ao carregar produtos:", err);
+      console.error(err);
     }
   };
 
   const carregarClientes = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_clientes", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error("Erro ao carregar clientes");
-      const resultado = await res.json();
-      // API retorna { resultado: 'ok', detalhes: [...] }
-      const rows = resultado.detalhes || resultado;
+      const res = await fetch("http://localhost:5000/listar_clientes");
+      const data = await res.json();
+      const rows = data.detalhes || data;
       const clientesFormatados = (rows || []).map((c) => ({
         id: c[0],
         nome: c[2] || c.nome || `Cliente ${c[0]}`,
       }));
       setClientesLista(clientesFormatados);
     } catch (err) {
-      console.error("Erro ao carregar clientes:", err);
+      console.error(err);
       setClientesLista([]);
     }
   };
 
   const carregarFuncionarios = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_funcionarios", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error("Erro ao carregar funcionários");
-      const resultado = await res.json();
-      const rows = resultado || [];
-      const funcionariosFormatados = (rows || []).map((f) => ({
+      const res = await fetch("http://localhost:5000/listar_funcionarios");
+      const data = await res.json();
+      const funcionariosFormatados = (data || []).map((f) => ({
         id: f[0],
-        nome: f[1] || `Funcionario ${f[0]}`,
+        nome: f[1] || `Funcionário ${f[0]}`,
       }));
       setFuncionariosLista(funcionariosFormatados);
-      // se não houver funcionarioId definido, usar primeiro
-      if (!funcionarioId && funcionariosFormatados.length > 0) {
-        setFuncionarioId(funcionariosFormatados[0].id.toString());
-      }
     } catch (err) {
-      console.error("Erro ao carregar funcionários:", err);
+      console.error(err);
       setFuncionariosLista([]);
     }
   };
@@ -121,47 +96,24 @@ export default function CadastrarVenda({ onClose }) {
     setProdutos(novos);
   };
 
-  const handleAdicionarProduto = () => {
-    if (novoProdutoId && novoProdutoQuantidade > 0) {
-      const produtoEncontrado = produtosDisponiveis.find(
-        (p) => p.id.toString() === novoProdutoId
-      );
-      if (produtoEncontrado) {
-        setProdutos([
-          ...produtos,
-          {
-            id: produtoEncontrado.id,
-            nome: produtoEncontrado.nome,
-            preco: produtoEncontrado.preco,
-            quantidade: novoProdutoQuantidade,
-          },
-        ]);
-        setNovoProdutoId("");
-        setNovoProdutoQuantidade(1);
-      }
-    }
-  };
-
-  const handleAdicionarCliente = () => {
-    if (clienteId.trim()) {
-      setClienteSelecionado(clienteId);
-      setClienteBusca("");
-    }
+  const handleAdicionarProduto = (produto) => {
+    if (!produto) return;
+    const jaAdicionado = produtos.find((p) => p.id === produto.id);
+    if (jaAdicionado) return alert("Produto já adicionado!");
+    setProdutos([
+      ...produtos,
+      { ...produto, quantidade: novoProdutoQuantidade || 1 },
+    ]);
+    setProdutoBusca("");
+    setNovoProdutoQuantidade(1);
   };
 
   const handleConfirmarVenda = async () => {
-    if (!clienteSelecionado) {
-      alert("Selecione um cliente");
-      return;
-    }
-    if (produtos.length === 0) {
-      alert("Adicione pelo menos um produto");
-      return;
-    }
-    if (tipoEntrega === "entrega" && !dataEntrega) {
-      alert("Informe a data de entrega");
-      return;
-    }
+    if (!clienteSelecionado) return alert("Selecione um cliente");
+    if (!funcionarioSelecionado) return alert("Selecione um funcionário");
+    if (produtos.length === 0) return alert("Adicione pelo menos um produto");
+    if (tipoEntrega === "entrega" && !dataEntrega)
+      return alert("Informe a data de entrega");
 
     setLoading(true);
     setErrorMsg(null);
@@ -170,14 +122,12 @@ export default function CadastrarVenda({ onClose }) {
       const dataVenda = new Date().toISOString().split("T")[0];
       const payload = {
         cliente: parseInt(clienteSelecionado),
-        funcionario: parseInt(funcionarioId),
+        funcionario: parseInt(funcionarioSelecionado),
         produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
         valorTotal: subtotal,
-        dataVenda: dataVenda,
+        dataVenda,
         entrega: tipoEntrega === "entrega",
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
-        pago: !!form.pago,
-        observacoes: form.observacoes,
       };
 
       const res = await fetch("http://localhost:5000/criar_venda", {
@@ -185,50 +135,25 @@ export default function CadastrarVenda({ onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error("Erro ao criar venda");
 
-      // registrar transacao financeira se for compra física (retirada)
-      if (tipoEntrega === "retirada") {
-        try {
-          await fetch("http://localhost:5000/criar_transacaofinanceira", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tipo: "entrada",
-              categoria: "venda",
-              descricao: `Venda (cliente ${clienteSelecionado})`,
-              valor: subtotal,
-              data: dataVenda,
-            }),
-          });
-        } catch (err) {
-          console.error("Erro ao registrar transacao financeira:", err);
-        }
-      }
-
-      // reduzir estoque dos produtos vendidos
+      // reduzir estoque
       for (const item of produtos) {
-        try {
-          const prodDisponivel = produtosDisponiveis.find((p) => p.id === item.id || p.id.toString() === item.id.toString());
-          const currentQty = prodDisponivel ? Number(prodDisponivel.quantidadeEstoque || 0) : null;
-          if (currentQty !== null) {
-            const newQty = Math.max(0, currentQty - item.quantidade);
-            await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ quantidadeEstoque: newQty }),
-            });
-          }
-        } catch (err) {
-          console.error(`Erro ao reduzir estoque do produto ${item.id}:`, err);
+        const prod = produtosDisponiveis.find((p) => p.id === item.id);
+        if (prod) {
+          const newQty = Math.max(0, prod.quantidadeEstoque - item.quantidade);
+          await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantidadeEstoque: newQty }),
+          });
         }
       }
 
       alert("Venda criada com sucesso!");
       onClose();
     } catch (err) {
-      console.error("Erro:", err);
+      console.error(err);
       setErrorMsg("Erro ao criar venda");
     } finally {
       setLoading(false);
@@ -245,83 +170,133 @@ export default function CadastrarVenda({ onClose }) {
           </button>
         </div>
 
+        {/* ================= CLIENTE ================= */}
         <label className={styles.titulo}>Cliente</label>
-        <div className={styles.inlineSearch}>
-          <select
+        <div className={styles.inlineSearch} ref={clienteInputRef}>
+          <input
+            type="text"
             className={styles.input}
-            value={clienteSelecionado ?? ""}
-            onChange={(e) => setClienteSelecionado(e.target.value)}
-          >
-            <option value="">Selecione um cliente</option>
-            {clientesLista.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.id} - {c.nome} 
-              </option>
-            ))}
-          </select>
+            placeholder="Pesquisar cliente..."
+            value={clienteBusca}
+            onChange={(e) => setClienteBusca(e.target.value)}
+          />
           <button
             className={styles.botaoRoxo}
             onClick={() => setShowCadastrarCliente(true)}
           >
             Novo cliente
           </button>
+
+          {clienteBusca && (
+            <div className={styles.dropdown}>
+              {clientesLista
+                .filter((c) =>
+                  c.nome.toLowerCase().startsWith(clienteBusca.toLowerCase())
+                )
+                .map((c) => (
+                  <div
+                    key={c.id}
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      setClienteSelecionado(c.id);
+                      setClienteBusca(c.nome);
+                    }}
+                  >
+                    {c.nome} (ID: {c.id})
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         {clienteSelecionado && (
           <div className={styles.clienteSelecionado}>
             <span>
-              Cliente selecionado ID: <strong>{clienteSelecionado}</strong>
+              Cliente selecionado: <strong>{clienteBusca}</strong>
             </span>
             <button
               className={styles.removerCliente}
-              onClick={() => setClienteSelecionado(null)}
-              title="Remover cliente"
+              onClick={() => {
+                setClienteSelecionado(null);
+                setClienteBusca("");
+              }}
             >
               <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
         )}
 
-          <label className={styles.titulo}>Funcionário</label>
-          <select
+        {/* ================= FUNCIONÁRIO ================= */}
+        <label className={styles.titulo}>Funcionário</label>
+        <div className={styles.inlineSearch} ref={funcionarioInputRef}>
+          <input
+            type="text"
             className={styles.input}
-            value={funcionarioId}
-            onChange={(e) => setFuncionarioId(e.target.value)}
-          >
-            <option value="">Selecione um funcionário</option>
-            {funcionariosLista.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.nome} (ID:{f.id})
-              </option>
-            ))}
-          </select>
+            placeholder="Pesquisar funcionário..."
+            value={funcionarioBusca}
+            onChange={(e) => setFuncionarioBusca(e.target.value)}
+          />
+          {funcionarioBusca && (
+            <div className={styles.dropdown}>
+              {funcionariosLista
+                .filter((f) =>
+                  f.nome
+                    .toLowerCase()
+                    .startsWith(funcionarioBusca.toLowerCase())
+                )
+                .map((f) => (
+                  <div
+                    key={f.id}
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      setFuncionarioSelecionado(f.id);
+                      setFuncionarioBusca(f.nome);
+                    }}
+                  >
+                    {f.nome} (ID: {f.id})
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
 
+        {/* ================= PRODUTOS ================= */}
         <h3 className={styles.titulo}>Produtos</h3>
-        <label>Adicionar Produto</label>
-        <div className={styles.novoProdutoForm}>
-          <select
-            value={novoProdutoId}
-            onChange={(e) => setNovoProdutoId(e.target.value)}
-          >
-            <option value="">Selecione um produto</option>
-            {produtosDisponiveis.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome} - R${p.preco.toFixed(2)}
-              </option>
-            ))}
-          </select>
+        <div className={styles.novoProdutoForm} ref={produtoInputRef}>
+          <input
+            type="text"
+            className={styles.input}
+            placeholder="Pesquisar produto..."
+            value={produtoBusca}
+            onChange={(e) => setProdutoBusca(e.target.value)}
+          />
           <input
             type="number"
             placeholder="Quantidade"
             value={novoProdutoQuantidade}
             onChange={(e) =>
-              setNovoProdutoQuantidade(Math.max(1, parseInt(e.target.value) || 1))
+              setNovoProdutoQuantidade(
+                Math.max(1, parseInt(e.target.value) || 1)
+              )
             }
-            min="1"
           />
-          <button className={styles.botaoRoxo} onClick={handleAdicionarProduto}>
-            Adicionar Produto
-          </button>
+          {produtoBusca && (
+            <div className={styles.dropdown}>
+              {produtosDisponiveis
+                .filter((p) =>
+                  p.nome.toLowerCase().startsWith(produtoBusca.toLowerCase())
+                )
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className={styles.dropdownItem}
+                    onClick={() => handleAdicionarProduto(p)}
+                  >
+                    {p.nome} - R${p.preco.toFixed(2)}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className={styles.produtoContainer}>
@@ -332,7 +307,6 @@ export default function CadastrarVenda({ onClose }) {
             <span>Valor</span>
             <span></span>
           </div>
-
           {produtos.map((produto, index) => (
             <div key={index} className={styles.produtoItem}>
               <span>{produto.nome}</span>
@@ -355,18 +329,19 @@ export default function CadastrarVenda({ onClose }) {
               </button>
             </div>
           ))}
-
           <div className={styles.totalRow}>
             <span className={styles.totalLabel}>Total</span>
             <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
           </div>
         </div>
 
+        {/* ================= ENTREGA / RETIRADA ================= */}
         <div className={styles.entregaBox}>
           <div className={styles.radioGroup}>
             <label>
               <input
                 type="radio"
+                className={styles.radioInput}
                 value="entrega"
                 checked={tipoEntrega === "entrega"}
                 onChange={() => setTipoEntrega("entrega")}
@@ -376,6 +351,7 @@ export default function CadastrarVenda({ onClose }) {
             <label>
               <input
                 type="radio"
+                className={styles.radioInput}
                 value="retirada"
                 checked={tipoEntrega === "retirada"}
                 onChange={() => setTipoEntrega("retirada")}
@@ -410,17 +386,19 @@ export default function CadastrarVenda({ onClose }) {
         >
           {loading ? "Criando..." : "Confirmar Venda"}
         </button>
+
+        {showCadastrarCliente && (
+          <div className={styles.modalWrapper}>
+            <CadastrarCliente
+              onClose={() => {
+                setShowCadastrarCliente(false);
+                carregarClientes();
+              }}
+            />
+          </div>
+        )}
       </div>
-      {showCadastrarCliente && (
-        <div className={styles.modalWrapper}>
-          <CadastrarCliente
-            onClose={() => {
-              setShowCadastrarCliente(false);
-              carregarClientes();
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
+
