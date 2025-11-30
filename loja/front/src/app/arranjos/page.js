@@ -61,7 +61,8 @@ export default function HomeArranjos() {
       <Banner
         imagem="/imgs/flores2.jpeg"
         titulo="Arranjos e Buquês"
-        texto="Arranjos e buquês frescos, cheios de vida e perfeitos para presentear."
+        texto="Encontre aqui buquês e arranjos frescos, cheios de cores e vida. 
+Perfeitos para presentear ou decorar com charme natural. "
       />
 
       <div className={styles.container}>

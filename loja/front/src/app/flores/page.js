@@ -59,9 +59,9 @@ export default function Home() {
   return (
     <div>
       <Banner
-        imagem="/imgs/flores2.jpeg"
-        titulo="Flores"
-        texto="Flores frescas e perfeitas para presentear."
+        imagem="/imgs/flores.jpeg"
+        titulo="Flores avulsas"
+        texto="Encontre aqui flores frescas e de qualidade: Rosas, Margaridas, Girassóis, Lírios e muito mais. Perfeitas para quem quer montar seu próprio presente ou decorar com um toque natural."
       />
 
       <div className={styles.container}>
