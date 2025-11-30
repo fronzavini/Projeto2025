@@ -8,20 +8,21 @@ import styles from "../styles/page.module.css";
 
 export default function Home() {
   const [produtos, setProdutos] = useState([]);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const produtosPorPagina = 12;
+  const totalPagsVisiveis = 5;
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/listar_produtos")
       .then((res) => res.json())
       .then((data) => {
-        // data = array de arrays:
-        // [id, nome, categoria, marca, preco, qtd_estoque, estoque_min, estado, fornecedor_id, imagem_1, imagem_2, imagem_3]
         const produtosFormatados = data
-          .filter((produto) => produto[2]?.toLowerCase() === "flores") // categoria = índice 2
+          .filter((produto) => produto[2]?.toLowerCase() === "flores")
           .map((produto) => ({
             id: produto[0],
             nome: produto[1],
             preco: produto[4],
-            imagemPrincipal: produto[9], // só a imagem 1
+            imagemPrincipal: produto[9],
           }));
 
         setProdutos(produtosFormatados);
@@ -29,32 +30,111 @@ export default function Home() {
       .catch((err) => console.error("Erro ao carregar produtos:", err));
   }, []);
 
+  const indiceUltimoProduto = paginaAtual * produtosPorPagina;
+  const indicePrimeiroProduto = indiceUltimoProduto - produtosPorPagina;
+  const produtosPagina = produtos.slice(
+    indicePrimeiroProduto,
+    indiceUltimoProduto
+  );
+
+  const totalPaginas = Math.ceil(produtos.length / produtosPorPagina);
+
+  const mudarPagina = (numero) => {
+    if (numero >= 1 && numero <= totalPaginas) {
+      setPaginaAtual(numero);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const startPage = Math.max(
+    1,
+    paginaAtual - Math.floor(totalPagsVisiveis / 2)
+  );
+  const endPage = Math.min(totalPaginas, startPage + totalPagsVisiveis - 1);
+  const paginasVisiveis = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i
+  );
+
   return (
     <div>
       <Banner
         imagem="/imgs/flores2.jpeg"
-        titulo="Arranjos e Buquês"
-        texto="Arranjos e buquês frescos, cheios de vida e perfeitos para presentear."
+        titulo="Flores"
+        texto="Flores frescas e perfeitas para presentear."
       />
 
-      <div className={styles.containerFiltros}>
-        <span className={styles.totalProdutos}>{produtos.length} produtos</span>
-
-        <div className={styles.filtros}>
-          <Relevancia />
+      <div className={styles.container}>
+        <div className={styles.containerFiltros}>
+          <span className={styles.totalProdutos}>
+            {produtos.length} produtos
+          </span>
+          <div className={styles.filtros}>
+            <Relevancia />
+          </div>
         </div>
-      </div>
 
-      <div className={styles.produtoGrid}>
-        {produtos.map((item) => (
-          <Produto
-            key={item.id}
-            id={item.id}
-            nome={item.nome}
-            preco={item.preco}
-            imagemPrincipal={item.imagemPrincipal} // só a imagem principal
-          />
-        ))}
+        <div className={styles.produtoGrid}>
+          {produtosPagina.map((item) => (
+            <Produto
+              key={item.id}
+              id={item.id}
+              nome={item.nome}
+              preco={item.preco}
+              imagemPrincipal={item.imagemPrincipal}
+            />
+          ))}
+        </div>
+
+        <div className={styles.paginacao}>
+          {/* Texto acima */}
+          <span className={styles.infoPaginacao}>Você está na página</span>
+
+          {/* Botões de paginação */}
+          <div className={styles.botoesPaginacao}>
+            <button
+              onClick={() => mudarPagina(paginaAtual - 1)}
+              disabled={paginaAtual === 1}
+              className={styles.botaoPagina}
+            >
+              &lt;
+            </button>
+
+            {paginasVisiveis.map((numero) => (
+              <button
+                key={numero}
+                className={`${styles.botaoPagina} ${
+                  paginaAtual === numero ? styles.paginaAtiva : ""
+                }`}
+                onClick={() => mudarPagina(numero)}
+              >
+                {numero}
+              </button>
+            ))}
+
+            {endPage < totalPaginas && (
+              <span className={styles.elipses}>...</span>
+            )}
+
+            {endPage < totalPaginas &&
+              !paginasVisiveis.includes(totalPaginas) && (
+                <button
+                  className={styles.botaoPagina}
+                  onClick={() => mudarPagina(totalPaginas)}
+                >
+                  {totalPaginas}
+                </button>
+              )}
+
+            <button
+              onClick={() => mudarPagina(paginaAtual + 1)}
+              disabled={paginaAtual === totalPaginas}
+              className={styles.botaoPagina}
+            >
+              &gt;
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
