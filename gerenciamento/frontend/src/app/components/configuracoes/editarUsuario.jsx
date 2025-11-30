@@ -7,7 +7,7 @@ export default function EditarUsuario({ onAtualizado }) {
   const [usuario, setUsuario] = useState(null);
 
   const [novoUsuario, setNovoUsuario] = useState("");
-  const [senhaAntiga, setSenhaAntiga] = useState("");
+  const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmNovaSenha, setConfirmNovaSenha] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
@@ -26,18 +26,20 @@ export default function EditarUsuario({ onAtualizado }) {
     setErrorMsg(null);
 
     const alterarUsuario = novoUsuario && novoUsuario !== usuario.usuario;
-    const alterarSenha = senhaAntiga || novaSenha || confirmNovaSenha;
+    const alterarSenha = novaSenha || confirmNovaSenha;
 
-    // Validação: precisa alterar pelo menos um
-    if (!alterarUsuario && !alterarSenha) {
-      setErrorMsg("Altere o nome de usuário e/ou a senha para atualizar.");
+    // Validação: sempre precisa da senha atual
+    if (!senhaAtual) {
+      setErrorMsg("Digite sua senha atual para confirmar a atualização.");
       return;
     }
 
-    // Se for alterar senha, valida todos os campos de senha
+    // Se for alterar senha, valida novos campos
     if (alterarSenha) {
-      if (!senhaAntiga || !novaSenha || !confirmNovaSenha) {
-        setErrorMsg("Para alterar a senha, preencha todos os campos de senha.");
+      if (!novaSenha || !confirmNovaSenha) {
+        setErrorMsg(
+          "Para alterar a senha, preencha todos os campos de nova senha."
+        );
         return;
       }
       if (novaSenha !== confirmNovaSenha) {
@@ -46,17 +48,22 @@ export default function EditarUsuario({ onAtualizado }) {
       }
     }
 
+    if (!alterarUsuario && !alterarSenha) {
+      setErrorMsg("Altere o nome de usuário e/ou a senha para atualizar.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch(
-        `http://localhost:5000('/editar_usuario_sistema/${usuario.id}`,
+        `http://localhost:5000/editar_usuario_sistema/${usuario.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             usuario: alterarUsuario ? novoUsuario : undefined,
-            senhaAntiga: alterarSenha ? senhaAntiga : undefined,
+            senhaAtual,
             novaSenha: alterarSenha ? novaSenha : undefined,
           }),
         }
@@ -81,7 +88,7 @@ export default function EditarUsuario({ onAtualizado }) {
       setUsuario(usuarioAtualizado);
 
       // Limpa campos de senha
-      setSenhaAntiga("");
+      setSenhaAtual("");
       setNovaSenha("");
       setConfirmNovaSenha("");
 
@@ -110,12 +117,12 @@ export default function EditarUsuario({ onAtualizado }) {
 
       <hr />
 
-      <label>Senha Antiga</label>
+      <label>Senha Atual</label>
       <input
         type="password"
-        value={senhaAntiga}
-        onChange={(e) => setSenhaAntiga(e.target.value)}
-        placeholder="Digite sua senha atual (para alterar senha)"
+        value={senhaAtual}
+        onChange={(e) => setSenhaAtual(e.target.value)}
+        placeholder="Digite sua senha atual"
       />
 
       <label>Nova Senha</label>
@@ -123,7 +130,7 @@ export default function EditarUsuario({ onAtualizado }) {
         type="password"
         value={novaSenha}
         onChange={(e) => setNovaSenha(e.target.value)}
-        placeholder="Digite a nova senha"
+        placeholder="Digite a nova senha (opcional)"
       />
 
       <label>Confirmar Nova Senha</label>
@@ -131,7 +138,7 @@ export default function EditarUsuario({ onAtualizado }) {
         type="password"
         value={confirmNovaSenha}
         onChange={(e) => setConfirmNovaSenha(e.target.value)}
-        placeholder="Repita a nova senha"
+        placeholder="Repita a nova senha (opcional)"
       />
 
       {errorMsg && <p className={styles.error}>{errorMsg}</p>}
