@@ -1,3 +1,4 @@
+"use client";
 import styles from "../styles/footer.module.css";
 
 export default function Footer() {
@@ -17,13 +18,13 @@ export default function Footer() {
           <h3>Links rápidos</h3>
           <ul>
             <li>
-              <a href="/produtos">Produtos</a>
-            </li>
-            <li>
               <a href="/sobre">Sobre nós</a>
             </li>
             <li>
-              <a href="/contato">Contato</a>
+              <a href="/flores">Flores</a>
+            </li>
+            <li>
+              <a href="/arranjos">Arranjos</a>
             </li>
           </ul>
         </div>
@@ -34,16 +35,6 @@ export default function Footer() {
           <p>Email: atendimento@BellaDonna.com</p>
           <p>WhatsApp: (47) 99999-9999</p>
           <p>Indaial - SC</p>
-        </div>
-
-        {/* Redes */}
-        <div className={styles.section}>
-          <h3>Redes sociais</h3>
-          <div className={styles.socials}>
-            <a href="#">Instagram</a>
-            <a href="#">Facebook</a>
-            <a href="#">TikTok</a>
-          </div>
         </div>
       </div>
 

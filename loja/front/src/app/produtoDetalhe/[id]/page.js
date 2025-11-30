@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ProdutoDetalhe from "../../components/produtoDetalhe";
+import ProdutoSlider from "@/app/components/produtoSlider";
 
 export default function ProdutoDetalhePage() {
   const params = useParams(); // pega os params da URL
@@ -34,14 +35,18 @@ export default function ProdutoDetalhePage() {
   if (!produto) return <h1>Produto não encontrado</h1>;
 
   return (
-    <ProdutoDetalhe
-      id={produto.id}
-      nome={produto.nome}
-      preco={produto.preco}
-      descricao={produto.descricao || "Sem descrição"}
-      imagemPrincipal={produto.imagem_1}
-      imagemSecundaria={produto.imagem_2}
-      imagemTerciaria={produto.imagem_3}
-    />
+    <div>
+      <ProdutoDetalhe
+        id={produto.id}
+        nome={produto.nome}
+        preco={produto.preco}
+        descricao={produto.descricao || "Sem descrição"}
+        imagemPrincipal={produto.imagem_1}
+        imagemSecundaria={produto.imagem_2}
+        imagemTerciaria={produto.imagem_3}
+      />
+
+      <ProdutoSlider />
+    </div>
   );
 }

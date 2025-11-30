@@ -1,95 +1,70 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../styles/produtoSlider.module.css";
 
-const produtos = [
-  {
-    id: 1,
-    nome: "Copo-de-Leite",
-    subtitulo: "Flor Unitária",
-    preco: "R$ 10,00",
-    imagem:
-      "https://i.pinimg.com/736x/a0/f6/57/a0f657941c33f721fd57c0c93fec7d39.jpg",
-  },
-  {
-    id: 2,
-    nome: "Dália",
-    subtitulo: "Flor Unitária",
-    preco: "R$ 7,90",
-    imagem:
-      "https://i.pinimg.com/736x/5b/a3/b5/5ba3b51339575c16e9a4c238f62766ee.jpg",
-  },
-  {
-    id: 3,
-    nome: "Lírio",
-    subtitulo: "Flor Unitária",
-    preco: "R$ 15,00",
-    imagem:
-      "https://i.pinimg.com/736x/e8/15/88/e81588e63c458185cae31c64c13b2b29.jpg",
-  },
-  {
-    id: 4,
-    nome: "Orquidea",
-    subtitulo: "Flor Unitária",
-    preco: "R$ 12,00",
-    imagem:
-      "https://i.pinimg.com/736x/0e/44/8d/0e448d5f0466747c7a6f52f8afb8a6a0.jpg",
-  },
-  {
-    id: 5,
-    nome: "Tulipa Vermelha",
-    subtitulo: "Flor Unitária",
-    preco: "R$ 8,50",
-    imagem:
-      "https://i.pinimg.com/736x/e7/fb/76/e7fb7654d43f58fa8bfcd3e7e175528b.jpg",
-  },
-];
-
-// duplicamos para loop infinito
-const loopData = [...produtos, ...produtos, ...produtos];
-
 export default function ProdutoSlider() {
-  const [pos, setPos] = useState(produtos.length); // começa no meio
+  const router = useRouter();
+  const [produtos, setProdutos] = useState([]);
+  const [pos, setPos] = useState(0);
   const sliderRef = useRef(null);
 
-  const larguraCard = 280; // card + gap
+  const larguraCard = 280;
 
-  const irPara = (novo) => {
-    setPos(novo);
-  };
-
-  const anterior = () => {
-    irPara(pos - 1);
-  };
-
-  const proximo = () => {
-    irPara(pos + 1);
-  };
-
-  // reset suave p/ loop infinito
   useEffect(() => {
-    if (pos <= 1) {
-      setTimeout(() => {
-        if (!sliderRef.current) return;
-        sliderRef.current.style.transition = "none";
-        setPos(produtos.length + 1);
-      }, 450);
-    }
+    fetch("http://127.0.0.1:5000/listar_produtos")
+      .then((res) => res.json())
+      .then((data) => {
+        const produtosFiltrados = data.filter(
+          (p) => p[2]?.toLowerCase() === "flores"
+        );
+        const shuffled = produtosFiltrados.sort(() => 0.5 - Math.random());
+        const selecionados = shuffled.slice(0, 5).map((p) => ({
+          id: p[0],
+          nome: p[1],
+          subtitulo: p[2],
+          preco: p[4],
+          imagem: p[9],
+        }));
 
-    if (pos >= loopData.length - 2) {
+        setProdutos([...selecionados, ...selecionados, ...selecionados]);
+        setPos(selecionados.length);
+      })
+      .catch((err) => console.error("Erro ao carregar produtos:", err));
+  }, []);
+
+  const irPara = (novo) => setPos(novo);
+  const anterior = () => irPara(pos - 1);
+  const proximo = () => irPara(pos + 1);
+
+  useEffect(() => {
+    if (!produtos.length) return;
+    if (pos <= 0) {
       setTimeout(() => {
         if (!sliderRef.current) return;
         sliderRef.current.style.transition = "none";
-        setPos(produtos.length - 2);
+        setPos(produtos.length / 3);
       }, 450);
     }
-  }, [pos]);
+    if (pos >= produtos.length - 1) {
+      setTimeout(() => {
+        if (!sliderRef.current) return;
+        sliderRef.current.style.transition = "none";
+        setPos(produtos.length / 3 - 1);
+      }, 450);
+    }
+  }, [pos, produtos]);
 
   useEffect(() => {
     if (!sliderRef.current) return;
     sliderRef.current.style.transition = "transform 0.45s ease";
   }, [pos]);
+
+  const abrirDetalhe = (id) => {
+    router.push(`/produtoDetalhe/${id}`); // redireciona para a página de detalhe
+    window.scrollTo(690, 690);
+  };
 
   return (
     <div className={styles.container}>
@@ -101,13 +76,16 @@ export default function ProdutoSlider() {
         <div
           ref={sliderRef}
           className={styles.slider}
-          style={{
-            transform: `translateX(${-pos * larguraCard}px)`,
-          }}
+          style={{ transform: `translateX(${-pos * larguraCard}px)` }}
         >
-          {loopData.map((p, i) => (
+          {produtos.map((p, i) => (
             <div key={i} className={styles.card}>
-              <img src={p.imagem} alt={p.nome} />
+              <img
+                src={p.imagem}
+                alt={p.nome}
+                onClick={() => abrirDetalhe(p.id)}
+                style={{ cursor: "pointer" }}
+              />
               <p className={styles.nome}>
                 {p.nome} — <span>{p.subtitulo}</span>
               </p>
