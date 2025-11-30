@@ -790,27 +790,126 @@ def listar_servicopersonalizado():
     return jsonify(servicos)
 
 
-# ROTAS DE CARRINHO
-#curl -X POST http://127.0.0.1:5000/criar_carrinho -H "Content-Type: application/json" -d '{"idCliente":1}'
+# --- Criar carrinho ---
+# curl -X POST http://127.0.0.1:5000/criar_carrinho -H "Content-Type: application/json" -d '{"idUsuario":1}'
 @app.route('/criar_carrinho', methods=['POST'])
 def criar_carrinho():
     dados = request.json
-    id_cliente = dados.get("idCliente") or dados.get("id_cliente")
-    resultado = Carrinho.criarCarrinho(id_cliente)
-    return jsonify({"message": resultado})
+    id_usuario = dados.get("idUsuario") or dados.get("id_usuario")
+    carrinho = Carrinho.criarCarrinho(id_usuario)
+    return jsonify({"message": "Carrinho criado com sucesso", "carrinho": carrinho.json()}), 201
 
-#curl -X DELETE http://127.0.0.1:5000/deletar_carrinho/1
+# --- Deletar carrinho ---
+# curl -X DELETE http://127.0.0.1:5000/deletar_carrinho/1
 @app.route('/deletar_carrinho/<int:id>', methods=['DELETE'])
 def deletar_carrinho(id):
     resultado = Carrinho.excluirCarrinho(id)
     return jsonify({"message": resultado})
 
-#curl -X GET http://127.0.0.1:5000/listar_carrinhos
+# --- Listar todos os carrinhos ---
+# curl -X GET http://127.0.0.1:5000/listar_carrinhos
 @app.route('/listar_carrinhos', methods=['GET'])
 def listar_carrinhos():
     carrinhos = Carrinho.listarCarrinhos()
-    return jsonify(carrinhos)
+    return jsonify([c.json() for c in carrinhos])
 
+# --- Listar carrinho específico pelo ID ---
+# curl -X GET http://127.0.0.1:5000/carrinho/1
+@app.route('/carrinho/<int:id>', methods=['GET'])
+def listar_carrinho(id):
+    conexao = conectar_banco()
+    cursor = conexao.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT * FROM carrinho_de_compra WHERE id = %s", (id,))
+        c = cursor.fetchone()
+        if not c:
+            return jsonify({"message": "Carrinho não encontrado"}), 404
+
+        carrinho = Carrinho(c['id'], c['idUsuario'])
+        carrinho.valorTotal = float(c['valorTotal'])
+
+        cursor.execute("SELECT produto_id, quantidade, preco_unitario FROM itens_carrinho WHERE carrinho_id = %s", (c['id'],))
+        itens = cursor.fetchall()
+        carrinho.produtos = [
+            {"produto_id": i['produto_id'], "quantidade": i['quantidade'], "preco_unitario": float(i['preco_unitario'])}
+            for i in itens
+        ]
+        return jsonify(carrinho.json())
+    finally:
+        cursor.close()
+        conexao.close()
+
+# --- Listar carrinho de um usuário específico ---
+# curl -X GET http://127.0.0.1:5000/carrinho/usuario/1
+@app.route('/carrinho/usuario/<int:id_usuario>', methods=['GET'])
+def listar_carrinho_usuario(id_usuario):
+    conexao = conectar_banco()
+    cursor = conexao.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT * FROM carrinho_de_compra WHERE idUsuario = %s", (id_usuario,))
+        c = cursor.fetchone()
+        if not c:
+            return jsonify({"message": "Carrinho não encontrado"}), 404
+
+        carrinho = Carrinho(c['id'], c['idUsuario'])
+        carrinho.valorTotal = float(c['valorTotal'])
+
+        cursor.execute("SELECT produto_id, quantidade, preco_unitario FROM itens_carrinho WHERE carrinho_id = %s", (c['id'],))
+        itens = cursor.fetchall()
+        carrinho.produtos = [
+            {"produto_id": i['produto_id'], "quantidade": i['quantidade'], "preco_unitario": float(i['preco_unitario'])}
+            for i in itens
+        ]
+        return jsonify(carrinho.json())
+    finally:
+        cursor.close()
+        conexao.close()
+
+# --- Adicionar item ao carrinho ---
+# curl -X POST http://127.0.0.1:5000/carrinho/1/adicionar_item -H "Content-Type: application/json" -d '{"produto_id":2,"quantidade":3,"preco_unitario":50.0}'
+@app.route('/carrinho/<int:id>/adicionar_item', methods=['POST'])
+def adicionar_item(id):
+    dados = request.json
+    produto_id = dados.get("produto_id")
+    quantidade = dados.get("quantidade", 1)
+    preco_unitario = dados.get("preco_unitario")
+    
+    carrinho = Carrinho(id, None)
+    carrinho.adicionarItem(produto_id, quantidade, preco_unitario)
+    return jsonify({"message": "Item adicionado", "carrinho": carrinho.json()})
+
+# --- Remover item do carrinho ---
+# curl -X DELETE http://127.0.0.1:5000/carrinho/1/remover_item/2
+@app.route('/carrinho/<int:id>/remover_item/<int:produto_id>', methods=['DELETE'])
+def remover_item(id, produto_id):
+    carrinho = Carrinho(id, None)
+    carrinho.removerItem(produto_id)
+    return jsonify({"message": "Item removido", "carrinho": carrinho.json()})
+
+# --- Atualizar quantidade de item ---
+# curl -X PUT http://127.0.0.1:5000/carrinho/1/atualizar_item -H "Content-Type: application/json" -d '{"produto_id":2,"quantidade":5}'
+@app.route('/carrinho/<int:id>/atualizar_item', methods=['PUT'])
+def atualizar_item(id):
+    dados = request.json
+    produto_id = dados.get("produto_id")
+    quantidade = dados.get("quantidade")
+
+    # Remove o item antigo
+    carrinho = Carrinho(id, None)
+    carrinho.removerItem(produto_id)
+
+    if quantidade > 0:
+        # Busca o preço atual do produto
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT preco FROM produtos WHERE id = %s", (produto_id,))
+        preco = cursor.fetchone()[0]
+        cursor.close()
+        conexao.close()
+
+        carrinho.adicionarItem(produto_id, quantidade, preco)
+
+    return jsonify({"message": "Item atualizado", "carrinho": carrinho.json()})
 
 # ROTAS DE VENDA
 #curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
@@ -957,12 +1056,28 @@ def criar_usuario_loja():
     usuario = dados.get("usuario")
     senha = dados.get("senha")
 
-    resultado = UsuarioLoja.criarUsuarioLoja(
-        cliente_id=cliente_id,
-        usuario=usuario,
-        senha=senha
-    )
-    return jsonify({"message": resultado})
+    # 1) Criar usuário
+    usuario_id = UsuarioLoja.criarUsuarioLoja(cliente_id, usuario, senha)
+    if not usuario_id:
+        return jsonify({"message": "Erro ao criar usuário"}), 500
+
+    # 2) Criar carrinho
+    carrinho_data = Carrinho.criarCarrinho(usuario_id)
+    if not carrinho_data:
+        return jsonify({"message": "Erro ao criar carrinho"}), 500
+
+    # 3) Retornar apenas dados serializáveis
+    return jsonify({
+        "message": "Usuário e carrinho criados com sucesso",
+        "usuario": {
+            "id": usuario_id,
+            "usuario": usuario,
+            "cliente_id": cliente_id
+        },
+        "carrinho": carrinho_data
+    })
+
+
 
 # curl -X PUT http://127.0.0.1:5000/editar_usuario_loja/1 -H "Content-Type: application/json" -d '{"cliente_id":2,"usuario":"cliente_novo","senha":"nova_senha"}'
 @app.route('/editar_usuario_loja/<int:id>', methods=['PUT'])

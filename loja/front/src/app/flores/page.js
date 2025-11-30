@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <div>
       <Banner
-        imagem="/imgs/flores.jpeg"
+        imagem="/imgs/flores.jpg"
         titulo="Flores avulsas"
         texto="Encontre aqui flores frescas e de qualidade: Rosas, Margaridas, Girassóis, Lírios e muito mais. Perfeitas para quem quer montar seu próprio presente ou decorar com um toque natural."
       />
