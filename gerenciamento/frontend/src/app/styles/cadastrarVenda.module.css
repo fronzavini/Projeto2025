@@ -1,14 +1,32 @@
+/* =========================
+   GRUPO DE RADIOS (ENTREGA / RETIRADA)
+========================= */
 .radioGroup {
-  background-color: var(--fundo-branco);
-  color: var(--fundo-branco);
-  border-radius: 6px;
-  padding: 6px 8px;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  /* removido color: var(--fundo-branco) que escondia o texto */
 }
-.radioGroup {
-  background-color: var(--fundo-branco);
-  border-radius: 6px;
-  padding: 4px 6px;
+
+.radioGroup label {
+  color: var(--foreground); /* texto visível */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
 }
+
+.radioInput {
+  accent-color: var(--botao-bg); /* cor do círculo selecionado */
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.spanRadio {
+  color: var(--foreground);
+}
+
 .botaoRoxo {
   background-color: var(--botao-bg);
   border: none;
