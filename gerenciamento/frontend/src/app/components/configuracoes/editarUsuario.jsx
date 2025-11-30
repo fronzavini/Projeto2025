@@ -13,28 +13,31 @@ export default function EditarUsuario({ onAtualizado }) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Pega o usuário logado do localStorage
+  // Carrega usuário logado
   useEffect(() => {
     const usuarioLS = JSON.parse(localStorage.getItem("usuario_sistema"));
     if (usuarioLS) {
       setUsuario(usuarioLS);
-      setNovoUsuario(usuarioLS.usuario); // preenche o campo do usuário
+      setNovoUsuario(usuarioLS.usuario);
     }
   }, []);
 
   const handleAtualizar = async () => {
     setErrorMsg(null);
 
-    if (!novoUsuario) {
-      setErrorMsg("O nome de usuário não pode ficar vazio.");
+    const alterarUsuario = novoUsuario && novoUsuario !== usuario.usuario;
+    const alterarSenha = senhaAntiga || novaSenha || confirmNovaSenha;
+
+    // Validação: precisa alterar pelo menos um
+    if (!alterarUsuario && !alterarSenha) {
+      setErrorMsg("Altere o nome de usuário e/ou a senha para atualizar.");
       return;
     }
 
-    // validação se o usuário quer alterar a senha
-    const alterarSenha = senhaAntiga || novaSenha || confirmNovaSenha;
+    // Se for alterar senha, valida todos os campos de senha
     if (alterarSenha) {
       if (!senhaAntiga || !novaSenha || !confirmNovaSenha) {
-        setErrorMsg("Preencha todos os campos de senha para alterar.");
+        setErrorMsg("Para alterar a senha, preencha todos os campos de senha.");
         return;
       }
       if (novaSenha !== confirmNovaSenha) {
@@ -52,7 +55,7 @@ export default function EditarUsuario({ onAtualizado }) {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            usuario: novoUsuario,
+            usuario: alterarUsuario ? novoUsuario : undefined,
             senhaAntiga: alterarSenha ? senhaAntiga : undefined,
             novaSenha: alterarSenha ? novaSenha : undefined,
           }),
@@ -66,16 +69,18 @@ export default function EditarUsuario({ onAtualizado }) {
 
       alert("Usuário atualizado com sucesso!");
 
-      // atualiza localStorage
-      const usuarioAtualizado = { ...usuario, usuario: novoUsuario };
+      // Atualiza localStorage
+      const usuarioAtualizado = { ...usuario };
+      if (alterarUsuario) usuarioAtualizado.usuario = novoUsuario;
       if (alterarSenha) usuarioAtualizado.senha = novaSenha;
+
       localStorage.setItem(
         "usuario_sistema",
         JSON.stringify(usuarioAtualizado)
       );
       setUsuario(usuarioAtualizado);
 
-      // limpa campos de senha
+      // Limpa campos de senha
       setSenhaAntiga("");
       setNovaSenha("");
       setConfirmNovaSenha("");
@@ -89,7 +94,7 @@ export default function EditarUsuario({ onAtualizado }) {
     }
   };
 
-  if (!usuario) return null; // ainda carregando
+  if (!usuario) return null; // carregando
 
   return (
     <div className={styles.container}>
@@ -110,7 +115,7 @@ export default function EditarUsuario({ onAtualizado }) {
         type="password"
         value={senhaAntiga}
         onChange={(e) => setSenhaAntiga(e.target.value)}
-        placeholder="Digite sua senha atual (para alterar)"
+        placeholder="Digite sua senha atual (para alterar senha)"
       />
 
       <label>Nova Senha</label>
@@ -132,7 +137,7 @@ export default function EditarUsuario({ onAtualizado }) {
       {errorMsg && <p className={styles.error}>{errorMsg}</p>}
 
       <button
-        className={`${styles.submit}`}
+        className={styles.submit}
         onClick={handleAtualizar}
         disabled={loading}
       >
