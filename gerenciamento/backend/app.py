@@ -8,6 +8,10 @@ import re
 from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPersonalizado, Carrinho, Venda, TransacaoFinanceira, UsuarioSistema,UsuarioLoja
 from flask_cors import CORS
 from pymysql.err import MySQLError
+import jwt
+
+SECRET_KEY = "minha_chave_super_secreta_123!@#"  # guarde em .env idealmente
+
 
 
 app = Flask(__name__)
@@ -221,10 +225,7 @@ def login():
     senha = dados.get('senha')
 
     if not usuario or not senha:
-        return jsonify({
-            'resultado': 'erro',
-            'detalhes': 'usuario e senha são obrigatórios'
-        }), 400
+        return jsonify({'resultado': 'erro', 'detalhes': 'Usuário e senha são obrigatórios'}), 400
 
     conexao = conectar_banco()
     if not conexao:
@@ -232,9 +233,7 @@ def login():
 
     cursor = conexao.cursor()
     try:
-        # =============================
-        # 1. VALIDAR LOGIN EM usuarios_sistema
-        # =============================
+        # Buscar usuário no banco
         query_user = '''
             SELECT id, funcionario_id, tipo_usuario, usuario, senha, tema_preferido
             FROM usuarios_sistema
@@ -246,25 +245,28 @@ def login():
         if not row:
             return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 401
 
-        # Dados do usuário do sistema
         usuario_sistema = {
             'id': row[0],
             'funcionario_id': row[1],
             'tipo_usuario': row[2],
             'usuario': row[3],
-            'senha': row[4],  # se futuramente for hash, aqui você verifica
+            'senha': row[4],
             'tema_preferido': row[5]
         }
-        print(usuario_sistema)
-        # =============================
-        # 2. VALIDAR SENHA
-        # =============================
+
+        # Verificar senha
         if senha != usuario_sistema['senha']:
             return jsonify({'resultado': 'erro', 'detalhes': 'Senha incorreta'}), 401
 
-        # =============================
-        # 3. CARREGAR FUNCIONÁRIO
-        # =============================
+        # Criar token JWT
+        payload = {
+            "usuario_id": usuario_sistema['id'],
+            "funcionario_id": usuario_sistema['funcionario_id'],
+            "exp": datetime.utcnow() + timedelta(hours=8)
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+        # Buscar dados do funcionário
         query_func = '''
             SELECT id, nome, email, funcao, estado, telefone
             FROM funcionarios
@@ -272,10 +274,6 @@ def login():
         '''
         cursor.execute(query_func, (usuario_sistema['funcionario_id'],))
         func = cursor.fetchone()
-
-        if not func:
-            return jsonify({'resultado': 'erro', 'detalhes': 'Funcionário vinculado não encontrado'}), 500
-
         funcionario = {
             'id': func[0],
             'nome': func[1],
@@ -285,16 +283,11 @@ def login():
             'telefone': func[5]
         }
 
-
-        # =============================
-        # 5. CARREGAR PERFIL (CASO EXISTA MESMO NA SUA TABELA)
-        # =============================
+        # Perfil (se existir)
         perfil = None
         if funcionario.get('perfil_id'):
-            cursor.execute(
-                'SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s',
-                (funcionario['perfil_id'],)
-            )
+            cursor.execute('SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s', 
+                           (funcionario['perfil_id'],))
             p = cursor.fetchone()
             if p:
                 perfil = {
@@ -304,24 +297,20 @@ def login():
                     'ativo': bool(p[3])
                 }
 
-        # =============================
-        # 6. RESPOSTA FINAL
-        # =============================
         return jsonify({
-            'resultado': 'ok',
-            'usuario_sistema': {
-                'id': usuario_sistema['id'],
-                'usuario': usuario_sistema['usuario'],
-                'senha': usuario_sistema['senha'],
-                'tipo_usuario': usuario_sistema['tipo_usuario'],
-                'tema_preferido': usuario_sistema['tema_preferido'],
+            "resultado": "ok",
+            "token": token,
+            "usuario_sistema": {
+                "id": usuario_sistema['id'],
+                "usuario": usuario_sistema['usuario'],
+                "tipo_usuario": usuario_sistema['tipo_usuario'],
+                "tema_preferido": usuario_sistema['tema_preferido'],
             },
-            'funcionario': funcionario,
-            'perfil': perfil,
+            "funcionario": funcionario,
+            "perfil": perfil
         })
 
     except Exception as e:
-        print("Erro no login:", e)
         return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
 
     finally:

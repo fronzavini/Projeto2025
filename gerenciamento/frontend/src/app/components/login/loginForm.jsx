@@ -16,9 +16,6 @@ export default function LoginForm() {
     fetch("http://localhost:5000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      //
-      // 🔥 Agora envia “usuario” e “senha” conforme sua nova rota
-      //
       body: JSON.stringify({ usuario, senha }),
     })
       .then(async (res) => {
@@ -29,25 +26,30 @@ export default function LoginForm() {
           return;
         }
 
-        // json agora contém { usuario_sistema, funcionario, settings }
-        const { usuario_sistema, funcionario, settings } = json;
+        const { token, usuario_sistema, funcionario, perfil } = json;
 
-        // armazena o usuário logado (usuário do sistema)
-        localStorage.setItem("usuario_sistema", JSON.stringify(usuario_sistema));
+        // salvar token JWT
+        if (token) localStorage.setItem("token", token);
 
-        // armazena os dados do funcionário vinculado
+        // salvar usuário do sistema
+        if (usuario_sistema)
+          localStorage.setItem(
+            "usuario_sistema",
+            JSON.stringify(usuario_sistema)
+          );
+
+        // salvar dados do funcionário
         if (funcionario)
           localStorage.setItem("funcionario", JSON.stringify(funcionario));
 
-        // configurações do usuário
-        if (settings)
-          localStorage.setItem("settings", JSON.stringify(settings));
+        // salvar perfil do usuário
+        if (perfil) localStorage.setItem("perfil", JSON.stringify(perfil));
 
+        // aplicar tema do usuário
         try {
           const tema =
-            (usuario_sistema.tema_preferido) ||
+            usuario_sistema.tema_preferido ||
             localStorage.getItem("tema_preferido");
-
           if (tema) {
             document.body.setAttribute(
               "data-theme",
@@ -56,7 +58,7 @@ export default function LoginForm() {
             localStorage.setItem("tema", tema);
           }
         } catch (err) {
-          console.error("Erro ao aplicar settings:", err);
+          console.error("Erro ao aplicar tema:", err);
         }
 
         window.location.href = "/";
@@ -78,8 +80,10 @@ export default function LoginForm() {
             type="text"
             placeholder="Digite seu usuário"
             value={usuario}
-            name="usuario"
-            onChange={(e) => setUsuario(e.target.value)}
+            onChange={(e) => {
+              setUsuario(e.target.value);
+              if (erro) setErro(false);
+            }}
             className={`${styles.input} ${erro ? styles.inputErro : ""}`}
           />
         </div>
@@ -89,8 +93,10 @@ export default function LoginForm() {
             type={mostrarSenha ? "text" : "password"}
             placeholder="Digite sua senha"
             value={senha}
-            name = "senha"
-            onChange={(e) => setSenha(e.target.value)}
+            onChange={(e) => {
+              setSenha(e.target.value);
+              if (erro) setErro(false);
+            }}
             className={`${styles.input} ${erro ? styles.inputErro : ""}`}
           />
           <button

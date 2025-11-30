@@ -30,16 +30,19 @@ export default function TabelaFuncionario() {
   // Carregar funcionários do backend
   const carregarFuncionarios = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/listar_funcionarios", {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      });
+      const response = await fetch(
+        "http://127.0.0.1:5000/listar_funcionarios",
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        }
+      );
 
       if (!response.ok) throw new Error("Erro ao carregar funcionários");
 
       const resultado = await response.json();
 
-      // Formata o resultado caso venha como array de arrays
+      // Formata o resultado usando os índices corretos
       const funcionariosFormatados = Array.isArray(resultado)
         ? resultado.map((f) => ({
             id: f[0],
@@ -49,8 +52,7 @@ export default function TabelaFuncionario() {
             data_nascimento: f[4],
             sexo: f[5],
             email: f[6],
-            //senha: f[7],             // Pode remover se não usar
-            estado: f[7],
+            estado: f[7], // confirmar se é esse mesmo
             telefone: f[8],
             cep: f[9],
             logradouro: f[10],
@@ -59,9 +61,9 @@ export default function TabelaFuncionario() {
             complemento: f[13],
             uf: f[14],
             cidade: f[15],
-            funcao: f[18],            // Agora está correto!
-            salario: f[16],           // Opcional
-            data_contratacao: f[17],  // Opcional
+            funcao: f[16],
+            salario: f[17],
+            data_contratacao: f[18],
           }))
         : [];
 
@@ -81,8 +83,10 @@ export default function TabelaFuncionario() {
     return (
       (!filterId || item.id.toString().startsWith(filterId)) &&
       (!filterCpf || item.cpf.startsWith(filterCpf)) &&
-      (!filterNome || item.nome.toLowerCase().startsWith(filterNome.toLowerCase())) &&
-      (!filterFuncao || item.funcao.toLowerCase().startsWith(filterFuncao.toLowerCase()))
+      (!filterNome ||
+        item.nome.toLowerCase().startsWith(filterNome.toLowerCase())) &&
+      (!filterFuncao ||
+        item.funcao.toLowerCase().startsWith(filterFuncao.toLowerCase()))
     );
   });
 
@@ -117,7 +121,12 @@ export default function TabelaFuncionario() {
         className={styles.acaoBotao}
         onClick={async (e) => {
           e.stopPropagation();
-          if (!confirm(`Deseja realmente deletar o funcionário "${rowData.nome}"?`)) return;
+          if (
+            !confirm(
+              `Deseja realmente deletar o funcionário "${rowData.nome}"?`
+            )
+          )
+            return;
 
           try {
             const response = await fetch(
@@ -129,7 +138,6 @@ export default function TabelaFuncionario() {
 
             const result = await response.json();
             alert(result.message || "Funcionário deletado com sucesso!");
-            // Atualiza a tabela
             setFuncionarios((prev) => prev.filter((f) => f.id !== rowData.id));
           } catch (error) {
             console.error("Erro ao deletar funcionário:", error);
@@ -147,10 +155,30 @@ export default function TabelaFuncionario() {
     <div>
       {/* Filtros */}
       <div className={styles["filters-container"]}>
-        <Filtros value={filterId} onChange={setFilterId} placeholder="Filtre por ID" label="ID" />
-        <Filtros value={filterCpf} onChange={setFilterCpf} placeholder="Filtre por CPF" label="CPF" />
-        <Filtros value={filterNome} onChange={setFilterNome} placeholder="Filtre por nome" label="Nome" />
-        <Filtros value={filterFuncao} onChange={setFilterFuncao} placeholder="Filtre por função" label="Função" />
+        <Filtros
+          value={filterId}
+          onChange={setFilterId}
+          placeholder="Filtre por ID"
+          label="ID"
+        />
+        <Filtros
+          value={filterCpf}
+          onChange={setFilterCpf}
+          placeholder="Filtre por CPF"
+          label="CPF"
+        />
+        <Filtros
+          value={filterNome}
+          onChange={setFilterNome}
+          placeholder="Filtre por nome"
+          label="Nome"
+        />
+        <Filtros
+          value={filterFuncao}
+          onChange={setFilterFuncao}
+          placeholder="Filtre por função"
+          label="Função"
+        />
       </div>
 
       {/* Tabela */}
