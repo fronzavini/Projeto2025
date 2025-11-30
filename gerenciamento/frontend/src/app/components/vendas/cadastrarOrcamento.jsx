@@ -1,312 +1,319 @@
 "use client";
 import { useState, useEffect } from "react";
-import styles from "../../styles/cadastrarCliente.module.css";
+import styles from "../../styles/cadastrarVenda.module.css"; // usar mesmo CSS
+import CadastrarCliente from "../clientes/cadastrarCliente";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTrash,
+  faPlus,
+  faMinus,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 const API = "http://127.0.0.1:5000";
 
-function formatCurrency(value) {
-  const n = Number(value || 0);
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
 export default function CadastrarOrcamento({ onClose, onConfirm }) {
-  const [clientes, setClientes] = useState([]);
+  const [clientesLista, setClientesLista] = useState([]);
+  const [funcionariosLista, setFuncionariosLista] = useState([]);
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
+  const [clienteSelecionado, setClienteSelecionado] = useState(null);
+  const [funcionarioId, setFuncionarioId] = useState("1");
   const [produtos, setProdutos] = useState([]);
+  const [novoProdutoId, setNovoProdutoId] = useState("");
+  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
+  const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
+  const [form, setForm] = useState({ observacoes: "", pago: false });
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    clienteId: "",
-    data: "",
-    observacoes: "",
-    itens: [],
-    pago: false, // novo campo
-  });
 
   useEffect(() => {
     carregarClientes();
+    carregarFuncionarios();
     carregarProdutos();
   }, []);
 
-  async function carregarProdutos() {
-    try {
-      const res = await fetch(`${API}/listar_produtos`);
-      if (!res.ok) throw new Error("Erro ao carregar produtos");
-      const body = await res.json();
-      const itens = Array.isArray(body)
-        ? body.map((p) =>
-            Array.isArray(p)
-              ? { id: p[0], nome: p[1], preco: Number(p[4] ?? 0) }
-              : { id: p.id ?? p[0], nome: p.nome ?? p[1], preco: Number(p.preco ?? 0) }
-          )
-        : [];
-      setProdutos(itens);
-    } catch (e) {
-      console.error("Erro ao carregar produtos:", e);
-      setProdutos([]);
-    }
-  }
-
-  async function carregarClientes() {
+  const carregarClientes = async () => {
     try {
       const res = await fetch(`${API}/listar_clientes`);
-      if (!res.ok) throw new Error("Erro ao carregar clientes");
-      const body = await res.json();
-
-      let clientesArray = [];
-      if (Array.isArray(body)) {
-        clientesArray = body.map((c) =>
-          Array.isArray(c) ? { id: c[0], nome: c[1] } : { id: c.id ?? c[0], nome: c.nome ?? c[1] ?? "" }
-        );
-      } else if (body && typeof body === "object") {
-        clientesArray = Object.values(body).map((c) =>
-          Array.isArray(c) ? { id: c[0], nome: c[1] } : { id: c.id ?? c[0], nome: c.nome ?? c[1] ?? String(c) }
-        );
-      }
-
-      setClientes(clientesArray);
-    } catch (e) {
-      console.error("Erro ao carregar clientes:", e);
-      setClientes([]);
+      const data = await res.json();
+      const lista = (data.detalhes || data).map((c) => ({
+        id: c[0],
+        nome: c[2] || c.nome || `Cliente ${c[0]}`,
+      }));
+      setClientesLista(lista);
+    } catch (err) {
+      console.error(err);
+      setClientesLista([]);
     }
-  }
+  };
 
-  function adicionarItem() {
-    setForm((f) => ({
-      ...f,
-      itens: [...f.itens, { produtoId: "", nome: "", preco: 0, quantidade: 1 }],
-    }));
-  }
-
-  function removerItem(index) {
-    setForm((f) => {
-      const itens = [...f.itens];
-      itens.splice(index, 1);
-      return { ...f, itens };
-    });
-  }
-
-  function alterarItem(index, key, value) {
-    setForm((f) => {
-      const itens = [...f.itens];
-      itens[index] = { ...itens[index], [key]: value };
-
-      if (key === "produtoId") {
-        const prod = produtos.find((p) => String(p.id) === String(value));
-        if (prod) {
-          itens[index].nome = prod.nome;
-          itens[index].preco = Number(prod.preco) || 0;
-        } else {
-          itens[index].nome = "";
-          itens[index].preco = 0;
-        }
-      }
-
-      // garantir quantidade mínima 1
-      if (key === "quantidade") {
-        itens[index].quantidade = Math.max(1, Number(value) || 1);
-      }
-
-      return { ...f, itens };
-    });
-  }
-
-  function calcularTotal() {
-    return form.itens.reduce((acc, it) => acc + (Number(it.preco || 0) * Number(it.quantidade || 0)), 0);
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!form.clienteId) {
-      alert("Selecione um cliente.");
-      return;
-    }
-    if (form.itens.length === 0) {
-      alert("Adicione ao menos um item ao orçamento.");
-      return;
-    }
-    setSubmitting(true);
-    const payload = {
-      cliente: form.clienteId,
-      funcionario: null,
-      produtos: form.itens.map((it) => ({
-        produtoId: it.produtoId,
-        quantidade: Number(it.quantidade),
-        preco: Number(it.preco),
-      })),
-      valorTotal: calcularTotal(),
-      dataVenda: form.data || new Date().toISOString().slice(0, 10),
-      entrega: false,
-      dataEntrega: null,
-      tipo: "orcamento",
-      pago: !!form.pago, // envia pago
-      observacoes: form.observacoes,
-    };
-
+  const carregarFuncionarios = async () => {
     try {
+      const res = await fetch(`${API}/listar_funcionarios`);
+      const data = await res.json();
+      const lista = (data || []).map((f) => ({
+        id: f[0],
+        nome: f[1] || `Funcionario ${f[0]}`,
+      }));
+      setFuncionariosLista(lista);
+      if (!funcionarioId && lista.length)
+        setFuncionarioId(lista[0].id.toString());
+    } catch (err) {
+      console.error(err);
+      setFuncionariosLista([]);
+    }
+  };
+
+  const carregarProdutos = async () => {
+    try {
+      const res = await fetch(`${API}/listar_produtos`);
+      const data = await res.json();
+      const lista = (data || []).map((p) => ({
+        id: p[0],
+        nome: p[1],
+        preco: Number(p[4] || 0),
+      }));
+      setProdutosDisponiveis(lista);
+    } catch (err) {
+      console.error(err);
+      setProdutosDisponiveis([]);
+    }
+  };
+
+  const subtotal = produtos.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
+
+  const handleAdicionarProduto = () => {
+    if (!novoProdutoId) return;
+    const p = produtosDisponiveis.find(
+      (prod) => String(prod.id) === String(novoProdutoId)
+    );
+    if (!p) return;
+    setProdutos([...produtos, { ...p, quantidade: novoProdutoQuantidade }]);
+    setNovoProdutoId("");
+    setNovoProdutoQuantidade(1);
+  };
+
+  const handleRemover = (index) =>
+    setProdutos(produtos.filter((_, i) => i !== index));
+
+  const handleQuantidade = (index, delta) => {
+    const novos = [...produtos];
+    novos[index].quantidade = Math.max(1, novos[index].quantidade + delta);
+    setProdutos(novos);
+  };
+
+  const handleConfirmar = async () => {
+    if (!clienteSelecionado) {
+      alert("Selecione um cliente");
+      return;
+    }
+    if (produtos.length === 0) {
+      alert("Adicione pelo menos um produto");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        cliente: parseInt(clienteSelecionado),
+        funcionario: parseInt(funcionarioId),
+        produtos: produtos.map((p) => ({ id: p.id, quantidade: p.quantidade })),
+        valorTotal: subtotal,
+        dataVenda: new Date().toISOString().split("T")[0],
+        entrega: false,
+        dataEntrega: null,
+        tipo: "orcamento",
+        pago: !!form.pago,
+        observacoes: form.observacoes,
+      };
+
       const res = await fetch(`${API}/criar_venda`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!res.ok) throw new Error("Erro ao criar orçamento");
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Erro ${res.status}`);
-      }
-
-      const result = await res.json();
-      alert(result.message || "Orçamento criado com sucesso.");
+      alert("Orçamento criado com sucesso!");
       if (onConfirm) onConfirm();
       onClose();
-      setForm({ clienteId: "", data: "", observacoes: "", itens: [] });
-    } catch (error) {
-      console.error("Erro ao criar orçamento:", error);
-      alert(error.message || "Erro ao criar orçamento");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Erro ao criar orçamento");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.popupContent}>
-        <div className={styles.container} style={{ maxWidth: 920 }}>
-          <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2 className={styles.headerTitle}>Novo Orçamento</h2>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button className={styles.botaoCancelar} type="button" onClick={onClose} disabled={submitting}>
-                Fechar
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Novo Orçamento</h2>
+          <button className={styles.cancelar} onClick={onClose}>
+            Cancelar
+          </button>
+        </div>
+
+        {/* Cliente */}
+        <label className={styles.titulo}>Cliente</label>
+        <div className={styles.inlineSearch}>
+          <select
+            className={styles.input}
+            value={clienteSelecionado || ""}
+            onChange={(e) => setClienteSelecionado(e.target.value)}
+          >
+            <option value="">Selecione um cliente</option>
+            {clientesLista.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.id} - {c.nome}
+              </option>
+            ))}
+          </select>
+          <button
+            className={styles.botaoRoxo}
+            onClick={() => setShowCadastrarCliente(true)}
+          >
+            Novo cliente
+          </button>
+        </div>
+        {clienteSelecionado && (
+          <div className={styles.clienteSelecionado}>
+            <span>
+              Cliente selecionado ID: <strong>{clienteSelecionado}</strong>
+            </span>
+            <button
+              className={styles.removerCliente}
+              onClick={() => setClienteSelecionado(null)}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        )}
+
+        {/* Funcionário */}
+        <label className={styles.titulo}>Funcionário</label>
+        <select
+          className={styles.input}
+          value={funcionarioId}
+          onChange={(e) => setFuncionarioId(e.target.value)}
+        >
+          {funcionariosLista.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.nome} (ID:{f.id})
+            </option>
+          ))}
+        </select>
+
+        {/* Produtos */}
+        <h3 className={styles.titulo}>Produtos</h3>
+        <div className={styles.novoProdutoForm}>
+          <select
+            value={novoProdutoId}
+            onChange={(e) => setNovoProdutoId(e.target.value)}
+          >
+            <option value="">Selecione um produto</option>
+            {produtosDisponiveis.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome} - R${p.preco.toFixed(2)}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            min="1"
+            value={novoProdutoQuantidade}
+            onChange={(e) =>
+              setNovoProdutoQuantidade(
+                Math.max(1, parseInt(e.target.value) || 1)
+              )
+            }
+          />
+          <button className={styles.botaoRoxo} onClick={handleAdicionarProduto}>
+            Adicionar Produto
+          </button>
+        </div>
+
+        <div className={styles.produtoContainer}>
+          <div className={styles.headerProdutos}>
+            <span>Produto</span>
+            <span>Quantidade</span>
+            <span>Valor Unit.</span>
+            <span>Valor</span>
+            <span></span>
+          </div>
+          {produtos.map((p, idx) => (
+            <div key={idx} className={styles.produtoItem}>
+              <span>{p.nome}</span>
+              <div className={styles.quantidadeControls}>
+                <button onClick={() => handleQuantidade(idx, -1)}>
+                  <FontAwesomeIcon icon={faMinus} />
+                </button>
+                <span>{p.quantidade}</span>
+                <button onClick={() => handleQuantidade(idx, 1)}>
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              </div>
+              <span>R${p.preco.toFixed(2)}</span>
+              <span>R${(p.preco * p.quantidade).toFixed(2)}</span>
+              <button
+                className={styles.trashButton}
+                onClick={() => handleRemover(idx)}
+              >
+                <FontAwesomeIcon icon={faTrash} />
               </button>
             </div>
+          ))}
+          <div className={styles.totalRow}>
+            <span className={styles.totalLabel}>Total</span>
+            <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
           </div>
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 12 }}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Cliente</label>
-                <select
-                  className={styles.select}
-                  value={form.clienteId}
-                  onChange={(e) => setForm({ ...form, clienteId: e.target.value })}
-                  required
-                >
-                  <option value="">Selecione cliente</option>
-                  {(Array.isArray(clientes) ? clientes : []).map((c) => (
-                    <option key={c.id ?? c[0]} value={c.id ?? c[0]}>
-                      {c.nome ?? c[1] ?? String(c)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Data</label>
-                <input type="date" className={styles.input} value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <label className={styles.label} style={{ margin: 0 }}>Pago</label>
-              <input type="checkbox" checked={!!form.pago} onChange={(e) => setForm({ ...form, pago: e.target.checked })} />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Observações</label>
-              <textarea className={styles.input} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} rows={3} />
-            </div>
-
-            <div style={{ marginTop: 8 }}>
-              <h4 style={{ margin: "8px 0" }}>Itens</h4>
-              {form.itens.length === 0 && (
-                <div style={{ marginBottom: 12, color: "#666" }}>Nenhum item. Adicione produtos ao orçamento.</div>
-              )}
-
-              {form.itens.map((it, idx) => (
-                <div key={idx} className={styles.row} style={{ gap: 8, marginBottom: 8, alignItems: "center" }}>
-                  {/* product selector with datalist */}
-                  <div style={{ flex: 1 }}>
-                    <input
-                      list={`produtos-list-${idx}`}
-                      className={styles.input}
-                      placeholder="Pesquisar produto..."
-                      value={it.nome}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        // tentar resolver por nome parciais
-                        const prod = produtos.find((p) => p.nome === val || String(p.id) === val);
-                        if (prod) {
-                          alterarItem(idx, "produtoId", prod.id);
-                        } else {
-                          alterarItem(idx, "nome", val);
-                          alterarItem(idx, "produtoId", "");
-                        }
-                      }}
-                    />
-                    <datalist id={`produtos-list-${idx}`}>
-                      {produtos.map((p) => (
-                        <option key={p.id} value={p.nome} />
-                      ))}
-                    </datalist>
-                  </div>
-
-                  <div style={{ width: 120 }}>
-                    <input
-                      className={styles.input}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={it.preco}
-                      onChange={(e) => alterarItem(idx, "preco", e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ width: 100 }}>
-                    <input
-                      className={styles.input}
-                      type="number"
-                      min="1"
-                      value={it.quantidade}
-                      onChange={(e) => alterarItem(idx, "quantidade", e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ width: 120, textAlign: "right", fontWeight: 600 }}>
-                    {formatCurrency(Number(it.preco || 0) * Number(it.quantidade || 0))}
-                  </div>
-
-                  <div>
-                    <button type="button" className={styles.botaoCancelar} onClick={() => removerItem(idx)}>
-                      Remover
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              <div style={{ marginTop: 8 }}>
-                <button type="button" className={styles.botaoEnviar} onClick={adicionarItem} disabled={submitting}>
-                  Adicionar Item
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
-              <div>
-                <strong>Total: </strong>
-                <span style={{ fontSize: 18, marginLeft: 8 }}>{formatCurrency(calcularTotal())}</span>
-              </div>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" className={styles.botaoCancelar} onClick={onClose} disabled={submitting}>
-                  Cancelar
-                </button>
-                <button type="submit" className={styles.botaoEnviar} disabled={submitting || form.itens.length === 0 || !form.clienteId}>
-                  {submitting ? "Salvando..." : "Salvar Orçamento"}
-                </button>
-              </div>
-            </div>
-          </form>
         </div>
+
+        {/* Observações e pago */}
+        <div style={{ marginTop: 12 }}>
+          <label className={styles.label}>Observações</label>
+          <textarea
+            className={styles.input}
+            rows={3}
+            value={form.observacoes}
+            onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={form.pago}
+              onChange={(e) => setForm({ ...form, pago: e.target.checked })}
+            />
+            <label>Pago</label>
+          </div>
+        </div>
+
+        <button
+          className={styles.confirmarVenda}
+          onClick={handleConfirmar}
+          disabled={loading}
+        >
+          {loading ? "Salvando..." : "Confirmar Orçamento"}
+        </button>
       </div>
+
+      {showCadastrarCliente && (
+        <div className={styles.modalWrapper}>
+          <CadastrarCliente
+            onClose={() => {
+              setShowCadastrarCliente(false);
+              carregarClientes();
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
