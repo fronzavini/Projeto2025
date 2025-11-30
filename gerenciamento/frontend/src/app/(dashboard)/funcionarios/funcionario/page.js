@@ -4,7 +4,7 @@ import { useState } from "react";
 import TabelaFuncionario from "@/app/components/funcionarios/tabelaFuncionarios";
 import CadastrarFuncionario from "@/app/components/funcionarios/cadastrarFuncionario";
 import BotaoGenerico from "@/app/components/botao";
-import styles from "../../styles/tabelas.module.css";
+import styles from "../../../styles/tabelas.module.css";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function Funcionarios() {

@@ -1,6 +1,6 @@
 /* Container da página */
 .container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
   background: var(--container-bg);
@@ -25,13 +25,12 @@
 }
 
 /* Labels e inputs */
-label {
+.container label {
   font-weight: 500;
   color: var(--label-cinza, #666);
 }
-
-input,
-select {
+.container input,
+.container select {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--input-border-color);
@@ -41,15 +40,14 @@ select {
   font-size: 1rem;
 }
 
-input:focus,
-select:focus {
+.container input:focus,
+.container select:focus {
   outline: none;
   border-color: var(--input-focus-border-color);
   box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
 }
-
 /* Botão de enviar */
-button.submit {
+.container button.submit {
   background: var(--botao-enviar-bg);
   color: var(--botao-text-color, #fff);
   padding: 0.6rem 1rem;
@@ -60,12 +58,12 @@ button.submit {
   transition: background 0.2s ease-in-out;
 }
 
-button.submit:hover {
+.container button.submit:hover {
   background: var(--botao-enviar-hover-bg);
 }
 
 /* Mensagem de erro */
-p.error {
+.container p.error {
   color: var(--status-inativo-color, #b91c1c);
   font-size: 0.9rem;
 }

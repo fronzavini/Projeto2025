@@ -52,12 +52,17 @@ export default function TabelaProduto() {
           const resImg = await fetch(`${API}/listar_imagens_produto/${p[0]}`);
           if (resImg.ok) {
             imagens = await resImg.json();
+            console.log(`Produto ${p[0]} imagens:`, imagens); // log
+          } else {
+            console.warn(`Falha ao carregar imagens do produto ${p[0]}`, resImg.status);
           }
         } catch (err) {
           console.error(`Erro ao buscar imagens do produto ${p[0]}`, err);
         }
 
-        produtosComImagens.push({
+        const imagemPrincipal = imagens.length > 0 ? imagens[0].url : "/imagens/default.png"; // fallback
+
+        produtosComImagens.append({
           id: p[0],
           nome: p[1],
           categoria: p[2],
@@ -67,8 +72,8 @@ export default function TabelaProduto() {
           estoque_minimo: p[6],
           estado: p[7],
           fornecedor_id: p[8],
-          imagens: imagens, // array de imagens
-          imagemPrincipal: imagens.length > 0 ? imagens[0].url : "", // primeira imagem
+          imagens: imagens,
+          imagemPrincipal: imagemPrincipal,
         });
       }
 

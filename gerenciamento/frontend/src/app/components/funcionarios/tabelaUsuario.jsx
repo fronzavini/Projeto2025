@@ -13,7 +13,7 @@ export default function TabelaUsuarios() {
 
   const carregarUsuarios = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_usuarios", {
+      const res = await fetch("http://localhost:5000/listar_usuarios_sistema", {
         method: "GET",
         headers: {
           Accept: "application/json",

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "../../styles/menuVendas.module.css";
 
-export default function MenuVendas() {
+export default function MenuFuncionario() {
   const pathname = usePathname();
 
   const itens = [
