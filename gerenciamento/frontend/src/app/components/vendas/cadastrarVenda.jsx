@@ -1,35 +1,26 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import styles from "../../styles/cadastrarVenda.module.css";
 import CadastrarCliente from "../clientes/cadastrarCliente";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTrash,
-  faPlus,
-  faMinus,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import DropdownSelect from "./dropdownSelect";
+import DropdownProduto from "./dropdownProduto";
 
 export default function CadastrarVenda({ onClose }) {
   const [produtos, setProdutos] = useState([]);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
-  const [produtoBusca, setProdutoBusca] = useState("");
-  const [clienteBusca, setClienteBusca] = useState("");
-  const [funcionarioBusca, setFuncionarioBusca] = useState("");
   const [clientesLista, setClientesLista] = useState([]);
   const [funcionariosLista, setFuncionariosLista] = useState([]);
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
-  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState("1");
+  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState(null);
+  const [clienteBusca, setClienteBusca] = useState("");
+  const [funcionarioBusca, setFuncionarioBusca] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState("entrega");
   const [dataEntrega, setDataEntrega] = useState("");
-  const [novoProdutoQuantidade, setNovoProdutoQuantidade] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
-
-  const produtoInputRef = useRef(null);
-  const clienteInputRef = useRef(null);
-  const funcionarioInputRef = useRef(null);
 
   useEffect(() => {
     carregarProdutos();
@@ -96,18 +87,6 @@ export default function CadastrarVenda({ onClose }) {
     setProdutos(novos);
   };
 
-  const handleAdicionarProduto = (produto) => {
-    if (!produto) return;
-    const jaAdicionado = produtos.find((p) => p.id === produto.id);
-    if (jaAdicionado) return alert("Produto já adicionado!");
-    setProdutos([
-      ...produtos,
-      { ...produto, quantidade: novoProdutoQuantidade || 1 },
-    ]);
-    setProdutoBusca("");
-    setNovoProdutoQuantidade(1);
-  };
-
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
@@ -170,135 +149,52 @@ export default function CadastrarVenda({ onClose }) {
           </button>
         </div>
 
-        {/* ================= CLIENTE ================= */}
-        <label className={styles.titulo}>Cliente</label>
-        <div className={styles.inlineSearch} ref={clienteInputRef}>
-          <input
-            type="text"
-            className={styles.input}
+        <div className={styles.dropdownContainer}>
+          <DropdownSelect
+            label="Cliente"
             placeholder="Pesquisar cliente..."
+            lista={clientesLista}
             value={clienteBusca}
-            onChange={(e) => setClienteBusca(e.target.value)}
+            selectedId={clienteSelecionado}
+            onChange={setClienteBusca}
+            onSelect={setClienteSelecionado}
+            onClear={() => {
+              setClienteSelecionado(null);
+              setClienteBusca("");
+            }}
+            allowNew={true}
+            onNewClick={() => setShowCadastrarCliente(true)}
           />
-          <button
-            className={styles.botaoRoxo}
-            onClick={() => setShowCadastrarCliente(true)}
-          >
-            Novo cliente
-          </button>
-
-          {clienteBusca && (
-            <div className={styles.dropdown}>
-              {clientesLista
-                .filter((c) =>
-                  c.nome.toLowerCase().startsWith(clienteBusca.toLowerCase())
-                )
-                .map((c) => (
-                  <div
-                    key={c.id}
-                    className={styles.dropdownItem}
-                    onClick={() => {
-                      setClienteSelecionado(c.id);
-                      setClienteBusca(c.nome);
-                    }}
-                  >
-                    {c.nome} (ID: {c.id})
-                  </div>
-                ))}
-            </div>
-          )}
         </div>
 
-        {clienteSelecionado && (
-          <div className={styles.clienteSelecionado}>
-            <span>
-              Cliente selecionado: <strong>{clienteBusca}</strong>
-            </span>
-            <button
-              className={styles.removerCliente}
-              onClick={() => {
-                setClienteSelecionado(null);
-                setClienteBusca("");
-              }}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
-          </div>
-        )}
-
-        {/* ================= FUNCIONÁRIO ================= */}
-        <label className={styles.titulo}>Funcionário</label>
-        <div className={styles.inlineSearch} ref={funcionarioInputRef}>
-          <input
-            type="text"
-            className={styles.input}
+        <div className={styles.dropdownContainer}>
+          <DropdownSelect
+            label="Funcionário"
             placeholder="Pesquisar funcionário..."
+            lista={funcionariosLista}
             value={funcionarioBusca}
-            onChange={(e) => setFuncionarioBusca(e.target.value)}
+            selectedId={funcionarioSelecionado}
+            onChange={setFuncionarioBusca}
+            onSelect={setFuncionarioSelecionado}
+            onClear={() => {
+              setFuncionarioSelecionado(null);
+              setFuncionarioBusca("");
+            }}
           />
-          {funcionarioBusca && (
-            <div className={styles.dropdown}>
-              {funcionariosLista
-                .filter((f) =>
-                  f.nome
-                    .toLowerCase()
-                    .startsWith(funcionarioBusca.toLowerCase())
-                )
-                .map((f) => (
-                  <div
-                    key={f.id}
-                    className={styles.dropdownItem}
-                    onClick={() => {
-                      setFuncionarioSelecionado(f.id);
-                      setFuncionarioBusca(f.nome);
-                    }}
-                  >
-                    {f.nome} (ID: {f.id})
-                  </div>
-                ))}
-            </div>
-          )}
         </div>
 
-        {/* ================= PRODUTOS ================= */}
+        {/* PRODUTOS */}
         <h3 className={styles.titulo}>Produtos</h3>
-        <div className={styles.novoProdutoForm} ref={produtoInputRef}>
-          <input
-            type="text"
-            className={styles.input}
-            placeholder="Pesquisar produto..."
-            value={produtoBusca}
-            onChange={(e) => setProdutoBusca(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Quantidade"
-            value={novoProdutoQuantidade}
-            onChange={(e) =>
-              setNovoProdutoQuantidade(
-                Math.max(1, parseInt(e.target.value) || 1)
-              )
-            }
-          />
-          {produtoBusca && (
-            <div className={styles.dropdown}>
-              {produtosDisponiveis
-                .filter((p) =>
-                  p.nome.toLowerCase().startsWith(produtoBusca.toLowerCase())
-                )
-                .map((p) => (
-                  <div
-                    key={p.id}
-                    className={styles.dropdownItem}
-                    onClick={() => handleAdicionarProduto(p)}
-                  >
-                    {p.nome} - R${p.preco.toFixed(2)}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
+        <DropdownProduto
+          lista={produtosDisponiveis}
+          onAdicionar={(produto) => {
+            const jaAdicionado = produtos.find((p) => p.id === produto.id);
+            if (jaAdicionado) return alert("Produto já adicionado!");
+            setProdutos([...produtos, produto]);
+          }}
+        />
 
+        {/* LISTA DE PRODUTOS */}
         <div className={styles.produtoContainer}>
           <div className={styles.headerProdutos}>
             <span>Produto</span>
@@ -311,13 +207,9 @@ export default function CadastrarVenda({ onClose }) {
             <div key={index} className={styles.produtoItem}>
               <span>{produto.nome}</span>
               <div className={styles.quantidadeControls}>
-                <button onClick={() => handleQuantidade(index, -1)}>
-                  <FontAwesomeIcon icon={faMinus} />
-                </button>
+                <button onClick={() => handleQuantidade(index, -1)}>-</button>
                 <span>{produto.quantidade}</span>
-                <button onClick={() => handleQuantidade(index, 1)}>
-                  <FontAwesomeIcon icon={faPlus} />
-                </button>
+                <button onClick={() => handleQuantidade(index, 1)}>+</button>
               </div>
               <span>R${produto.preco.toFixed(2)}</span>
               <span>R${(produto.preco * produto.quantidade).toFixed(2)}</span>
@@ -335,13 +227,12 @@ export default function CadastrarVenda({ onClose }) {
           </div>
         </div>
 
-        {/* ================= ENTREGA / RETIRADA ================= */}
+        {/* ENTREGA / RETIRADA */}
         <div className={styles.entregaBox}>
           <div className={styles.radioGroup}>
             <label>
               <input
                 type="radio"
-                className={styles.radioInput}
                 value="entrega"
                 checked={tipoEntrega === "entrega"}
                 onChange={() => setTipoEntrega("entrega")}
@@ -351,7 +242,6 @@ export default function CadastrarVenda({ onClose }) {
             <label>
               <input
                 type="radio"
-                className={styles.radioInput}
                 value="retirada"
                 checked={tipoEntrega === "retirada"}
                 onChange={() => setTipoEntrega("retirada")}
@@ -359,18 +249,15 @@ export default function CadastrarVenda({ onClose }) {
               Retirada
             </label>
           </div>
-
           {tipoEntrega === "entrega" && (
             <div className={styles.entregaCampos}>
-              <div className={styles.row}>
-                <label className={styles.labelCinza}>Data da entrega</label>
-                <input
-                  type="date"
-                  className={styles.inputEntrega}
-                  value={dataEntrega}
-                  onChange={(e) => setDataEntrega(e.target.value)}
-                />
-              </div>
+              <label className={styles.labelCinza}>Data da entrega</label>
+              <input
+                type="date"
+                className={styles.inputEntrega}
+                value={dataEntrega}
+                onChange={(e) => setDataEntrega(e.target.value)}
+              />
             </div>
           )}
         </div>
@@ -387,6 +274,7 @@ export default function CadastrarVenda({ onClose }) {
           {loading ? "Criando..." : "Confirmar Venda"}
         </button>
 
+        {/* MODAL NOVO CLIENTE */}
         {showCadastrarCliente && (
           <div className={styles.modalWrapper}>
             <CadastrarCliente
@@ -401,4 +289,3 @@ export default function CadastrarVenda({ onClose }) {
     </div>
   );
 }
-
