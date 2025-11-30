@@ -6,18 +6,20 @@ export default function CadastrarCliente({ onClose }) {
   const [form, setForm] = useState({
     nome: "",
     tipo: "fisico",
+    sexo: "",
     cpf: "",
+    cnpj: "",
     rg: "",
     email: "",
     telefone: "",
-    dataNascimento: "",
-    cep: "",
-    numero: "",
-    cidade: "",
-    bairro: "",
-    logradouro: "",
-    complemento: "",
-    uf: "",
+    dataNasc: "",
+    endCep: "",
+    endNumero: "",
+    endMunicipio: "",
+    endBairro: "",
+    endRua: "",
+    endComplemento: "",
+    endUF: "",
   });
 
   function handleChange(e) {
@@ -30,11 +32,9 @@ export default function CadastrarCliente({ onClose }) {
 
     const dadosCompletos = {
       ...form,
-      data_nascimento: form.dataNascimento,
-      /*cidade: form.cidade,*/
-      cnpj: form.tipo === "juridico" ? form.cpf : "",
-      /*senha: "cliente123",*/
-      /*uf: form.uf,*/
+      cnpj: form.tipo === "juridico" ? form.cpf : "", // usa o campo do CPF como entrada do CNPJ
+      cpf: form.tipo === "fisico" ? form.cpf : "",
+      dataCadastro: new Date().toISOString().split("T")[0],
       estado: true,
     };
 
@@ -47,10 +47,6 @@ export default function CadastrarCliente({ onClose }) {
         },
         body: JSON.stringify(dadosCompletos),
       });
-      /*const response = await axios.post(
-        "http://127.0.0.1:5000/criar_cliente",
-        dadosCompletos
-      );*/
 
       if (!response.ok) throw new Error("Erro ao cadastrar cliente.");
 
@@ -60,18 +56,20 @@ export default function CadastrarCliente({ onClose }) {
       setForm({
         nome: "",
         tipo: "fisico",
+        sexo: "",
         cpf: "",
+        cnpj: "",
         rg: "",
         email: "",
         telefone: "",
-        dataNascimento: "",
-        cep: "",
-        numero: "",
-        cidade: "",
-        bairro: "",
-        logradouro: "",
-        complemento: "",
-        uf: "",
+        dataNasc: "",
+        endCep: "",
+        endNumero: "",
+        endMunicipio: "",
+        endBairro: "",
+        endRua: "",
+        endComplemento: "",
+        endUF: "",
       });
     } catch (error) {
       console.error(error);
@@ -83,20 +81,15 @@ export default function CadastrarCliente({ onClose }) {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Novo cliente</h2>
-        <button
-          className={styles.botaoCancelar}
-          type="button"
-          onClick={onClose}
-        >
+        <button className={styles.botaoCancelar} type="button" onClick={onClose}>
           Cancelar
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome" className={styles.label}>
-            Nome do cliente
-          </label>
+          <label htmlFor="nome" className={styles.label}>Nome do cliente</label>
           <input
             className={styles.input}
             id="nome"
@@ -108,6 +101,7 @@ export default function CadastrarCliente({ onClose }) {
           />
         </div>
 
+        {/* Tipo */}
         <div className={styles.radioGroup}>
           <label className={styles.radioLabel}>
             <input
@@ -133,10 +127,29 @@ export default function CadastrarCliente({ onClose }) {
           </label>
         </div>
 
+        {/* Sexo */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Sexo</label>
+          <select
+            name="sexo"
+            className={styles.input}
+            value={form.sexo}
+            onChange={handleChange}
+            disabled={form.tipo !== "fisico"}
+            required={form.tipo === "fisico"}
+          >
+            <option value="">Selecione</option>
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        {/* CPF e RG */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
             <label htmlFor="cpf" className={styles.label}>
-              CPF
+              {form.tipo === "fisico" ? "CPF" : "CNPJ"}
             </label>
             <input
               className={styles.input}
@@ -145,31 +158,29 @@ export default function CadastrarCliente({ onClose }) {
               type="text"
               value={form.cpf}
               onChange={handleChange}
-              disabled={form.tipo !== "fisico"}
-              required={form.tipo === "fisico"}
+              required
             />
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="rg" className={styles.label}>
-              RG
-            </label>
-            <input
-              className={styles.input}
-              id="rg"
-              name="rg"
-              type="text"
-              value={form.rg}
-              onChange={handleChange}
-              disabled={form.tipo !== "fisico"}
-              required={form.tipo === "fisico"}
-            />
-          </div>
+
+          {form.tipo === "fisico" && (
+            <div className={styles.formGroup}>
+              <label htmlFor="rg" className={styles.label}>RG</label>
+              <input
+                className={styles.input}
+                id="rg"
+                name="rg"
+                type="text"
+                value={form.rg}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
         </div>
 
+        {/* Email */}
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>
-            Email
-          </label>
+          <label htmlFor="email" className={styles.label}>Email</label>
           <input
             className={styles.input}
             id="email"
@@ -181,10 +192,9 @@ export default function CadastrarCliente({ onClose }) {
           />
         </div>
 
+        {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>
-            Telefone
-          </label>
+          <label htmlFor="telefone" className={styles.label}>Telefone</label>
           <input
             className={styles.input}
             id="telefone"
@@ -196,122 +206,118 @@ export default function CadastrarCliente({ onClose }) {
           />
         </div>
 
+        {/* Data de nascimento */}
         <div className={styles.formGroup}>
-          <label htmlFor="dataNascimento" className={styles.label}>
-            Data de nascimento
-          </label>
+          <label htmlFor="dataNasc" className={styles.label}>Data de nascimento</label>
           <input
             className={styles.inputDate}
-            id="dataNascimento"
-            name="dataNascimento"
+            id="dataNasc"
+            name="dataNasc"
             type="date"
-            value={form.dataNascimento}
+            value={form.dataNasc}
             onChange={handleChange}
             disabled={form.tipo !== "fisico"}
             required={form.tipo === "fisico"}
           />
         </div>
 
+        {/* CEP e número */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cep" className={styles.label}>
-              CEP
-            </label>
+            <label htmlFor="endCep" className={styles.label}>CEP</label>
             <input
               className={styles.input}
-              id="cep"
-              name="cep"
+              id="endCep"
+              name="endCep"
               type="text"
-              value={form.cep}
+              value={form.endCep}
               onChange={handleChange}
+              required
             />
           </div>
+
           <div className={styles.formGroup}>
-            <label htmlFor="numero" className={styles.label}>
-              Número
-            </label>
+            <label htmlFor="endNumero" className={styles.label}>Número</label>
             <input
               className={styles.input}
-              id="numero"
-              name="numero"
+              id="endNumero"
+              name="endNumero"
               type="text"
-              value={form.numero}
+              value={form.endNumero}
               onChange={handleChange}
+              required
             />
           </div>
         </div>
 
-        <div className={styles.row}>
-          <div className={styles.formGroup}>
-            <label htmlFor="uf" className={styles.label}>
-              UF
-            </label>
-            <input
-              className={styles.input}
-              id="uf"
-              name="uf"
-              type="text"
-              value={form.uf}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className={styles.row}>
-          <div className={styles.formGroup}>
-            <label htmlFor="cidade" className={styles.label}>
-              Cidade
-            </label>
-            <input
-              className={styles.input}
-              id="cidade"
-              name="cidade"
-              type="text"
-              value={form.cidade}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="bairro" className={styles.label}>
-              Bairro
-            </label>
-            <input
-              className={styles.input}
-              id="bairro"
-              name="bairro"
-              type="text"
-              value={form.bairro}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
+        {/* UF */}
         <div className={styles.formGroup}>
-          <label htmlFor="logradouro" className={styles.label}>
-            Logradouro
-          </label>
+          <label htmlFor="endUF" className={styles.label}>UF</label>
           <input
             className={styles.input}
-            id="logradouro"
-            name="logradouro"
+            id="endUF"
+            name="endUF"
             type="text"
-            value={form.logradouro}
+            value={form.endUF}
             onChange={handleChange}
+            required
           />
         </div>
 
+        {/* Cidade e bairro */}
+        <div className={styles.row}>
+          <div className={styles.formGroup}>
+            <label htmlFor="endMunicipio" className={styles.label}>Cidade</label>
+            <input
+              className={styles.input}
+              id="endMunicipio"
+              name="endMunicipio"
+              type="text"
+              value={form.endMunicipio}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="endBairro" className={styles.label}>Bairro</label>
+            <input
+              className={styles.input}
+              id="endBairro"
+              name="endBairro"
+              type="text"
+              value={form.endBairro}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        </div>
+
+        {/* Rua */}
         <div className={styles.formGroup}>
-          <label htmlFor="complemento" className={styles.label}>
-            Complemento
-          </label>
+          <label htmlFor="endRua" className={styles.label}>Logradouro</label>
           <input
             className={styles.input}
-            id="complemento"
-            name="complemento"
+            id="endRua"
+            name="endRua"
             type="text"
-            value={form.complemento}
+            value={form.endRua}
             onChange={handleChange}
+            required
+          />
+        </div>
+
+        {/* Complemento */}
+        <div className={styles.formGroup}>
+          <label htmlFor="endComplemento" className={styles.label}>Complemento</label>
+          <input
+            className={styles.input}
+            id="endComplemento"
+            name="endComplemento"
+            type="text"
+            value={form.endComplemento}
+            onChange={handleChange}
+            required
           />
         </div>
 

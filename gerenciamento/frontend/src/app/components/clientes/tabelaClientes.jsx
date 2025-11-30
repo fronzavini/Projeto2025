@@ -11,7 +11,6 @@ import { FiltroDropdown } from "../filtrosDropdown";
 
 import VisualizarCliente from "./visualizarCliente";
 import EditarCliente from "./editarCliente";
-import { deletarItem } from "../deletar";
 
 export default function TabelaClientes() {
   const [clientes, setClientes] = useState([]);
@@ -35,7 +34,7 @@ export default function TabelaClientes() {
   const [modalEditar, setModalEditar] = useState(false);
   const [clienteParaEditar, setClienteParaEditar] = useState(null);
 
-  // Carregar clientes
+  // Carregar clientes (normalizando para o formato da tabela)
   const carregarClientes = async () => {
     try {
       const response = await fetch("http://localhost:5000/listar_clientes", {
@@ -48,63 +47,32 @@ export default function TabelaClientes() {
       if (!response.ok) throw new Error("Erro ao carregar clientes.");
 
       const resultado = await response.json();
-      console.log(resultado);
-
       const raw = resultado.detalhes ?? resultado;
 
       const clientesFormatados = (Array.isArray(raw) ? raw : []).map((c) => {
-        // Caso o backend retorne objeto com chaves
-        if (!Array.isArray(c) && typeof c === "object") {
-          const documento = c.cpf || c.cnpj || "";
-          return {
-            id: c.id ?? c.ID ?? c[0] ?? null,
-            dataCadastro: c.dataCadastro ?? c.data_cadastro ?? c[1] ?? null,
-            nome: c.nome ?? c.razao_social ?? c[2] ?? "",
-            tipoPessoa: c.tipo ?? c.tipoPessoa ?? c[3] ?? "",
-            genero: c.sexo ?? c.genero ?? c[4] ?? "",
-            cpf: c.cpf ?? null,
-            cnpj: c.cnpj ?? null,
-            documento: documento,
-            rg: c.rg ?? null,
-            email: c.email ?? null,
-            telefone: c.telefone ?? c.telefone1 ?? c[10] ?? "",
-            dataNascimento: c.data_nascimento ?? c.dataNascimento ?? c[11] ?? "",
-            status: (c.estado ?? c.status ?? 1) === 1 ? "ativo" : "inativo",
-            cep: c.cep ?? c.endCep ?? c[13] ?? "",
-            logradouro: c.logradouro ?? c.endRua ?? c[14] ?? "",
-            numero: c.numero ?? c.endNumero ?? c[15] ?? "",
-            bairro: c.bairro ?? c.endBairro ?? c[16] ?? "",
-            complemento: c.complemento ?? c.endComplemento ?? c[17] ?? "",
-            uf: c.uf ?? c.endUF ?? c[18] ?? "",
-            cidade: c.cidade ?? c.endMunicipio ?? c[19] ?? "",
-          };
-        }
-
-        // Caso o backend retorne array: mapear por índices conhecidos (fallback para heurística)
-        const arr = Array.isArray(c) ? c : [];
-
-        // Se tiver o número mínimo de colunas esperado (conforme screenshot / schema)
-        if (arr.length >= 13) {
-          const id = arr[0] ?? null;
-          const dataCadastro = arr[1] ?? null;
-          const nome = arr[2] ?? `Cliente ${id ?? ""}`;
-          const tipoPessoa = arr[3] ?? "";
-          const genero = arr[4] ?? "";
-          const cpf = arr[5] ?? null;
-          const cnpj = arr[6] ?? null;
-          const rg = arr[7] ?? null;
-          const email = arr[8] ?? null;
-          const telefone = arr[9] ?? "";
-          const dataNascimento = arr[10] ?? "";
-          const estadoRaw = arr[11];
-          const status = (estadoRaw ?? 1) === 1 ? "ativo" : "inativo";
-          const cep = arr[12] ?? "";
-          const logradouro = arr[13] ?? "";
-          const numero = arr[14] ?? "";
-          const bairro = arr[15] ?? "";
-          const complemento = arr[16] ?? "";
-          const uf = arr[17] ?? "";
-          const cidade = arr[18] ?? arr[19] ?? "";
+        // Normalizar quando backend já retornar objeto com chaves próximas ao schema
+        if (c && typeof c === "object" && !Array.isArray(c)) {
+          // Priorizar nomes da sua tabela: dataCadastro, dataNasc, endRua, endCep, endNumero, endBairro, endComplemento, endUF, endMunicipio
+          const id = c.id ?? c.ID ?? null;
+          const dataCadastro = c.dataCadastro ?? c.data_cadastro ?? c.dataCadastro ?? null;
+          const nome = c.nome ?? c.razao_social ?? "";
+          const tipo = c.tipo ?? "fisico";
+          const sexo = c.sexo ?? c.genero ?? "";
+          const cpf = c.cpf ?? null;
+          const cnpj = c.cnpj ?? null;
+          const rg = c.rg ?? null;
+          const email = c.email ?? null;
+          const telefone = c.telefone ?? c.telefone1 ?? "";
+          const dataNasc = c.dataNasc ?? c.data_nascimento ?? c.dataNascimento ?? "";
+          const estadoRaw = c.estado ?? c.status ?? 1;
+          const status = (estadoRaw === 1 || estadoRaw === true) ? "ativo" : "inativo";
+          const endCep = c.endCep ?? c.end_cep ?? c.cep ?? "";
+          const endRua = c.endRua ?? c.end_rua ?? c.logradouro ?? "";
+          const endNumero = c.endNumero ?? c.end_numero ?? c.numero ?? "";
+          const endBairro = c.endBairro ?? c.end_bairro ?? c.bairro ?? "";
+          const endComplemento = c.endComplemento ?? c.end_complemento ?? c.complemento ?? "";
+          const endUF = c.endUF ?? c.end_uf ?? c.uf ?? "";
+          const endMunicipio = c.endMunicipio ?? c.end_municipio ?? c.cidade ?? "";
 
           const documento = cpf || cnpj || "";
 
@@ -112,130 +80,102 @@ export default function TabelaClientes() {
             id,
             dataCadastro,
             nome,
-            tipoPessoa,
-            genero,
-            cpf: cpf || null,
-            cnpj: cnpj || null,
-            documento,
+            tipo,
+            sexo,
+            cpf,
+            cnpj,
             rg,
             email,
             telefone,
-            dataNascimento,
+            dataNasc,
+            estado: estadoRaw === 1 || estadoRaw === true,
             status,
-            cep,
-            logradouro,
-            numero,
-            bairro,
-            complemento,
-            uf,
-            cidade,
+            endCep,
+            endRua,
+            endNumero,
+            endBairro,
+            endComplemento,
+            endUF,
+            endMunicipio,
+            documento,
           };
         }
 
-        // fallback heurístico (caso formato diferente)
-        let id = arr[0] ?? null;
-        let nome = "";
-        let telefone = "";
-        let cpf = "";
-        let cnpj = "";
-        let dataNascimento = "";
-        let status = null;
-        let cep = "";
-        let logradouro = "";
-        let numero = "";
-        let bairro = "";
-        let complemento = "";
-        let uf = "";
-        let cidade = "";
+        // Se veio como array — tentar mapear por posição (fallback)
+        if (Array.isArray(c)) {
+          const arr = c;
+          // heurística baseada no schema: ajustar índices conforme seu backend real
+          const id = arr[0] ?? null;
+          const dataCadastro = arr[1] ?? null;
+          const nome = arr[2] ?? "";
+          const tipo = arr[3] ?? "fisico";
+          const sexo = arr[4] ?? "";
+          const cpf = arr[5] ?? null;
+          const cnpj = arr[6] ?? null;
+          const rg = arr[7] ?? null;
+          const email = arr[8] ?? null;
+          const telefone = arr[9] ?? "";
+          const dataNasc = arr[10] ?? "";
+          const estadoRaw = arr[11];
+          const status = (estadoRaw === 1 || estadoRaw === true) ? "ativo" : "inativo";
+          const endCep = arr[12] ?? "";
+          const endRua = arr[13] ?? "";
+          const endNumero = arr[14] ?? "";
+          const endBairro = arr[15] ?? "";
+          const endComplemento = arr[16] ?? "";
+          const endUF = arr[17] ?? "";
+          const endMunicipio = arr[18] ?? arr[19] ?? "";
 
-        for (let i = 1; i < arr.length; i++) {
-          const v = arr[i];
-          if (v == null) continue;
-          const s = String(v).trim();
-          const digits = s.replace(/\D/g, "");
+          const documento = cpf || cnpj || "";
 
-          // detectar data primeiro
-          if (!dataNascimento) {
-            const parsed = Date.parse(s);
-            if (!Number.isNaN(parsed)) {
-              const yr = new Date(parsed).getFullYear();
-              if (yr > 1900 && yr < 2100) {
-                dataNascimento = new Date(parsed).toISOString().slice(0, 10);
-                continue;
-              }
-            }
-            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-              dataNascimento = s;
-              continue;
-            }
-          }
-
-          // cpf (11) ou cnpj (14)
-          if (!cpf && digits.length === 11) {
-            cpf = s;
-            continue;
-          }
-          if (!cnpj && digits.length === 14) {
-            cnpj = s;
-            continue;
-          }
-
-          // telefone: preferir 10 ou 11 dígitos (não confundir com CEP de 8 dígitos)
-          if (!telefone && (digits.length === 10 || digits.length === 11)) {
-            telefone = s;
-            continue;
-          }
-
-          // status 0/1
-          if (status === null && (v === 0 || v === 1)) {
-            status = v;
-            continue;
-          }
-
-          // cep (8 dígitos)
-          if (!cep && digits.length === 8) {
-            cep = s;
-            continue;
-          }
-
-          // nome (string com letras)
-          if (!nome && /[A-Za-zÀ-ÿ]/.test(s)) {
-            nome = s;
-            continue;
-          }
-
-          // fallback por posições
-          if (!logradouro && i === 14) logradouro = s;
-          if (!numero && i === 15) numero = s;
-          if (!bairro && i === 16) bairro = s;
-          if (!complemento && i === 17) complemento = s;
-          if (!uf && i === 18) uf = s;
-          if (!cidade && i === 19) cidade = s;
+          return {
+            id,
+            dataCadastro,
+            nome,
+            tipo,
+            sexo,
+            cpf,
+            cnpj,
+            rg,
+            email,
+            telefone,
+            dataNasc,
+            estado: estadoRaw === 1 || estadoRaw === true,
+            status,
+            endCep,
+            endRua,
+            endNumero,
+            endBairro,
+            endComplemento,
+            endUF,
+            endMunicipio,
+            documento,
+          };
         }
 
-        const documento = cpf || cnpj || "";
-
+        // fallback minimal
         return {
-          id,
-          dataCadastro: arr[1] ?? null,
-          nome: nome || `Cliente ${id ?? ""}`,
-          tipoPessoa: arr[3] ?? "",
-          genero: arr[4] ?? "",
-          cpf: cpf || null,
-          cnpj: cnpj || null,
-          documento,
-          rg: arr[7] ?? null,
-          email: arr[8] ?? null,
-          telefone,
-          dataNascimento,
-          status: status === 1 ? "ativo" : "inativo",
-          cep,
-          logradouro,
-          numero,
-          bairro,
-          complemento,
-          uf,
-          cidade,
+          id: null,
+          dataCadastro: null,
+          nome: String(c) ?? "",
+          tipo: "fisico",
+          sexo: "",
+          cpf: null,
+          cnpj: null,
+          rg: null,
+          email: null,
+          telefone: "",
+          dataNasc: "",
+          estado: true,
+          status: "ativo",
+          endCep: "",
+          endRua: "",
+          endNumero: "",
+          endBairro: "",
+          endComplemento: "",
+          endUF: "",
+          endMunicipio: "",
+          documento: "",
         };
       });
 
@@ -251,22 +191,18 @@ export default function TabelaClientes() {
   }, []);
 
   // Filtragem
-  const filteredData = clientes.filter(
-    (item) =>
-      (!filtros.id || item.id.toString().startsWith(filtros.id)) &&
-      (!filtros.cpf || item.cpf.startsWith(filtros.cpf)) &&
-      (!filtros.nome ||
-        item.nome.toLowerCase().startsWith(filtros.nome.toLowerCase())) &&
-      (!filtros.telefone || item.telefone.startsWith(filtros.telefone)) &&
-      (!filtros.status || item.status === filtros.status)
+  const filteredData = clientes.filter((item) =>
+    (!filtros.id || String(item.id).startsWith(filtros.id)) &&
+    (!filtros.cpf || (item.cpf && item.cpf.startsWith(filtros.cpf))) &&
+    (!filtros.nome || item.nome.toLowerCase().startsWith(filtros.nome.toLowerCase())) &&
+    (!filtros.telefone || (item.telefone && item.telefone.startsWith(filtros.telefone))) &&
+    (!filtros.status || item.status === filtros.status)
   );
 
   // Status template
   const statusTemplate = (rowData) => (
     <span
-      className={`${styles["status-badge"]} ${
-        styles[rowData.status?.toLowerCase() || "indefinido"]
-      }`}
+      className={`${styles["status-badge"]} ${styles[rowData.status?.toLowerCase() || "indefinido"]}`}
     >
       {rowData.status || "Indefinido"}
     </span>
@@ -314,8 +250,7 @@ export default function TabelaClientes() {
             if (!response.ok) throw new Error("Erro ao deletar cliente.");
 
             const result = await response.json();
-            alert(result.message || "Produto deletado com sucesso!");
-            // Atualiza a lista de produtos
+            alert(result.message || "Cliente deletado com sucesso!");
             setClientes((prev) => prev.filter((c) => c.id !== rowData.id));
           } catch (error) {
             console.error("Erro ao deletar cliente:", error);
@@ -384,11 +319,7 @@ export default function TabelaClientes() {
           <Column field="nome" header="Nome" />
           <Column field="telefone" header="Telefone" />
           <Column field="status" header="Status" body={statusTemplate} />
-          <Column
-            body={actionTemplate}
-            header="Ações"
-            style={{ width: "150px" }}
-          />
+          <Column body={actionTemplate} header="Ações" style={{ width: "150px" }} />
         </DataTable>
 
         {/* Modais */}

@@ -2,18 +2,26 @@ import React from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
 
 export default function VisualizarCliente({ onClose, cliente }) {
-  console.log(cliente);
   if (!cliente) return null;
 
-  const tipo = cliente.tipo ?? cliente.tipoPessoa ?? cliente.tipo_cliente ?? "";
+  // garantir uso das chaves da tabela
+  const tipo = cliente.tipo ?? "fisico";
   const isJuridico = String(tipo).toLowerCase() === "juridico";
 
-  // normalizações de campos possíveis
-  const cpf = cliente.cpf ?? cliente.documento ?? "";
-  const cnpj = cliente.cnpj ?? cliente.cnpj_empresa ?? "";
+  const cpf = cliente.cpf ?? "";
+  const cnpj = cliente.cnpj ?? "";
   const rg = cliente.rg ?? "";
-  const telefone = cliente.telefone ?? cliente.telefone1 ?? "";
-  const dataNasc = cliente.data_nascimento ?? cliente.dataNascimento ?? "";
+  const telefone = cliente.telefone ?? "";
+  const dataNasc = cliente.dataNasc ?? cliente.data_nascimento ?? cliente.dataNascimento ?? "";
+  const email = cliente.email ?? "";
+
+  const endCep = cliente.endCep ?? cliente.end_cep ?? cliente.cep ?? "";
+  const endRua = cliente.endRua ?? cliente.end_rua ?? cliente.logradouro ?? "";
+  const endNumero = cliente.endNumero ?? cliente.end_numero ?? cliente.numero ?? "";
+  const endBairro = cliente.endBairro ?? cliente.end_bairro ?? cliente.bairro ?? "";
+  const endComplemento = cliente.endComplemento ?? cliente.end_complemento ?? cliente.complemento ?? "";
+  const endUF = cliente.endUF ?? cliente.end_uf ?? cliente.uf ?? "";
+  const endMunicipio = cliente.endMunicipio ?? cliente.end_municipio ?? cliente.cidade ?? "";
 
   return (
     <div className={styles.overlay}>
@@ -32,13 +40,9 @@ export default function VisualizarCliente({ onClose, cliente }) {
 
           <form>
             <div className={styles.formGroup}>
-              <label htmlFor="nome" className={styles.label}>
-                Nome do cliente
-              </label>
+              <label className={styles.label}>Nome do cliente</label>
               <input
                 className={styles.input}
-                id="nome"
-                name="nome"
                 type="text"
                 value={cliente.nome ?? cliente.razao_social ?? ""}
                 disabled
@@ -70,92 +74,42 @@ export default function VisualizarCliente({ onClose, cliente }) {
               </label>
             </div>
 
-            {/* Campos condicionais: Físico -> CPF + RG + Data nascimento; Jurídico -> CNPJ */}
             {isJuridico ? (
               <div className={styles.row}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="cnpj" className={styles.label}>
-                    CNPJ
-                  </label>
-                  <input
-                    className={styles.input}
-                    id="cnpj"
-                    name="cnpj"
-                    type="text"
-                    value={cnpj || cpf /* fallback caso cnpj venha no campo documento */}
-                    disabled
-                  />
+                  <label className={styles.label}>CNPJ</label>
+                  <input className={styles.input} type="text" value={cnpj || ""} disabled />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label htmlFor="telefone" className={styles.label}>
-                    Telefone
-                  </label>
-                  <input
-                    className={styles.input}
-                    id="telefone"
-                    name="telefone"
-                    type="text"
-                    value={telefone}
-                    disabled
-                  />
+                  <label className={styles.label}>Telefone</label>
+                  <input className={styles.input} type="text" value={telefone || ""} disabled />
                 </div>
               </div>
             ) : (
               <>
                 <div className={styles.row}>
                   <div className={styles.formGroup}>
-                    <label htmlFor="cpf" className={styles.label}>
-                      CPF
-                    </label>
-                    <input
-                      className={styles.input}
-                      id="cpf"
-                      name="cpf"
-                      type="text"
-                      value={cpf}
-                      disabled
-                    />
+                    <label className={styles.label}>CPF</label>
+                    <input className={styles.input} type="text" value={cpf || ""} disabled />
                   </div>
                   <div className={styles.formGroup}>
-                    <label htmlFor="rg" className={styles.label}>
-                      RG
-                    </label>
-                    <input
-                      className={styles.input}
-                      id="rg"
-                      name="rg"
-                      type="text"
-                      value={rg}
-                      disabled
-                    />
+                    <label className={styles.label}>RG</label>
+                    <input className={styles.input} type="text" value={rg || ""} disabled />
                   </div>
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label htmlFor="telefone" className={styles.label}>
-                    Telefone
-                  </label>
-                  <input
-                    className={styles.input}
-                    id="telefone"
-                    name="telefone"
-                    type="text"
-                    value={telefone}
-                    disabled
-                  />
+                  <label className={styles.label}>Telefone</label>
+                  <input className={styles.input} type="text" value={telefone || ""} disabled />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label htmlFor="data_nascimento" className={styles.label}>
-                    Data de nascimento
-                  </label>
+                  <label className={styles.label}>Data de nascimento</label>
                   <input
                     className={styles.inputDate}
-                    id="data_nascimento"
-                    name="data_nascimento"
                     type="date"
-                    value={dataNasc ? (new Date(dataNasc).toISOString().slice(0, 10)) : ""}
+                    value={dataNasc ? new Date(dataNasc).toISOString().slice(0, 10) : ""}
                     disabled
                   />
                 </div>
@@ -163,103 +117,45 @@ export default function VisualizarCliente({ onClose, cliente }) {
             )}
 
             <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>
-                Email
-              </label>
-              <input
-                className={styles.input}
-                id="email"
-                name="email"
-                type="email"
-                value={cliente.email ?? ""}
-                disabled
-              />
+              <label className={styles.label}>Email</label>
+              <input className={styles.input} type="email" value={email} disabled />
             </div>
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="cep" className={styles.label}>
-                  CEP
-                </label>
-                <input
-                  className={styles.input}
-                  id="cep"
-                  name="cep"
-                  type="text"
-                  value={cliente.cep ?? cliente.endCep ?? ""}
-                  disabled
-                />
+                <label className={styles.label}>CEP</label>
+                <input className={styles.input} type="text" value={endCep} disabled />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="numero" className={styles.label}>
-                  Número
-                </label>
-                <input
-                  className={styles.input}
-                  id="numero"
-                  name="numero"
-                  type="text"
-                  value={cliente.numero ?? cliente.endNumero ?? ""}
-                  disabled
-                />
+                <label className={styles.label}>Número</label>
+                <input className={styles.input} type="text" value={endNumero} disabled />
               </div>
             </div>
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="cidade" className={styles.label}>
-                  Cidade
-                </label>
-                <input
-                  className={styles.input}
-                  id="cidade"
-                  name="cidade"
-                  type="text"
-                  value={cliente.cidade ?? cliente.endMunicipio ?? ""}
-                  disabled
-                />
+                <label className={styles.label}>Município</label>
+                <input className={styles.input} type="text" value={endMunicipio} disabled />
               </div>
               <div className={styles.formGroup}>
-                <label htmlFor="bairro" className={styles.label}>
-                  Bairro
-                </label>
-                <input
-                  className={styles.input}
-                  id="bairro"
-                  name="bairro"
-                  type="text"
-                  value={cliente.bairro ?? cliente.endBairro ?? ""}
-                  disabled
-                />
+                <label className={styles.label}>Bairro</label>
+                <input className={styles.input} type="text" value={endBairro} disabled />
               </div>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="logradouro" className={styles.label}>
-                Logradouro
-              </label>
-              <input
-                className={styles.input}
-                id="logradouro"
-                name="logradouro"
-                type="text"
-                value={cliente.logradouro ?? cliente.endRua ?? ""}
-                disabled
-              />
+              <label className={styles.label}>Rua</label>
+              <input className={styles.input} type="text" value={endRua} disabled />
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="complemento" className={styles.label}>
-                Complemento
-              </label>
-              <input
-                className={styles.input}
-                id="complemento"
-                name="complemento"
-                type="text"
-                value={cliente.complemento ?? cliente.endComplemento ?? ""}
-                disabled
-              />
+              <label className={styles.label}>Complemento</label>
+              <input className={styles.input} type="text" value={endComplemento} disabled />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>UF</label>
+              <input className={styles.input} type="text" value={endUF} disabled />
             </div>
           </form>
         </div>
