@@ -9,9 +9,11 @@ import styles from "../styles/page.module.css";
 export default function HomeArranjos() {
   const [produtos, setProdutos] = useState([]);
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [ordenacao, setOrdenacao] = useState(null); // Estado de ordenação
   const produtosPorPagina = 12;
   const totalPagsVisiveis = 5;
 
+  // Carregar produtos
   useEffect(() => {
     fetch("http://127.0.0.1:5000/listar_produtos")
       .then((res) => res.json())
@@ -56,27 +58,36 @@ export default function HomeArranjos() {
     (_, i) => startPage + i
   );
 
+  // Ordenação
+  let produtosOrdenados = [...produtosPagina];
+  if (ordenacao === "preco-asc") {
+    produtosOrdenados.sort((a, b) => parseFloat(a.preco) - parseFloat(b.preco));
+  } else if (ordenacao === "preco-desc") {
+    produtosOrdenados.sort((a, b) => parseFloat(b.preco) - parseFloat(a.preco));
+  }
+
   return (
     <div>
       <Banner
         imagem="/imgs/flores2.jpeg"
         titulo="Arranjos e Buquês"
-        texto="Encontre aqui buquês e arranjos frescos, cheios de cores e vida. 
-Perfeitos para presentear ou decorar com charme natural. "
+        texto="Encontre aqui buquês e arranjos frescos, cheios de cores e vida. Perfeitos para presentear ou decorar com charme natural."
       />
 
       <div className={styles.container}>
+        {/* Filtros */}
         <div className={styles.containerFiltros}>
           <span className={styles.totalProdutos}>
             {produtos.length} produtos
           </span>
           <div className={styles.filtros}>
-            <Relevancia />
+            <Relevancia onChange={(valor) => setOrdenacao(valor)} />
           </div>
         </div>
 
+        {/* Grid de produtos */}
         <div className={styles.produtoGrid}>
-          {produtosPagina.map((item) => (
+          {produtosOrdenados.map((item) => (
             <Produto
               key={item.id}
               id={item.id}

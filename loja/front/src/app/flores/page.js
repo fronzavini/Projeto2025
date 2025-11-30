@@ -9,9 +9,11 @@ import styles from "../styles/page.module.css";
 export default function Home() {
   const [produtos, setProdutos] = useState([]);
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [ordenacao, setOrdenacao] = useState(null); // Estado de ordenação
   const produtosPorPagina = 12;
   const totalPagsVisiveis = 5;
 
+  // Carregar produtos
   useEffect(() => {
     fetch("http://127.0.0.1:5000/listar_produtos")
       .then((res) => res.json())
@@ -30,13 +32,13 @@ export default function Home() {
       .catch((err) => console.error("Erro ao carregar produtos:", err));
   }, []);
 
+  // Paginação
   const indiceUltimoProduto = paginaAtual * produtosPorPagina;
   const indicePrimeiroProduto = indiceUltimoProduto - produtosPorPagina;
   const produtosPagina = produtos.slice(
     indicePrimeiroProduto,
     indiceUltimoProduto
   );
-
   const totalPaginas = Math.ceil(produtos.length / produtosPorPagina);
 
   const mudarPagina = (numero) => {
@@ -56,6 +58,14 @@ export default function Home() {
     (_, i) => startPage + i
   );
 
+  // Ordenação
+  let produtosOrdenados = [...produtosPagina];
+  if (ordenacao === "preco-asc") {
+    produtosOrdenados.sort((a, b) => parseFloat(a.preco) - parseFloat(b.preco));
+  } else if (ordenacao === "preco-desc") {
+    produtosOrdenados.sort((a, b) => parseFloat(b.preco) - parseFloat(a.preco));
+  }
+
   return (
     <div>
       <Banner
@@ -65,17 +75,19 @@ export default function Home() {
       />
 
       <div className={styles.container}>
+        {/* Filtros */}
         <div className={styles.containerFiltros}>
           <span className={styles.totalProdutos}>
             {produtos.length} produtos
           </span>
           <div className={styles.filtros}>
-            <Relevancia />
+            <Relevancia onChange={(valor) => setOrdenacao(valor)} />
           </div>
         </div>
 
+        {/* Grid de produtos */}
         <div className={styles.produtoGrid}>
-          {produtosPagina.map((item) => (
+          {produtosOrdenados.map((item) => (
             <Produto
               key={item.id}
               id={item.id}
@@ -86,11 +98,11 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Paginação */}
         <div className={styles.paginacao}>
-          {/* Texto acima */}
-          <span className={styles.infoPaginacao}>Você está na página</span>
-
-          {/* Botões de paginação */}
+          <span className={styles.infoPaginacao}>
+            Você está na página {paginaAtual}
+          </span>
           <div className={styles.botoesPaginacao}>
             <button
               onClick={() => mudarPagina(paginaAtual - 1)}
