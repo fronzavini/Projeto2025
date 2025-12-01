@@ -1,6 +1,8 @@
 CREATE DATABASE IF NOT EXISTS bd_belladonna;
 USE bd_belladonna;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 CREATE TABLE IF NOT EXISTS clientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     dataCadastro DATE,
@@ -102,7 +104,7 @@ CREATE TABLE IF NOT EXISTS vendas (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     cliente INT,
     funcionario INT,
-    pedido INT
+    pedido INT,
     produtos TEXT NOT NULL,
     valorTotal DECIMAL(10,2) NOT NULL,
     dataVenda DATE,
@@ -170,8 +172,8 @@ CREATE TABLE IF NOT EXISTS usuarios_sistema (
     usuario VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(100) NOT NULL,
     tema_preferido VARCHAR(50) DEFAULT 'claro',
-    --idioma VARCHAR(10) DEFAULT 'pt_BR',
-    --notificacoes_email BOOLEAN DEFAULT TRUE,
+    -- idioma VARCHAR(10) DEFAULT 'pt_BR',
+    -- notificacoes_email BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 );
 
@@ -190,3 +192,4 @@ CREATE TABLE IF NOT EXISTS usuarios_loja (
 #--    permissoes JSON NOT NULL,
 #--    status ENUM('Ativo', 'Inativo') NOT NULL DEFAULT 'Ativo'
 #--);
+SET FOREIGN_KEY_CHECKS = 1;
