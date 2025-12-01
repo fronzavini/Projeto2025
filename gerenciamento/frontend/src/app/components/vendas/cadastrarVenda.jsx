@@ -8,7 +8,7 @@ import DropdownSelect from "./dropdownSelect";
 import DropdownProduto from "./dropdownProduto";
 
 export default function CadastrarVenda({ onClose }) {
-  // Estados principais
+  // -------------------- ESTADOS PRINCIPAIS --------------------
   const [produtos, setProdutos] = useState([]);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
   const [clientesLista, setClientesLista] = useState([]);
@@ -32,10 +32,19 @@ export default function CadastrarVenda({ onClose }) {
   const [errorMsg, setErrorMsg] = useState(null);
   const [showCadastrarCliente, setShowCadastrarCliente] = useState(false);
 
-  // Subtotal dos produtos
-  const subtotal = produtos.reduce((acc, p) => acc + Number(p.preco || 0) * Number(p.quantidade || 0), 0);
+  // -------------------- PIX: ESTADOS --------------------
+  const [showPix, setShowPix] = useState(false);
+  const [pixPaymentId, setPixPaymentId] = useState(null);
+  const [pixQrBase64, setPixQrBase64] = useState("");
+  const [pixStatus, setPixStatus] = useState("");
 
-  // Carregar dados iniciais
+  // -------------------- DERIVADOS --------------------
+  const subtotal = produtos.reduce(
+    (acc, p) => acc + Number(p.preco || 0) * Number(p.quantidade || 0),
+    0
+  );
+
+  // -------------------- CARREGAR DADOS INICIAIS --------------------
   useEffect(() => {
     carregarProdutos();
     carregarClientes();
@@ -43,17 +52,14 @@ export default function CadastrarVenda({ onClose }) {
     carregarCupons();
   }, []);
 
-  // Recalcular desconto sempre que produtos ou cupom mudarem
+  // Recalcula desconto quando muda cupom/produtos
   useEffect(() => {
-    if (cupomSelecionado) {
-      aplicarCupom(cupomSelecionado);
-    } else {
-      setDesconto(0);
-    }
+    if (cupomSelecionado) aplicarCupom(cupomSelecionado);
+    else setDesconto(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [produtos, cupomSelecionado]);
 
-  // -------------------- CARREGAR DADOS --------------------
+  // -------------------- FETCHS --------------------
   const carregarProdutos = async () => {
     try {
       const res = await fetch("http://localhost:5000/listar_produtos");
@@ -77,15 +83,13 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_clientes");
       const data = await res.json();
-      const rows = data.detalhes || data;
-      const clientesFormatados = (rows || []).map((c) => ({
-        id: c[0],
-        nome: c[2] || c.nome || `Cliente ${c[0]}`,
+      const lista = (data?.detalhes || data || []).map((c) => ({
+        id: c.id || c[0],
+        nome: c.nome || c[1] || c.cliente || "Cliente",
       }));
-      setClientesLista(clientesFormatados);
+      setClientesLista(lista);
     } catch (err) {
       console.error(err);
-      setClientesLista([]);
     }
   };
 
@@ -93,14 +97,13 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_funcionarios");
       const data = await res.json();
-      const funcionariosFormatados = (data || []).map((f) => ({
-        id: f[0],
-        nome: f[1] || `Funcionário ${f[0]}`,
+      const lista = (data || []).map((f) => ({
+        id: f.id || f[0],
+        nome: f.nome || f[1] || "Funcionário",
       }));
-      setFuncionariosLista(funcionariosFormatados);
+      setFuncionariosLista(lista);
     } catch (err) {
       console.error(err);
-      setFuncionariosLista([]);
     }
   };
 
@@ -108,108 +111,64 @@ export default function CadastrarVenda({ onClose }) {
     try {
       const res = await fetch("http://localhost:5000/listar_cupons");
       const data = await res.json();
-      const cuponsFormatados = (data || []).map((c) => ({
-        // normaliza vários formatos possíveis do backend
-        id: c.id ?? c[0],
-        nome: c.codigo ?? c.nome ?? String(c.id ?? c[0]),
-        tipo: (c.tipo ?? c.type ?? "").toString(),
-        descontofixo: Number(c.desconto_fixo ?? c.descontofixo ?? c.desconto ?? 0),
-        descontoPorcentagem: Number(c.desconto_percentual ?? c.descontoPorcentagem ?? c.descontoPercent ?? 0),
-        descontofrete: Number(c.desconto_frete ?? c.descontofrete ?? 0),
-        validade: c.validade ?? c.data_validade ?? c.dataValidade ?? null,
-        usos_permitidos: c.usos_permitidos ?? c.usosPermitidos ?? null,
-        valor_minimo: Number(c.valor_minimo ?? c.valorMinimo ?? 0),
-        aplicacao: (c.aplicacao ?? c.aplicacao_tipo ?? c.aplicacaoTipo ?? "todos").toString(),
-        tipo_produto: (c.tipo_produto ?? c.tipoProduto ?? c.produto ?? "").toString(),
+      const lista = (data || []).map((c) => ({
+        id: c.id || c[0],
+        nome: c.codigo || c[1],
+        tipo: c.tipo || c[2],
+        descontofixo: c.descontofixo || c[3],
+        descontoPorcentagem: c.descontoPorcentagem || c[4],
+        descontofrete: c.descontofrete || c[5],
+        validade: c.validade || c[6],
+        usos_permitidos: c.usos_permitidos || c[7],
+        valor_minimo: c.valor_minimo || c[8],
+        aplicacao: c.aplicacao || c[9],
+        tipo_produto: c.tipo_produto || c[10],
       }));
-      setCuponsLista(cuponsFormatados);
+      setCuponsLista(lista);
     } catch (err) {
       console.error(err);
-      setCuponsLista([]);
     }
   };
 
-  // -------------------- PRODUTOS --------------------
-  const handleRemover = (index) => {
-    setProdutos(produtos.filter((_, i) => i !== index));
-  };
-
+  // -------------------- PRODUTOS: QUANTIDADE / REMOÇÃO --------------------
   const handleQuantidade = (index, delta) => {
     const novos = [...produtos];
-    novos[index].quantidade = Math.max(1, Number(novos[index].quantidade || 0) + delta);
+    const atual = { ...novos[index] };
+    const novaQt = Math.max(1, Number(atual.quantidade || 1) + delta);
+    atual.quantidade = novaQt;
+    novos[index] = atual;
+    setProdutos(novos);
+  };
+
+  const handleRemoverProduto = (index) => {
+    const novos = [...produtos];
+    novos.splice(index, 1);
     setProdutos(novos);
   };
 
   // -------------------- CUPOM --------------------
-  // retorna { valido: boolean, motivo?: string, desconto?: number }
-  const validarCupom = (cupom, produtosList, subtotalValue) => {
-    if (!cupom) return { valido: false, motivo: "Cupom inválido." };
+  const validarCupom = (cupom, itens, valorSubtotal) => {
+    if (!cupom) return { valido: false, motivo: "Cupom inválido" };
 
-    const tipoCupom = String(cupom.tipo || "").toLowerCase().trim();
-    const aplicacao = String(cupom.aplicacao || "").toLowerCase().trim();
-    const tipoProdutoCupom = String(cupom.tipo_produto || cupom.tipoProduto || "").toLowerCase().trim();
-
-    // Validade - tenta normalizar datas similares a "YYYY-MM-DD"
-    if (cupom.validade) {
-      try {
-        const hoje = new Date().toISOString().split("T")[0];
-        const validadeStr = String(cupom.validade).split("T")[0];
-        if (validadeStr < hoje) return { valido: false, motivo: "Cupom expirado." };
-      } catch (e) {
-        // se formato estranho, não bloqueia por validade
-      }
+    if (cupom.valor_minimo && Number(valorSubtotal) < Number(cupom.valor_minimo)) {
+      return { valido: false, motivo: "Valor mínimo não atingido para este cupom." };
     }
-
-    // Valor mínimo
-    if (Number(cupom.valor_minimo || cupom.valorMinimo || 0) && subtotalValue < Number(cupom.valor_minimo || cupom.valorMinimo || 0))
-      return { valido: false, motivo: `Valor mínimo R$${Number(cupom.valor_minimo || cupom.valorMinimo || 0).toFixed(2)}` };
-
-    // Filtrar produtos compatíveis
-    const produtosValidos = produtosList.filter((p) => {
-      const nomeProduto = String(p.nome || "").toLowerCase().trim();
-      const categoriaProduto = String(p.categoria || p.categoria_produto || "").toLowerCase().trim();
-
-      if (aplicacao === "todos" || aplicacao === "") return true;
-      if (aplicacao === "tipo_produto" || aplicacao === "categoria") return categoriaProduto === tipoProdutoCupom;
-      if (aplicacao === "produto") return nomeProduto === tipoProdutoCupom;
-      // fallback: verifica se bate por nome ou categoria
-      return categoriaProduto === tipoProdutoCupom || nomeProduto === tipoProdutoCupom;
-    });
-
-    if (produtosValidos.length === 0)
-      return { valido: false, motivo: "Cupom não se aplica aos produtos selecionados." };
-
-    // Calcular total dos produtos válidos
-    const totalValidos = produtosValidos.reduce((acc, p) => acc + Number(p.preco || 0) * Number(p.quantidade || 0), 0);
-
-    // tenta ler desconto nas propriedades possíveis
-    const descontoFixo = Number(cupom.descontofixo ?? cupom.desconto_fixo ?? cupom.desconto ?? 0);
-    const descontoPerc = Number(cupom.descontoPorcentagem ?? cupom.desconto_percentual ?? cupom.descontoPercent ?? 0);
 
     let descontoCalc = 0;
-    if (tipoCupom.includes("fix") || tipoCupom.includes("valor") || descontoFixo > 0) {
-      descontoCalc = Math.min(descontoFixo, totalValidos);
-    } else if (tipoCupom.includes("percent") || tipoCupom.includes("%") || descontoPerc > 0) {
-      descontoCalc = (totalValidos * descontoPerc) / 100;
-    } else {
-      // se backend não informou tipo, tenta inferir pelos campos
-      if (descontoFixo > 0) descontoCalc = Math.min(descontoFixo, totalValidos);
-      else if (descontoPerc > 0) descontoCalc = (totalValidos * descontoPerc) / 100;
-      else descontoCalc = 0;
+
+    if (String(cupom.tipo).toLowerCase() === "percentual") {
+      const pct = Number(cupom.descontoPorcentagem || 0);
+      descontoCalc = (valorSubtotal * pct) / 100.0;
+    } else if (["valor_fixo", "fixo"].includes(String(cupom.tipo).toLowerCase())) {
+      descontoCalc = Number(cupom.descontofixo || 0);
+    } else if (String(cupom.tipo).toLowerCase() === "frete") {
+      descontoCalc = 0;
     }
 
-    if (!isFinite(descontoCalc) || isNaN(descontoCalc)) descontoCalc = 0;
-
-    // não pode exceder total válido
-    descontoCalc = Math.max(0, Math.min(descontoCalc, totalValidos));
-
-    // arredonda para 2 casas
     descontoCalc = Number(descontoCalc.toFixed(2));
-
     return { valido: true, desconto: descontoCalc };
   };
 
-  // aplicarCupom aceita id ou objeto
   const aplicarCupom = (idOrObj) => {
     let cupom = null;
     if (!idOrObj) {
@@ -218,18 +177,17 @@ export default function CadastrarVenda({ onClose }) {
       setDesconto(0);
       return;
     }
-    // se receberam objeto direto
     if (typeof idOrObj === "object") cupom = idOrObj;
     else cupom = cuponsLista.find((c) => String(c.id) === String(idOrObj));
 
     if (!cupom) {
-      // pode ser que onSelect passou um código (nome), tenta buscar por nome/codigo
-      const maybe = cuponsLista.find((c) => String(c.nome).toLowerCase() === String(idOrObj).toLowerCase());
+      const maybe = cuponsLista.find(
+        (c) => String(c.nome).toLowerCase() === String(idOrObj).toLowerCase()
+      );
       if (maybe) cupom = maybe;
     }
 
     if (!cupom) {
-      // não encontrado -> limpa
       setCupomSelecionado(null);
       setCupomBusca("");
       setDesconto(0);
@@ -238,7 +196,6 @@ export default function CadastrarVenda({ onClose }) {
 
     const resultado = validarCupom(cupom, produtos, subtotal);
     if (!resultado.valido) {
-      // mostra aviso e limpa seleção
       alert(resultado.motivo);
       setCupomSelecionado(null);
       setCupomBusca("");
@@ -246,18 +203,51 @@ export default function CadastrarVenda({ onClose }) {
       return;
     }
 
-    // se válido, atualiza estado
     setCupomSelecionado(cupom.id);
     setCupomBusca(cupom.nome);
     setDesconto(resultado.desconto);
   };
+
+  // -------------------- PIX: CRIAR PAGAMENTO --------------------
+  async function criarPagamentoPix({ total, pedidoId, email }) {
+    const resp = await fetch("http://localhost:5000/create_pix_payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: Number(total),
+        order_id: String(pedidoId),
+        email: email || "cliente@teste.com",
+      }),
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(
+        data?.erro ? JSON.stringify(data.erro) : "Erro ao criar pagamento PIX"
+      );
+    }
+
+    if (data.ticket_url) {
+      window.open(data.ticket_url, "_blank");
+    }
+
+    if (data.qr_code_base64) {
+      setPixQrBase64(data.qr_code_base64);
+      setPixPaymentId(data.payment_id);
+      setPixStatus(data.status || "pending");
+      setShowPix(true);
+    }
+
+    return data;
+  }
 
   // -------------------- SALVAR VENDA --------------------
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
     if (produtos.length === 0) return alert("Adicione pelo menos um produto");
-    if (tipoEntrega === "entrega" && !dataEntrega) return alert("Informe a data de entrega");
+    if (tipoEntrega === "entrega" && !dataEntrega)
+      return alert("Informe a data de entrega");
 
     setLoading(true);
     setErrorMsg(null);
@@ -286,9 +276,26 @@ export default function CadastrarVenda({ onClose }) {
 
       if (!res.ok) throw new Error("Erro ao criar venda");
 
-      // Baixar estoque
+      const retorno = await res.json().catch(() => ({}));
+      const pedidoId =
+        retorno.id ||
+        retorno.pedidoId ||
+        retorno.vendaId ||
+        retorno.resultado?.id ||
+        String(Date.now());
+
+      if (String(formaPagamento).toLowerCase() === "pix") {
+        await criarPagamentoPix({
+          total: Number((subtotal - desconto).toFixed(2)),
+          pedidoId,
+          email: "cliente@teste.com",
+        });
+      }
+
       for (const item of produtos) {
-        const prod = produtosDisponiveis.find((p) => String(p.id) === String(item.id));
+        const prod = produtosDisponiveis.find(
+          (p) => String(p.id) === String(item.id)
+        );
         if (prod) {
           const newQty = Math.max(0, prod.quantidadeEstoque - item.quantidade);
           await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
@@ -315,7 +322,9 @@ export default function CadastrarVenda({ onClose }) {
       <div className={styles.container}>
         <div className={styles.header}>
           <h2 className={styles.title}>Nova venda</h2>
-          <button className={styles.cancelar} onClick={onClose}>Cancelar</button>
+          <button className={styles.cancelar} onClick={onClose}>
+            Cancelar
+          </button>
         </div>
 
         {/* CLIENTE */}
@@ -327,7 +336,10 @@ export default function CadastrarVenda({ onClose }) {
           selectedId={clienteSelecionado}
           onChange={setClienteBusca}
           onSelect={setClienteSelecionado}
-          onClear={() => { setClienteSelecionado(null); setClienteBusca(""); }}
+          onClear={() => {
+            setClienteSelecionado(null);
+            setClienteBusca("");
+          }}
           allowNew
           onNewClick={() => setShowCadastrarCliente(true)}
         />
@@ -341,7 +353,10 @@ export default function CadastrarVenda({ onClose }) {
           selectedId={funcionarioSelecionado}
           onChange={setFuncionarioBusca}
           onSelect={setFuncionarioSelecionado}
-          onClear={() => { setFuncionarioSelecionado(null); setFuncionarioBusca(""); }}
+          onClear={() => {
+            setFuncionarioSelecionado(null);
+            setFuncionarioBusca("");
+          }}
         />
 
         {/* PRODUTOS */}
@@ -349,9 +364,14 @@ export default function CadastrarVenda({ onClose }) {
         <DropdownProduto
           lista={produtosDisponiveis}
           onAdicionar={(produto) => {
-            const jaAdicionado = produtos.find((p) => String(p.id) === String(produto.id));
+            const jaAdicionado = produtos.find(
+              (p) => String(p.id) === String(produto.id)
+            );
             if (jaAdicionado) return alert("Produto já adicionado!");
-            setProdutos([...produtos, produto]);
+            setProdutos([
+              ...produtos,
+              { ...produto, quantidade: produto.quantidade || 1 },
+            ]);
           }}
         />
 
@@ -373,94 +393,141 @@ export default function CadastrarVenda({ onClose }) {
                 <button onClick={() => handleQuantidade(index, 1)}>+</button>
               </div>
               <span>R${Number(produto.preco || 0).toFixed(2)}</span>
-              <span>R${(Number(produto.preco || 0) * Number(produto.quantidade || 0)).toFixed(2)}</span>
-              <button className={styles.trashButton} onClick={() => handleRemover(index)}>
+              <span>
+                R$
+                {(
+                  Number(produto.preco || 0) * Number(produto.quantidade || 0)
+                ).toFixed(2)}
+              </span>
+              <button
+                className={styles.trashButton}
+                onClick={() => handleRemoverProduto(index)}
+              >
                 <FontAwesomeIcon icon={faTrash} />
               </button>
             </div>
           ))}
 
           <div className={styles.totalRow}>
-            <span className={styles.totalLabel}>Subtotal</span>
-            <span className={styles.totalValue}>R${subtotal.toFixed(2)}</span>
+            <span>Total itens</span>
+            <span className={styles.valorDireita}>
+              R${subtotal.toFixed(2)}
+            </span>
           </div>
         </div>
 
-        {/* CUPOM */}
-        <label className={styles.titulo}>Adicionar Cupom</label>
-        <DropdownSelect
-          label="Cupom"
-          placeholder="Buscar cupom..."
-          lista={cuponsLista}
-          value={cupomBusca}
-          selectedId={cupomSelecionado}
-          onChange={setCupomBusca}
-          onSelect={aplicarCupom}
-          onClear={() => { setCupomSelecionado(null); setCupomBusca(""); setDesconto(0); }}
-        />
-
-        {/* RESUMO */}
+        {/* CUPOM E RESUMO */}
         <div className={styles.resumo}>
-          <div className={styles.resumoItem}>
-            <span>Subtotal</span>
-            <span className={styles.valorDireita}>R${subtotal.toFixed(2)}</span>
-          </div>
+          <DropdownSelect
+            label="Cupom"
+            placeholder="Código do cupom..."
+            lista={cuponsLista}
+            value={cupomBusca}
+            selectedId={cupomSelecionado}
+            onChange={setCupomBusca}
+            onSelect={aplicarCupom}
+            onClear={() => aplicarCupom(null)}
+          />
+
           <div className={styles.resumoItem}>
             <span>Desconto</span>
-            <span className={styles.valorDireita}>R${desconto.toFixed(2)}</span>
+            <span className={styles.valorDireita}>- R${desconto.toFixed(2)}</span>
           </div>
+
           <div className={styles.resumoItem}>
-            <span>Total</span>
-            <span className={styles.valorDireita}>R${(subtotal - desconto).toFixed(2)}</span>
+            <span>Total a pagar</span>
+            <span className={styles.totalValue}>
+              R${(subtotal - desconto).toFixed(2)}
+            </span>
           </div>
         </div>
 
         {/* ENTREGA */}
         <div className={styles.entregaBox}>
-          <div className={styles.radioGroup}>
-            <label>
-              <input type="radio" value="entrega" checked={tipoEntrega === "entrega"} onChange={() => setTipoEntrega("entrega")} />
-              Entrega
-            </label>
-            <label>
-              <input type="radio" value="retirada" checked={tipoEntrega === "retirada"} onChange={() => setTipoEntrega("retirada")} />
-              Retirada
-            </label>
-          </div>
+          <label>Entrega</label>
+          <select
+            className={styles.select}
+            value={tipoEntrega}
+            onChange={(e) => setTipoEntrega(e.target.value)}
+          >
+            <option value="entrega">Entrega</option>
+            <option value="retirada">Retirada</option>
+          </select>
 
           {tipoEntrega === "entrega" && (
-            <div className={styles.entregaCampos}>
-              <label className={styles.labelCinza}>Data da entrega</label>
-              <input type="date" className={styles.inputEntrega} value={dataEntrega} onChange={(e) => setDataEntrega(e.target.value)} />
-            </div>
+            <input
+              className={styles.inputEntrega}
+              type="date"
+              value={dataEntrega}
+              onChange={(e) => setDataEntrega(e.target.value)}
+            />
           )}
         </div>
 
         {/* FORMA DE PAGAMENTO */}
-        <label className={styles.titulo}>Forma de Pagamento</label>
-        <select className={styles.select} value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)}>
-          <option>Pix</option>
-          <option>Espécie</option>
-        </select>
+        <div className={styles.entregaBox}>
+          <label>Forma de pagamento</label>
+          <select
+            className={styles.select}
+            value={formaPagamento}
+            onChange={(e) => setFormaPagamento(e.target.value)}
+          >
+            <option value="Pix">Pix</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Dinheiro">Dinheiro</option>
+          </select>
+        </div>
 
-        {errorMsg && <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>}
-
-        <button className={styles.confirmarVenda} onClick={handleConfirmarVenda} disabled={loading}>
-          {loading ? "Criando..." : "Confirmar Venda"}
+        {/* BOTÃO CONFIRMAR */}
+        <button
+          className={styles.confirmarVenda}
+          onClick={handleConfirmarVenda}
+          disabled={loading}
+        >
+          {loading ? "Salvando..." : "Confirmar venda"}
         </button>
 
-        {/* MODAL NOVO CLIENTE */}
-        {showCadastrarCliente && (
-          <div className={styles.modalWrapper}>
-            <CadastrarCliente
-              onClose={() => {
-                setShowCadastrarCliente(false);
-                carregarClientes();
-              }}
-            />
-          </div>
+        {/* ERRO */}
+        {errorMsg && (
+          <div style={{ color: "red", marginTop: 8 }}>{errorMsg}</div>
         )}
       </div>
+
+      {/* MODAL PIX (fallback quando não há ticket_url) */}
+      {showPix && (
+        <div className={styles.modalWrapper}>
+          <div className={styles.modal}>
+            <h3>Pagamento Pix</h3>
+            {pixQrBase64 ? (
+              <img
+                alt="Pague com Pix"
+                src={`data:image/png;base64,${pixQrBase64}`}
+                style={{
+                  width: 300,
+                  height: 300,
+                  objectFit: "contain",
+                  borderRadius: 12,
+                }}
+              />
+            ) : (
+              <p>Gerando QR...</p>
+            )}
+            <p>
+              Status: <b>{pixStatus || "pending"}</b>
+            </p>
+            <button onClick={() => setShowPix(false)}>Fechar</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CADASTRAR CLIENTE */}
+      {showCadastrarCliente && (
+        <div className={styles.modalWrapper}>
+          <div className={styles.modal}>
+            <CadastrarCliente onClose={() => setShowCadastrarCliente(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
