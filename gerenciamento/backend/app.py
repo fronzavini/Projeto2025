@@ -159,29 +159,29 @@ def criar_funcionario():
     dados = request.json or {}
 
     funcionario_data = {
-        "nome": dados.get("nome"),
-        "cpf": dados.get("cpf"),
-        "rg": dados.get("rg"),
-        "data_nascimento": dados.get("data_nascimento"),  # nome correto
-        "sexo": dados.get("sexo"),
-        "email": dados.get("email"),
-        "estado": True,
-        "telefone": dados.get("telefone"),
+    "nome": dados.get("nome"),
+    "cpf": dados.get("cpf"),
+    "rg": dados.get("rg"),
+    "dataNasc": dados.get("data_nascimento"),  # ✅ mapeado para o nome que a classe espera
+    "sexo": dados.get("sexo"),
+    "email": dados.get("email"),
+    "estado": True,
+    "telefone": dados.get("telefone"),
 
-        # Endereço (nomes corrigidos)
-        "endCep": dados.get("endCep"),
-        "endRua": dados.get("endRua"),
-        "endNumero": dados.get("endNumero"),
-        "endBairro": dados.get("endBairro"),
-        "endComplemento": dados.get("endComplemento"),
-        "endUF": dados.get("endUF"),
-        "endMunicipio": dados.get("endMunicipio"),
+    # Endereço
+    "endCep": dados.get("endCep"),
+    "endRua": dados.get("endRua"),
+    "endNumero": dados.get("endNumero"),
+    "endBairro": dados.get("endBairro"),
+    "endComplemento": dados.get("endComplemento"),
+    "endUF": dados.get("endUF"),
+    "endMunicipio": dados.get("endMunicipio"),
 
-        # Outros campos
-        "funcao": dados.get("funcao"),
-        "salario": dados.get("salario"),
-        "dataContratacao": dados.get("dataContratacao"),
-    }
+    "funcao": dados.get("funcao"),
+    "salario": dados.get("salario"),
+    "dataContratacao": dados.get("dataContratacao"),
+}
+
 
     resultado = Funcionario.criarFuncionario(**funcionario_data)
     return jsonify({"message": resultado})

@@ -8,7 +8,7 @@ export default function EditarFuncionario({ onClose, funcionario }) {
     if (!dateString) return "";
     const d = new Date(dateString);
     const month = `${d.getMonth() + 1}`.padStart(2, "0");
-    const day = `${d.getDate()}`.padStart(2, "0");
+    const day = `${d.getDate() + 1}`.padStart(2, "0");
     const year = d.getFullYear();
     return `${year}-${month}-${day}`;
   };

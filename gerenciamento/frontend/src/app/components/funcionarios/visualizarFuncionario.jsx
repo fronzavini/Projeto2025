@@ -1,23 +1,93 @@
+"use client";
 import styles from "../../styles/cadastrarCliente.module.css";
 
-export default function VisualizarFuncionario({ onClose, funcionario }) {
-  function formatDate(dateStr) {
-    if (!dateStr) return "";
-    // Se já estiver no formato yyyy-mm-dd, retorna direto
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-    // Caso venha yyyy-mm-ddTHH:mm:ss, pega só a data
-    if (dateStr.length >= 10) return dateStr.substring(0, 10);
-    return dateStr;
+function normalizeDateToInput(value) {
+  if (!value) return "";
+  // Date object
+  if (value instanceof Date && !isNaN(value)) {
+    return value.toISOString().slice(0, 10);
   }
+  const s = String(value).trim();
+
+  // ISO com hora -> pega só AAAA-MM-DD
+  const ymd = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (ymd) return `${ymd[1]}-${ymd[2]}-${ymd[3]}`;
+
+  // DD/MM/AAAA -> converte
+  const dmy = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (dmy) return `${dmy[3]}-${dmy[2]}-${dmy[1]}`;
+
+  // Tenta parsear genericamente
+  const d = new Date(s);
+  if (!isNaN(d)) return d.toISOString().slice(0, 10);
+
+  return "";
+}
+
+// Lê a primeira chave disponível
+function pick(obj, keys, fallback = "") {
+  for (const k of keys) {
+    if (obj && obj[k] != null && obj[k] !== "") return obj[k];
+  }
+  return fallback;
+}
+
+// Mapeia qualquer formato que venha do backend para o que a UI precisa
+function mapFuncionario(raw) {
+  if (!raw) return {};
+
+  const mapped = {
+    id: pick(raw, ["id"]),
+    nome: pick(raw, ["nome"]),
+    cpf: pick(raw, ["cpf"]),
+    rg: pick(raw, ["rg"]),
+    sexo: pick(raw, ["sexo"]),
+    funcao: pick(raw, ["funcao"]),
+
+    // datas com normalização
+    data_nascimento: normalizeDateToInput(
+      pick(raw, ["data_nascimento", "dataNasc", "dataNascimento"])
+    ),
+    data_contratacao: normalizeDateToInput(
+      pick(raw, ["data_contratacao", "dataContratacao"])
+    ),
+
+    email: pick(raw, ["email"]),
+    telefone: pick(raw, ["telefone"]),
+
+    // endereço: converte end* -> campos exibidos no form
+    cep: pick(raw, ["cep", "endCep"]),
+    numero: pick(raw, ["numero", "endNumero"]),
+    cidade: pick(raw, ["cidade", "endMunicipio"]),
+    bairro: pick(raw, ["bairro", "endBairro"]),
+    logradouro: pick(raw, ["logradouro", "endRua"]),
+    complemento: pick(raw, ["complemento", "endComplemento"]),
+    uf: pick(raw, ["uf", "endUF"]),
+
+    // status
+    estado: (() => {
+      const v = pick(raw, ["estado"], null);
+      return typeof v === "string"
+        ? v === "1" || v.toLowerCase() === "true"
+        : !!v;
+    })(),
+
+    // salário (mantém número/str; não formata para não quebrar input type=number)
+    salario: pick(raw, ["salario"], ""),
+  };
+
+  return mapped;
+}
+
+export default function VisualizarFuncionario({ onClose, funcionario }) {
+  const f = mapFuncionario(funcionario);
 
   return (
     <div className={styles.overlay}>
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h2 className={styles.headerTitle}>
-              Funcionário: {funcionario.id}
-            </h2>
+            <h2 className={styles.headerTitle}>Funcionário: {f.id}</h2>
             <button
               className={styles.botaoCancelar}
               type="button"
@@ -37,7 +107,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="nome"
                 name="nome"
                 type="text"
-                value={funcionario.nome || ""}
+                value={f.nome || ""}
                 disabled
               />
             </div>
@@ -52,7 +122,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cpf"
                   name="cpf"
                   type="text"
-                  value={funcionario.cpf || ""}
+                  value={f.cpf || ""}
                   disabled
                 />
               </div>
@@ -65,7 +135,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="rg"
                   name="rg"
                   type="text"
-                  value={funcionario.rg || ""}
+                  value={f.rg || ""}
                   disabled
                 />
               </div>
@@ -80,7 +150,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="data_nascimento"
                 name="data_nascimento"
                 type="date"
-                value={formatDate(funcionario.data_nascimento)}
+                value={f.data_nascimento || ""}
                 disabled
               />
             </div>
@@ -94,7 +164,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="sexo"
                 name="sexo"
                 type="text"
-                value={funcionario.sexo || ""}
+                value={f.sexo || ""}
                 disabled
               />
             </div>
@@ -108,7 +178,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="funcao"
                 name="funcao"
                 type="text"
-                value={funcionario.funcao || ""}
+                value={f.funcao || ""}
                 disabled
               />
             </div>
@@ -122,7 +192,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="salario"
                 name="salario"
                 type="number"
-                value={funcionario.salario || ""}
+                value={f.salario || ""}
                 disabled
               />
             </div>
@@ -136,7 +206,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="data_contratacao"
                 name="data_contratacao"
                 type="date"
-                value={formatDate(funcionario.data_contratacao)}
+                value={f.data_contratacao || ""}
                 disabled
               />
             </div>
@@ -150,7 +220,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="email"
                 name="email"
                 type="email"
-                value={funcionario.email || ""}
+                value={f.email || ""}
                 disabled
               />
             </div>
@@ -164,7 +234,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="telefone"
                 name="telefone"
                 type="text"
-                value={funcionario.telefone || ""}
+                value={f.telefone || ""}
                 disabled
               />
             </div>
@@ -179,7 +249,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cep"
                   name="cep"
                   type="text"
-                  value={funcionario.cep || ""}
+                  value={f.cep || ""}
                   disabled
                 />
               </div>
@@ -192,7 +262,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="numero"
                   name="numero"
                   type="text"
-                  value={funcionario.numero || ""}
+                  value={f.numero || ""}
                   disabled
                 />
               </div>
@@ -208,7 +278,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="cidade"
                   name="cidade"
                   type="text"
-                  value={funcionario.cidade || ""}
+                  value={f.cidade || ""}
                   disabled
                 />
               </div>
@@ -221,7 +291,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                   id="bairro"
                   name="bairro"
                   type="text"
-                  value={funcionario.bairro || ""}
+                  value={f.bairro || ""}
                   disabled
                 />
               </div>
@@ -236,7 +306,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="logradouro"
                 name="logradouro"
                 type="text"
-                value={funcionario.logradouro || ""}
+                value={f.logradouro || ""}
                 disabled
               />
             </div>
@@ -250,7 +320,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="complemento"
                 name="complemento"
                 type="text"
-                value={funcionario.complemento || ""}
+                value={f.complemento || ""}
                 disabled
               />
             </div>
@@ -264,7 +334,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="uf"
                 name="uf"
                 type="text"
-                value={funcionario.uf || ""}
+                value={f.uf || ""}
                 disabled
               />
             </div>
@@ -278,7 +348,7 @@ export default function VisualizarFuncionario({ onClose, funcionario }) {
                 id="estado"
                 name="estado"
                 type="text"
-                value={funcionario.estado ? "Ativo" : "Inativo"}
+                value={f.estado ? "Ativo" : "Inativo"}
                 disabled
               />
             </div>
