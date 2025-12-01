@@ -4,11 +4,10 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "../styles/carrinho.module.css";
 
-// Usa .env NEXT_PUBLIC_BACKEND_URL se existir
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
 
-function ResumoCompra() {
+export default function ResumoCompra() {
   const [dadosCheckout, setDadosCheckout] = useState({
     valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
     itensPedido: [],
@@ -25,9 +24,16 @@ function ResumoCompra() {
       .toFixed(2)
       .replace(".", ",");
 
+  const parseFreteToNumber = (frete) => {
+    if (typeof frete === "string" && frete.toLowerCase().includes("gr"))
+      return 0;
+    const n = Number(frete);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const numItens = dadosCheckout.itensPedido.length;
 
-  // Carrega carrinho do usuário no backend
+  // Carrega o carrinho
   useEffect(() => {
     (async () => {
       try {
@@ -52,6 +58,8 @@ function ResumoCompra() {
 
         const carrinho = await res.json();
         const subtotal = Number(carrinho?.valorTotal || 0);
+        const frete = "Grátis";
+        const freteNum = parseFreteToNumber(frete);
 
         const itensPedido = (carrinho?.produtos || []).map((p) => ({
           id: p.produto_id,
@@ -61,7 +69,11 @@ function ResumoCompra() {
         }));
 
         setDadosCheckout({
-          valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
+          valoresTotais: {
+            subtotal,
+            total: Math.max(0.01, subtotal + freteNum),
+            frete,
+          },
           itensPedido,
         });
         setDesconto(0);
@@ -73,12 +85,48 @@ function ResumoCompra() {
     })();
   }, []);
 
+  function decidirTipoCupom(data, codigoUpper) {
+    const t = (
+      data?.tipo ||
+      data?.tipo_cupom ||
+      data?.desconto_tipo ||
+      data?.kind ||
+      ""
+    )
+      .toString()
+      .toLowerCase();
+
+    if (t === "fixo" || t === "percentual") return t;
+
+    const pct = Number(
+      data?.percentual || data?.desconto_percentual || data?.porcentagem || 0
+    );
+    const val = Number(
+      data?.valor_desconto ??
+        data?.desconto ??
+        data?.valor ??
+        data?.desconto_fixo ??
+        0
+    );
+
+    if (pct > 0) return "percentual";
+    if (val > 0) return "fixo";
+
+    // fallback por código conhecido
+    if (codigoUpper === "BLACK") return "fixo";
+
+    return ""; // desconhecido
+  }
+
   const handleAplicarCupom = async () => {
     setErroCupom(null);
     setOkCupom(null);
 
     const subtotalAtual = Number(dadosCheckout.valoresTotais.subtotal || 0);
-    if (!cupom) {
+    const freteNum = parseFreteToNumber(dadosCheckout.valoresTotais.frete);
+    const codigoUpper = cupom.trim().toUpperCase();
+
+    if (!codigoUpper) {
       setErroCupom("Informe um cupom.");
       return;
     }
@@ -94,34 +142,87 @@ function ResumoCompra() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           valor_total: subtotalAtual,
-          codigo_cupom: cupom.trim(),
+          codigo_cupom: codigoUpper,
         }),
       });
 
-      // backend responde JSON sempre
       const data = await resp.json().catch(() => null);
 
       if (!resp.ok || !data || data.resultado !== "ok") {
         const msg =
-          data?.detalhes ||
-          data?.erro ||
-          "Não foi possível aplicar o cupom. Tente novamente.";
+          data?.detalhes || data?.erro || "Cupom inválido ou expirado.";
         setErroCupom(msg);
         return;
       }
 
-      const novoDesconto = Number(data.desconto || 0);
-      const novoTotal = Number(data.valor_final || subtotalAtual);
+      // --- Diferenciação fixo x percentual ---
+      const tipo = decidirTipoCupom(data, codigoUpper);
 
-      setDesconto(novoDesconto);
+      const pct = Number(
+        data?.percentual || data?.desconto_percentual || data?.porcentagem || 0
+      );
+      const val = Number(
+        data?.valor_desconto ??
+          data?.desconto ??
+          data?.valor ??
+          data?.desconto_fixo ??
+          0
+      );
+
+      let descAbs = 0;
+
+      if (tipo === "percentual") {
+        const fator = pct > 0 ? pct / 100 : 0;
+        if (!fator) {
+          setErroCupom(
+            "Cupom percentual sem percentual informado pelo backend."
+          );
+          return;
+        }
+        descAbs = subtotalAtual * fator;
+      } else if (tipo === "fixo") {
+        if (!val) {
+          // Ex: BLACK fixo sem valor retornado
+          setErroCupom("Cupom fixo sem valor informado pelo backend.");
+          return;
+        }
+        descAbs = val;
+      } else {
+        // Tipo desconhecido → tenta heurística (prioriza percent, depois fixo)
+        if (pct > 0) {
+          descAbs = subtotalAtual * (pct / 100);
+        } else if (val > 0) {
+          descAbs = val;
+        } else {
+          setErroCupom("Não foi possível calcular o desconto deste cupom.");
+          return;
+        }
+      }
+
+      // Candidato do backend
+      const backendTotal = Number(data?.valor_final);
+
+      // Usa backendTotal só se for < subtotal (ou seja, aplicou desconto)
+      let totalCalc =
+        Number.isFinite(backendTotal) && backendTotal < subtotalAtual
+          ? backendTotal
+          : subtotalAtual - descAbs;
+
+      // soma frete e aplica mínimo (nunca 0 ou negativo)
+      totalCalc = Math.max(0.01, totalCalc + freteNum);
+
+      // limita o desconto para não passar o subtotal
+      const descontoAplicado = Math.min(descAbs, subtotalAtual);
+
+      setDesconto(descontoAplicado);
       setDadosCheckout((prev) => ({
         ...prev,
         valoresTotais: {
           ...prev.valoresTotais,
-          total: novoTotal,
+          total: totalCalc,
         },
       }));
-      setOkCupom(`Cupom aplicado: ${cupom.toUpperCase()}`);
+      setOkCupom(`Cupom aplicado: ${codigoUpper}`);
       setCupom("");
     } catch (e) {
       console.error(e);
@@ -135,6 +236,7 @@ function ResumoCompra() {
     <div className={styles.resumoCompraContainer}>
       <h2 className={styles.tituloSecao}>Resumo da compra</h2>
 
+      {/* Subtotal */}
       <div className={styles.linhaResumo}>
         <span>
           Subtotal ({numItens} item{numItens > 1 ? "s" : ""})
@@ -144,6 +246,7 @@ function ResumoCompra() {
         </span>
       </div>
 
+      {/* Frete */}
       <div className={styles.linhaFrete}>
         <div className={styles.freteDetalhes}>
           <span>Frete</span>
@@ -171,13 +274,11 @@ function ResumoCompra() {
             onClick={handleAplicarCupom}
             className={styles.botaoAplicar}
             disabled={aplicando}
-            title={aplicando ? "Aplicando..." : "Aplicar cupom"}
           >
             {aplicando ? "Aplicando..." : "Aplicar"}
           </button>
         </div>
 
-        {/* feedback do cupom */}
         {erroCupom && (
           <p className={styles.mensagemErro} style={{ marginTop: 8 }}>
             {erroCupom}
@@ -190,18 +291,17 @@ function ResumoCompra() {
         )}
       </div>
 
-      {/* mostra a linha de desconto quando houver */}
-      {desconto > 0 && (
-        <div className={styles.linhaResumo}>
-          <span>Desconto</span>
-          <span className={styles.valorSubtotal}>
-            - R$ {formatCurrency(desconto)}
-          </span>
-        </div>
-      )}
+      {/* Desconto */}
+      <div className={styles.linhaResumo}>
+        <span>Desconto</span>
+        <span className={styles.valorSubtotal}>
+          - R$ {formatCurrency(desconto)}
+        </span>
+      </div>
 
       <div className={styles.divisorTotal}></div>
 
+      {/* Total final */}
       <div className={`${styles.linhaResumo} ${styles.valorTotal}`}>
         <span>Valor total</span>
         <span className={styles.valorFinal}>
@@ -220,5 +320,3 @@ function ResumoCompra() {
     </div>
   );
 }
-
-export default ResumoCompra;

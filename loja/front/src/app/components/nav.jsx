@@ -14,9 +14,39 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 
 import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
-// ⬇️ removido useCarrinho
-// import { useCarrinho } from "../context/carrinhoContext";
-import { getCartByUser } from "../lib/cartApi"; // ⬅️ usa o helper das rotas
+import { getCartByUser } from "../lib/cartApi";
+
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
+
+// Converte tanto tupla (SELECT * sem DictCursor) quanto objeto (DictCursor)
+function mapProduto(row) {
+  if (Array.isArray(row)) {
+    // id, nome, categoria, marca, preco, quantidade_estoque, estoque_minimo, estado, fornecedor_id, imagem_1, imagem_2, imagem_3
+    return {
+      id: row[0],
+      nome: row[1],
+      categoria: row[2],
+      marca: row[3],
+      preco: Number(row[4] || 0),
+      imagem_1: row[9] || null,
+    };
+  }
+  return {
+    id: row.id,
+    nome: row.nome,
+    categoria: row.categoria,
+    marca: row.marca,
+    preco: Number(row.preco || 0),
+    imagem_1: row.imagem_1 || null,
+  };
+}
+
+async function fetchProdutos() {
+  const res = await fetch(`${BASE}/listar_produtos`, { cache: "no-store" });
+  const data = await res.json().catch(() => []);
+  const listaBruta = Array.isArray(data) ? data : data?.detalhes || [];
+  return listaBruta.map(mapProduto);
+}
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -30,12 +60,18 @@ export default function Nav() {
   const [usuario, setUsuario] = useState(null);
   const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false);
 
-  const [totalItens, setTotalItens] = useState(0); // ⬅️ contador do carrinho
+  const [totalItens, setTotalItens] = useState(0);
+
+  // Busca
+  const [query, setQuery] = useState("");
+  const [resultados, setResultados] = useState([]);
+  const [carregandoBusca, setCarregandoBusca] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const router = useRouter();
   const pathname = usePathname();
 
-  // Detecta scroll
+  // Scroll
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 150);
     window.addEventListener("scroll", handleScroll);
@@ -46,7 +82,6 @@ export default function Nav() {
   useEffect(() => {
     const token = localStorage.getItem("token_loja");
     const userData = localStorage.getItem("usuario_loja");
-
     if (token && userData) {
       setLogado(true);
       try {
@@ -60,9 +95,9 @@ export default function Nav() {
     }
   }, []);
 
-  // Busca quantidade de itens no carrinho (backend)
+  // Contador do carrinho
   useEffect(() => {
-    async function carregarContador() {
+    (async () => {
       try {
         const userData = localStorage.getItem("usuario_loja");
         const idUsuario =
@@ -70,10 +105,7 @@ export default function Nav() {
           Number(localStorage.getItem("idUsuario")) ||
           null;
 
-        if (!idUsuario) {
-          setTotalItens(0);
-          return;
-        }
+        if (!idUsuario) return setTotalItens(0);
 
         const carrinho = await getCartByUser(idUsuario);
         const total =
@@ -82,42 +114,80 @@ export default function Nav() {
             0
           ) || 0;
         setTotalItens(total);
-      } catch (e) {
-        console.error("Erro ao carregar contador do carrinho:", e);
+      } catch {
         setTotalItens(0);
       }
-    }
-
-    carregarContador();
+    })();
   }, [logado]);
 
-  // Clique no ícone do usuário
+  // Clique no usuário
   const handleUsuarioClick = () => {
-    if (logado) {
-      setAbrirUsuarioMenu(!abrirUsuarioMenu);
-    } else {
-      setAbrirLogin(true);
-    }
+    if (logado) setAbrirUsuarioMenu(!abrirUsuarioMenu);
+    else setAbrirLogin(true);
   };
 
   // Logout
   const handleLogout = () => {
     localStorage.removeItem("token_loja");
     localStorage.removeItem("usuario_loja");
-    localStorage.removeItem("cart:" + (usuario?.id ?? "")); // limpa cache do carrinho deste usuário (se existir)
+    localStorage.removeItem("cart:" + (usuario?.id ?? ""));
     setLogado(false);
     setUsuario(null);
     setAbrirUsuarioMenu(false);
     setTotalItens(0);
-    router.refresh();
     router.push("/");
   };
 
-  // Ir para perfil
   const irParaPerfil = () => {
     setAbrirUsuarioMenu(false);
     router.push("/perfil");
   };
+
+  // ===== BUSCA =====
+  let buscaTimer;
+  function handleChangeBusca(e) {
+    const q = e.target.value;
+    setQuery(q);
+
+    if (buscaTimer) clearTimeout(buscaTimer);
+    if (q.trim().length < 2) {
+      setResultados([]);
+      return;
+    }
+
+    buscaTimer = setTimeout(async () => {
+      try {
+        setCarregandoBusca(true);
+        const produtos = await fetchProdutos();
+        const f = produtos.filter((p) => {
+          const alvo = `${p.nome} ${p.categoria || ""} ${
+            p.marca || ""
+          }`.toLowerCase();
+          return alvo.includes(q.toLowerCase());
+        });
+        setResultados(f.slice(0, 8));
+      } catch (err) {
+        console.error("Erro na busca:", err);
+        setResultados([]);
+      } finally {
+        setCarregandoBusca(false);
+      }
+    }, 180);
+  }
+
+  function handleSelectProduto(id) {
+    setAbrirBusca(false);
+    setQuery("");
+    setResultados([]);
+    router.push(`/produtoDetalhe/${id}`);
+  }
+
+  useEffect(() => {
+    if (!abrirBusca) {
+      setQuery("");
+      setResultados([]);
+    }
+  }, [abrirBusca]);
 
   return (
     <>
@@ -171,12 +241,10 @@ export default function Nav() {
             <FontAwesomeIcon icon={faMagnifyingGlass} />
           </li>
 
-          {/* Ícone do usuário */}
           <li onClick={handleUsuarioClick} className={styles.iconClick}>
             <FontAwesomeIcon icon={faUser} />
           </li>
 
-          {/* Ícone carrinho com contador */}
           <li className={styles.cartIcon}>
             <Link href="/carrinho">
               <FontAwesomeIcon icon={faCartShopping} />
@@ -197,8 +265,11 @@ export default function Nav() {
               />
               <input
                 type="text"
-                placeholder="Estou buscando por..."
+                placeholder="Buscar produtos..."
+                value={query}
+                onChange={handleChangeBusca}
                 className={styles.searchInput}
+                ref={(el) => setAnchorEl(el)}
               />
               <button
                 className={styles.closeSearch}
@@ -207,10 +278,66 @@ export default function Nav() {
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
+
+            {/* Dropdown alinhado ao input */}
+            {query && (
+              <div
+                className={styles.resultadosContainer}
+                style={
+                  anchorEl
+                    ? {
+                        width: anchorEl.offsetWidth,
+                        left:
+                          anchorEl.getBoundingClientRect().left +
+                          window.scrollX,
+                        top:
+                          anchorEl.getBoundingClientRect().bottom +
+                          window.scrollY +
+                          8,
+                      }
+                    : undefined
+                }
+              >
+                {carregandoBusca ? (
+                  <p className={styles.loading}>Carregando...</p>
+                ) : resultados.length > 0 ? (
+                  resultados.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={styles.resultadoItem}
+                      onClick={() => handleSelectProduto(p.id)}
+                    >
+                      <img
+                        src={
+                          p.imagem_1
+                            ? p.imagem_1.startsWith("http")
+                              ? p.imagem_1
+                              : `${BASE}/static/${p.imagem_1}`
+                            : "/sem-imagem.png"
+                        }
+                        alt={p.nome}
+                        className={styles.resultadoImg}
+                      />
+                      <div className={styles.resultadoInfo}>
+                        <span className={styles.resultadoNome}>{p.nome}</span>
+                        <span className={styles.resultadoPreco}>
+                          R$ {p.preco.toFixed(2).replace(".", ",")}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <p className={styles.semResultados}>
+                    Nenhum produto encontrado
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Menu do usuário (popup) */}
+        {/* Menu do usuário */}
         {abrirUsuarioMenu && logado && (
           <div className={styles.usuarioMenu}>
             <p className={styles.usuarioNome}>

@@ -1,19 +1,29 @@
 "use client";
 import React, { useState } from "react";
 import styles from "../styles/produtoDetalhe.module.css";
-// ❌ removido useCarrinho
-// import { useCarrinho } from "../context/carrinhoContext";
-import { addItem } from "../lib/cartApi"; // ✅ helper que fala com o backend
+import { addItem } from "../lib/cartApi"; // helper que fala com o backend
 
+// ✅ Corrigido: conversor robusto de valores monetários BR/US
 function toNumberBR(v) {
+  if (v === null || v === undefined) return 0;
   if (typeof v === "number") return v;
-  if (!v) return 0;
-  return Number(
-    String(v)
-      .replace(/[^\d,.-]/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-  );
+
+  const s = String(v).trim();
+
+  // 1) Tem vírgula e ponto -> assume ponto como milhar e vírgula como decimal (ex: 1.234,56)
+  if (s.includes(",") && s.includes(".")) {
+    const semMilhar = s.replace(/\./g, ""); // remove pontos de milhar
+    return Number(semMilhar.replace(",", ".")); // vírgula vira decimal
+  }
+
+  // 2) Só vírgula -> decimal BR (ex: 0,50)
+  if (s.includes(",") && !s.includes(".")) {
+    return Number(s.replace(",", "."));
+  }
+
+  // 3) Só ponto -> decimal padrão (ex: 0.50)
+  // 4) Nem ponto nem vírgula -> número inteiro
+  return Number(s);
 }
 
 export default function ProdutoDetalhe({
@@ -29,21 +39,23 @@ export default function ProdutoDetalhe({
   const [adicionado, setAdicionado] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
-
   const [cep, setCep] = useState("");
 
+  // filtra imagens válidas
   const imagens = [imagemPrincipal, imagemSecundaria, imagemTerciaria].filter(
     Boolean
   );
 
   const handleTrocarImagem = (novaImagem) => setImagemAtual(novaImagem);
 
+  // ✅ conversão e formatação corrigidas
   const precoNum = toNumberBR(preco);
-  const precoFormatado = Number(precoNum).toLocaleString("pt-BR", {
+  const precoFormatado = precoNum.toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
+  // ✅ Adicionar ao carrinho
   const handleAddToCart = async () => {
     setErro(null);
     if (!id) return;
@@ -69,11 +81,9 @@ export default function ProdutoDetalhe({
       const resp = await addItem(idUsuario, {
         produtoId: Number(id),
         quantidade: 1,
-        // se o backend buscar o preço atual, pode omitir:
         preco: isNaN(precoNum) ? undefined : precoNum,
       });
 
-      // Checagem defensiva de erro vindo do backend
       const rawMsg = (resp?.message || resp?.erro || "")
         .toString()
         .toLowerCase();
@@ -92,10 +102,10 @@ export default function ProdutoDetalhe({
     }
   };
 
+  // Calcular CEP (placeholder)
   const handleCalcularCep = (e) => {
     e.preventDefault();
     if (!cep) return alert("Informe um CEP válido");
-    // Aqui você pode chamar sua API de frete/CEP
     console.log("CEP informado:", cep);
   };
 

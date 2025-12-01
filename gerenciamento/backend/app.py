@@ -759,39 +759,93 @@ def listar_cupons():
 @app.route('/calcular_desconto', methods=['POST'])
 def calcular_desconto():
     dados = request.json or {}
-    valor_total = float(dados.get('valor_total', 0))
-    codigo_cupom = dados.get('codigo_cupom')
+    try:
+        valor_total = float(dados.get('valor_total', 0))
+    except (TypeError, ValueError):
+        return jsonify({"resultado": "erro", "detalhes": "valor_total inválido"}), 400
 
+    codigo_cupom = (dados.get('codigo_cupom') or '').strip()
     if not codigo_cupom:
         return jsonify({"resultado": "erro", "detalhes": "Código do cupom não informado"}), 400
+    if valor_total <= 0:
+        return jsonify({"resultado": "erro", "detalhes": "valor_total deve ser > 0"}), 400
 
-    # Buscar cupom no banco
     conexao = conectar_banco()
     if not conexao:
         return jsonify({'resultado': 'erro', 'detalhes': 'Erro ao conectar ao banco'}), 500
 
+    cursor = conexao.cursor(pymysql.cursors.DictCursor)
     try:
-        cursor = conexao.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT * FROM cupons WHERE codigo=%s AND estado=1", (codigo_cupom,))
+        # Busca cupom ativo pelo código
+        cursor.execute("""
+            SELECT id, codigo, tipo, descontofixo, descontoPorcentagem, descontofrete,
+                   validade, usos_permitidos, usos_realizados, valor_minimo, estado
+              FROM cupons
+             WHERE codigo = %s
+             LIMIT 1
+        """, (codigo_cupom,))
         cupom = cursor.fetchone()
-        if not cupom:
+
+        if not cupom or not cupom.get('estado'):
             return jsonify({"resultado": "erro", "detalhes": "Cupom inválido ou desativado"}), 404
 
-        desconto = 0
-        if cupom['tipo'] == 'percentual' and cupom['descontoPorcentagem']:
-            desconto = valor_total * (cupom['descontoPorcentagem'] / 100)
-        elif cupom['tipo'] == 'fixo' and cupom['descontofixo']:
-            desconto = cupom['descontofixo']
-        elif cupom['tipo'] == 'frete' and cupom['descontofrete']:
-            desconto = cupom['descontofrete']
+        # Regras de uso (opcional, mas recomendado)
+        if cupom.get('validade') and date.today() > cupom['validade']:
+            return jsonify({"resultado": "erro", "detalhes": "Cupom vencido"}), 400
 
-        valor_final = max(0, valor_total - desconto)
+        usos_perm = cupom.get('usos_permitidos')
+        usos_real = cupom.get('usos_realizados') or 0
+        if usos_perm is not None and usos_real >= usos_perm:
+            return jsonify({"resultado": "erro", "detalhes": "Limite de usos atingido"}), 400
+
+        valor_minimo = float(cupom.get('valor_minimo') or 0)
+        if valor_minimo and valor_total < valor_minimo:
+            return jsonify({"resultado": "erro", "detalhes": f"Valor mínimo para uso do cupom: R$ {valor_minimo:.2f}"}), 400
+
+        # Normaliza tipo (banco usa 'valor_fixo' / 'percentual')
+        tipo_raw = (cupom.get('tipo') or '').lower()
+        if tipo_raw in ('fixo', 'valor_fixo'):
+            tipo = 'valor_fixo'
+        elif tipo_raw in ('percentual', '%'):
+            tipo = 'percentual'
+        else:
+            # se existir cupom de frete no futuro, trate aqui
+            return jsonify({"resultado": "erro", "detalhes": f"Tipo de cupom não suportado: {cupom.get('tipo')}"}), 400
+
+        desconto_abs = 0.0
+        percentual = None
+
+        if tipo == 'percentual':
+            percentual = float(cupom.get('descontoPorcentagem') or 0)
+            if percentual <= 0:
+                return jsonify({"resultado": "erro", "detalhes": "Percentual do cupom inválido"}), 400
+            desconto_abs = valor_total * (percentual / 100.0)
+        else:  # valor_fixo
+            desconto_fixo = float(cupom.get('descontofixo') or 0)
+            if desconto_fixo <= 0:
+                return jsonify({"resultado": "erro", "detalhes": "Valor fixo do cupom não informado"}), 400
+            desconto_abs = desconto_fixo
+
+        # Evita desconto maior que o total
+        desconto_abs = max(0.0, min(desconto_abs, valor_total))
+        # Impõe mínimo de 0,01 no total (se desejar manter essa regra)
+        valor_final = max(0.01, valor_total - desconto_abs)
+
+        # (Opcional) Atualiza usos_realizados
+        try:
+            cursor.execute("UPDATE cupons SET usos_realizados = COALESCE(usos_realizados,0) + 1 WHERE id=%s", (cupom['id'],))
+            conexao.commit()
+        except Exception:
+            conexao.rollback()  # não falha o cálculo por causa disso
 
         return jsonify({
             "resultado": "ok",
-            "valor_total": valor_total,
-            "desconto": desconto,
-            "valor_final": valor_final
+            "codigo": cupom['codigo'],
+            "tipo": "fixo" if tipo == "valor_fixo" else "percentual",  # para o front
+            "percentual": percentual,            # ex.: 10 (ou null se não for percentual)
+            "valor_total": valor_total,          # antes do desconto
+            "desconto": round(desconto_abs, 2),  # valor absoluto aplicado
+            "valor_final": round(valor_final, 2) # após desconto (mínimo 0,01 aplicado)
         })
 
     except Exception as e:
@@ -799,6 +853,7 @@ def calcular_desconto():
     finally:
         cursor.close()
         conexao.close()
+
 
 @app.route('/cupons_disponiveis', methods=['GET'])
 def cupons_disponiveis():
