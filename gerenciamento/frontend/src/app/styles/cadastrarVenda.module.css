@@ -94,6 +94,7 @@
   background-color: var(--fundo-branco);
   width: 200px;
   outline: none;
+  color: var(--foreground);
 }
 
 .input::placeholder {
@@ -467,7 +468,7 @@
 }
 
 .inputReadOnly {
-  background-color: var(--input-readonly-bg);
+  background-color: var(--background);
   cursor: not-allowed;
 }
 
@@ -684,6 +685,7 @@
   padding: 6px 10px;
   cursor: pointer;
   color: var(--foreground);
+  background-color: var(--background);
 }
 
 .dropdownItem:hover {
@@ -726,8 +728,8 @@
 /* Foco no input */
 .inlineSearch input:focus,
 .novoProdutoForm input:focus {
-  border-color: var(--botao-bg);
-  background-color: var(--roxo-escuro-icon);
+  border-color: var(--cinza-borda);
+  background-color: var(--background);
 }
 
 /* Botão Novo */
@@ -811,10 +813,10 @@
   align-items: center;
   margin-top: 0.4rem;
   padding: 0.5rem 0.75rem;
-  background-color: var(--botao-enviar-bg);
+  background-color: var(--background);
   border-radius: 8px;
   font-size: 0.95rem;
-  color: var(--botao-text-color);
+  color: var(--foreground);
 }
 
 .removerCliente,

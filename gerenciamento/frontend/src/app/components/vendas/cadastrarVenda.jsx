@@ -85,7 +85,7 @@ export default function CadastrarVenda({ onClose }) {
       const data = await res.json();
       const lista = (data?.detalhes || data || []).map((c) => ({
         id: c.id || c[0],
-        nome: c.nome || c[1] || c.cliente || "Cliente",
+        nome: c.nome || c[2] || c.cliente || "Cliente",
       }));
       setClientesLista(lista);
     } catch (err) {
