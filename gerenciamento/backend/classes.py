@@ -971,149 +971,169 @@ class Carrinho:
         self.id = id
         self.idUsuario = idUsuario
         self.produtos = produtos or []
-        self.valorTotal = valorTotal
+        self.valorTotal = float(valorTotal or 0.0)
 
-    # ---------------- Criar carrinho ----------------
+    # --- Criar carrinho para um usuário (idUsuario) ---
     @staticmethod
     def criarCarrinho(idUsuario):
+        if not idUsuario:
+            raise ValueError("idUsuario é obrigatório para criar carrinho.")
         conexao = conectar_banco()
-        cursor = conexao.cursor()
         try:
-            query = "INSERT INTO carrinho_de_compra (idUsuario, valorTotal) VALUES (%s, %s)"
-            cursor.execute(query, (idUsuario, 0.0))
-            conexao.commit()
-            carrinho_id = cursor.lastrowid
-            return Carrinho(carrinho_id, idUsuario)  # retorna objeto Carrinho
+            with conexao.cursor(pymysql.cursors.DictCursor) as c:
+                # Garante 1 carrinho por usuário (se quiser permitir vários, remova este SELECT)
+                c.execute("SELECT id, idUsuario, valorTotal FROM carrinho_de_compra WHERE idUsuario=%s", (idUsuario,))
+                row = c.fetchone()
+                if row:
+                    carrinho = Carrinho(row["id"], row["idUsuario"], valorTotal=row["valorTotal"])
+                    carrinho.atualizarProdutos()
+                    return carrinho
+
+                c.execute("INSERT INTO carrinho_de_compra (idUsuario, valorTotal) VALUES (%s, %s)", (idUsuario, 0.0))
+                conexao.commit()
+                carrinho_id = c.lastrowid
+                return Carrinho(carrinho_id, idUsuario)
         finally:
-            cursor.close()
             conexao.close()
 
-    # ---------------- Listar todos os carrinhos ----------------
+    # --- Listar todos os carrinhos ---
     @staticmethod
     def listarCarrinhos():
         conexao = conectar_banco()
-        cursor = conexao.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT * FROM carrinho_de_compra")
-            carrinhos = cursor.fetchall()
-            resultado = []
-            for c in carrinhos:
-                carrinho = Carrinho(c['id'], c['idUsuario'])
-                carrinho.atualizarTotal()
-                carrinho.atualizarProdutos()
-                resultado.append(carrinho)
-            return resultado
+            with conexao.cursor(pymysql.cursors.DictCursor) as c:
+                c.execute("SELECT id, idUsuario, valorTotal FROM carrinho_de_compra")
+                rows = c.fetchall()
+                resultado = []
+                for r in rows:
+                    carrinho = Carrinho(r["id"], r["idUsuario"], valorTotal=r["valorTotal"])
+                    carrinho.atualizarProdutos()
+                    resultado.append(carrinho)
+                return resultado
         finally:
-            cursor.close()
             conexao.close()
 
-    # ---------------- Adicionar item ----------------
-    def adicionarItem(self, produto_id, quantidade, preco_unitario):
+    # --- Adicionar item ---
+    def adicionarItem(self, produto_id, quantidade, preco_unitario=None):
+        if not produto_id:
+            raise ValueError("produto_id é obrigatório.")
+        try:
+            quantidade = int(quantidade)
+        except Exception:
+            raise ValueError("quantidade inválida.")
         if quantidade <= 0:
-            raise ValueError("Quantidade deve ser maior que 0.")
+            raise ValueError("quantidade deve ser > 0.")
+
         conexao = conectar_banco()
-        cursor = conexao.cursor(dictionary=True)
         try:
-            cursor.execute(
-                "SELECT id, quantidade FROM itens_carrinho WHERE carrinho_id = %s AND produto_id = %s",
-                (self.id, produto_id)
-            )
-            item = cursor.fetchone()
-            if item:
-                novo_qtde = item['quantidade'] + quantidade
-                cursor.execute(
-                    "UPDATE itens_carrinho SET quantidade = %s WHERE id = %s",
-                    (novo_qtde, item['id'])
-                )
-            else:
-                cursor.execute(
-                    "INSERT INTO itens_carrinho (carrinho_id, produto_id, quantidade, preco_unitario) VALUES (%s, %s, %s, %s)",
-                    (self.id, produto_id, quantidade, preco_unitario)
-                )
-            conexao.commit()
-        except Exception as e:
+            with conexao.cursor(pymysql.cursors.DictCursor) as c:
+                # Busca preço atual se não informado
+                if preco_unitario is None:
+                    c.execute("SELECT preco FROM produtos WHERE id=%s", (produto_id,))
+                    prod = c.fetchone()
+                    if not prod:
+                        raise ValueError(f"Produto {produto_id} não encontrado.")
+                    preco_unitario = float(prod["preco"])
+
+                # Se já existe o item, soma quantidade
+                c.execute("""
+                    SELECT id, quantidade FROM itens_carrinho
+                     WHERE carrinho_id=%s AND produto_id=%s
+                """, (self.id, produto_id))
+                item = c.fetchone()
+                if item:
+                    nova_qtd = int(item["quantidade"]) + quantidade
+                    c.execute("UPDATE itens_carrinho SET quantidade=%s WHERE id=%s", (nova_qtd, item["id"]))
+                else:
+                    c.execute("""
+                        INSERT INTO itens_carrinho (carrinho_id, produto_id, quantidade, preco_unitario)
+                        VALUES (%s, %s, %s, %s)
+                    """, (self.id, produto_id, quantidade, float(preco_unitario)))
+                conexao.commit()
+        except Exception:
             conexao.rollback()
-            raise e
+            raise
         finally:
-            cursor.close()
             conexao.close()
+
         self._atualizarCarrinho()
 
-    # ---------------- Remover item ----------------
+    # --- Remover item ---
     def removerItem(self, produto_id):
+        if not produto_id:
+            raise ValueError("produto_id é obrigatório.")
         conexao = conectar_banco()
-        cursor = conexao.cursor()
         try:
-            cursor.execute(
-                "DELETE FROM itens_carrinho WHERE carrinho_id = %s AND produto_id = %s",
-                (self.id, produto_id)
-            )
-            conexao.commit()
-        except Exception as e:
+            with conexao.cursor() as c:
+                c.execute("DELETE FROM itens_carrinho WHERE carrinho_id=%s AND produto_id=%s", (self.id, produto_id))
+                conexao.commit()
+        except Exception:
             conexao.rollback()
-            raise e
+            raise
         finally:
-            cursor.close()
             conexao.close()
         self._atualizarCarrinho()
 
-    # ---------------- Atualizar total ----------------
+    # --- Recalcular total ---
     def atualizarTotal(self):
         conexao = conectar_banco()
-        cursor = conexao.cursor()
         try:
-            cursor.execute(
-                "SELECT SUM(quantidade * preco_unitario) as total FROM itens_carrinho WHERE carrinho_id = %s",
-                (self.id,)
-            )
-            total = cursor.fetchone()[0] or 0.0
-            cursor.execute(
-                "UPDATE carrinho_de_compra SET valorTotal = %s WHERE id = %s",
-                (total, self.id)
-            )
-            conexao.commit()
-            self.valorTotal = float(total)
+            with conexao.cursor() as c:
+                c.execute("""
+                    SELECT COALESCE(SUM(quantidade * preco_unitario), 0)
+                      FROM itens_carrinho
+                     WHERE carrinho_id=%s
+                """, (self.id,))
+                total = c.fetchone()[0] or 0
+                c.execute("UPDATE carrinho_de_compra SET valorTotal=%s WHERE id=%s", (total, self.id))
+                conexao.commit()
+                self.valorTotal = float(total)
         finally:
-            cursor.close()
             conexao.close()
 
-    # ---------------- Atualizar lista de produtos ----------------
+    # --- Atualizar lista de itens em memória ---
     def atualizarProdutos(self):
         conexao = conectar_banco()
-        cursor = conexao.cursor(dictionary=True)
         try:
-            cursor.execute(
-                "SELECT produto_id, quantidade, preco_unitario FROM itens_carrinho WHERE carrinho_id = %s",
-                (self.id,)
-            )
-            self.produtos = [
-                {"produto_id": i['produto_id'], "quantidade": i['quantidade'], "preco_unitario": float(i['preco_unitario'])}
-                for i in cursor.fetchall()
-            ]
+            with conexao.cursor(pymysql.cursors.DictCursor) as c:
+                c.execute("""
+                    SELECT produto_id, quantidade, preco_unitario
+                      FROM itens_carrinho
+                     WHERE carrinho_id=%s
+                """, (self.id,))
+                self.produtos = [
+                    {
+                        "produto_id": row["produto_id"],
+                        "quantidade": int(row["quantidade"]),
+                        "preco_unitario": float(row["preco_unitario"])
+                    }
+                    for row in c.fetchall()
+                ]
         finally:
-            cursor.close()
             conexao.close()
 
-    # ---------------- Atualiza total + produtos juntos ----------------
+    # --- Atualiza total + itens ---
     def _atualizarCarrinho(self):
         self.atualizarTotal()
         self.atualizarProdutos()
 
-    # ---------------- Excluir carrinho ----------------
+    # --- Excluir carrinho (e itens) ---
     @staticmethod
     def excluirCarrinho(id):
         conexao = conectar_banco()
-        cursor = conexao.cursor()
         try:
-            cursor.execute("DELETE FROM itens_carrinho WHERE carrinho_id = %s", (id,))
-            cursor.execute("DELETE FROM carrinho_de_compra WHERE id = %s", (id,))
-            conexao.commit()
-            return "Carrinho excluído com sucesso"
+            with conexao.cursor() as c:
+                c.execute("DELETE FROM itens_carrinho WHERE carrinho_id=%s", (id,))
+                c.execute("DELETE FROM carrinho_de_compra WHERE id=%s", (id,))
+                conexao.commit()
+                return "Carrinho excluído com sucesso"
+        except Exception:
+            conexao.rollback()
+            raise
         finally:
-            cursor.close()
             conexao.close()
 
-    # ---------------- JSON serializável ----------------
+    # --- Serialização ---
     def json(self):
         return {
             "id": self.id,

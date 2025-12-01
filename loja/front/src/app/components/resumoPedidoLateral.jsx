@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/checkout.module.css";
-import { useCarrinho } from "../context/carrinhoContext";
 
-// Componente para um único item do pedido
+// ⬅️ BACKEND (use .env NEXT_PUBLIC_BACKEND_URL se tiver)
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
+
+// Componente para um único item do pedido (mantido)
 const ItemResumo = ({ item }) => {
   return (
     <div className={styles.itemResumo}>
@@ -21,11 +24,29 @@ const ItemResumo = ({ item }) => {
   );
 };
 
-// Componente principal da coluna lateral
+// Componente principal da coluna lateral (layout mantido)
 const ResumoPedidoLateral = () => {
-  const { dadosCheckout, atualizarEndereco } = useCarrinho();
+  // ⬅️ Substitui o useCarrinho por estado local com a MESMA forma de uso
+  const [dadosCheckout, setDadosCheckout] = useState({
+    itensPedido: [],
+    enderecoEntrega: {
+      nome: "",
+      numero: "",
+      cep: "",
+      cidade: "",
+      estado: "",
+      destinatario: "",
+    },
+    valoresTotais: { frete: "Grátis", total: 0 },
+  });
+
+  // ⬅️ Função com o MESMO NOME usado no seu código
+  const atualizarEndereco = (novo) =>
+    setDadosCheckout((prev) => ({ ...prev, enderecoEntrega: { ...novo } }));
+
   const { itensPedido, enderecoEntrega, valoresTotais } = dadosCheckout;
 
+  // Estados do formulário (mantidos)
   const [novoEndereco, setNovoEndereco] = useState({
     nome: "",
     numero: "",
@@ -49,6 +70,80 @@ const ResumoPedidoLateral = () => {
     atualizarEndereco(novoEndereco);
     setMostraFormulario(false);
   };
+
+  // ⬅️ Carrega o carrinho do backend e preenche itensPedido/valoresTotais
+  useEffect(() => {
+    (async () => {
+      try {
+        const userData =
+          typeof window !== "undefined"
+            ? localStorage.getItem("usuario_loja")
+            : null;
+        const idUsuario =
+          (userData && JSON.parse(userData)?.id) ||
+          (typeof window !== "undefined"
+            ? Number(localStorage.getItem("idUsuario"))
+            : null);
+
+        if (!idUsuario) return;
+
+        // Busca carrinho do usuário
+        const res = await fetch(
+          `${BACKEND_URL}/carrinho/usuario/${idUsuario}`,
+          {
+            cache: "no-store",
+          }
+        );
+        if (!res.ok) return;
+
+        const carrinho = await res.json();
+        const produtos = Array.isArray(carrinho?.produtos)
+          ? carrinho.produtos
+          : [];
+
+        // Enriquecer com nome do produto
+        const itensComNome = await Promise.all(
+          produtos.map(async (p) => {
+            try {
+              const pr = await fetch(
+                `${BACKEND_URL}/produto_id/${p.produto_id}`,
+                {
+                  cache: "no-store",
+                }
+              );
+              const prod = pr.ok ? await pr.json() : null;
+              return {
+                id: p.produto_id,
+                nome: prod?.nome || `Produto #${p.produto_id}`,
+                quantidade: Number(p.quantidade || 0),
+                preco: Number(p.preco_unitario || prod?.preco || 0),
+              };
+            } catch {
+              return {
+                id: p.produto_id,
+                nome: `Produto #${p.produto_id}`,
+                quantidade: Number(p.quantidade || 0),
+                preco: Number(p.preco_unitario || 0),
+              };
+            }
+          })
+        );
+
+        const total = Number(carrinho?.valorTotal || 0);
+
+        setDadosCheckout((prev) => ({
+          ...prev,
+          itensPedido: itensComNome,
+          valoresTotais: {
+            ...prev.valoresTotais,
+            total,
+          },
+        }));
+      } catch (e) {
+        console.error("Erro ao carregar resumo do pedido:", e);
+      }
+    })();
+  }, []);
 
   return (
     <div className={styles.containerResumoLateral}>

@@ -1,17 +1,24 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
-// URL do backend Flask
-const BACKEND_URL = "http://127.0.0.1:5000";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:5000";
 
-const CarrinhoContext = createContext();
+const CarrinhoContext = createContext(null);
 
 export const useCarrinho = () => {
-  const context = useContext(CarrinhoContext);
-  if (!context)
+  const ctx = useContext(CarrinhoContext);
+  if (!ctx)
     throw new Error("useCarrinho deve ser usado dentro de um CarrinhoProvider");
-  return context;
+  return ctx;
 };
 
 export const CarrinhoProvider = ({ children, idUsuario }) => {
@@ -21,128 +28,103 @@ export const CarrinhoProvider = ({ children, idUsuario }) => {
     valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
   });
 
-  // --- Carregar ou criar carrinho ao iniciar ---
-  useEffect(() => {
-    if (!idUsuario) return;
-
-    const carregarOuCriarCarrinho = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/carrinho/usuario/${idUsuario}`);
-        if (res.ok) {
-          const carrinho = await res.json();
-          setDadosCheckout({
-            idCarrinho: carrinho.id,
-            itensPedido: carrinho.produtos.map((p) => ({
-              id: p.produto_id,
-              quantidade: p.quantidade,
-              preco: p.preco_unitario,
-            })),
-            valoresTotais: {
-              subtotal: carrinho.valorTotal,
-              total: carrinho.valorTotal,
-              frete: "Grátis",
-            },
-          });
-        } else {
-          // Cria um novo carrinho se não existir
-          const criarRes = await fetch(`${BACKEND_URL}/criar_carrinho`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idUsuario }),
-          });
-          const data = await criarRes.json();
-          setDadosCheckout({
-            idCarrinho: data.carrinho.id,
-            itensPedido: [],
-            valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
-          });
-        }
-      } catch (err) {
-        console.error("Erro ao carregar/criar carrinho:", err);
-      }
+  const mapResponseToState = (carrinhoJson) => {
+    const itens = (carrinhoJson?.produtos || []).map((p) => ({
+      id: Number(p.produto_id),
+      quantidade: Number(p.quantidade),
+      preco: Number(p.preco_unitario),
+    }));
+    const subtotal = Number(carrinhoJson?.valorTotal || 0);
+    return {
+      idCarrinho: Number(carrinhoJson?.id) || null,
+      itensPedido: itens,
+      valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
     };
+  };
 
-    carregarOuCriarCarrinho();
-  }, [idUsuario]);
+  const fetchCarrinho = useCallback(
+    async (idCarrinho) => {
+      if (!idUsuario) return;
 
-  // --- Garantir carrinho existente ---
-  const garantirCarrinho = async () => {
-    if (!dadosCheckout.idCarrinho && idUsuario) {
-      const res = await fetch(`${BACKEND_URL}/criar_carrinho`, {
+      const res = await fetch(`${BACKEND_URL}/carrinho/usuario/${idUsuario}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const carrinho = await res.json();
+        setDadosCheckout(mapResponseToState(carrinho));
+        return;
+      }
+
+      const criarRes = await fetch(`${BACKEND_URL}/criar_carrinho`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idUsuario }),
       });
-      const data = await res.json();
-      setDadosCheckout((prev) => ({ ...prev, idCarrinho: data.carrinho.id }));
-      return data.carrinho.id;
-    }
-    return dadosCheckout.idCarrinho;
-  };
+      const data = await criarRes.json();
+      const carrinho = data?.carrinho || data;
+      setDadosCheckout(mapResponseToState(carrinho));
+    },
+    [idUsuario]
+  );
 
-  // --- Adicionar item ---
-  const adicionarItem = async (item) => {
-    if (!item?.id || !item.preco) return;
-    const idCarrinhoAtual = await garantirCarrinho();
-
+  const carregarOuCriarCarrinho = useCallback(async () => {
+    if (!idUsuario) return;
     try {
+      await fetchCarrinho(dadosCheckout.idCarrinho);
+    } catch (e) {
+      console.error("Erro ao carregar/criar carrinho:", e);
+    }
+  }, [idUsuario, fetchCarrinho, dadosCheckout.idCarrinho]);
+
+  useEffect(() => {
+    carregarOuCriarCarrinho();
+  }, [carregarOuCriarCarrinho]);
+
+  const garantirCarrinhoId = useCallback(async () => {
+    if (dadosCheckout.idCarrinho) return dadosCheckout.idCarrinho;
+    await carregarOuCriarCarrinho();
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(dadosCheckout.idCarrinho || 0), 0);
+    });
+  }, [dadosCheckout.idCarrinho, carregarOuCriarCarrinho]);
+
+  const adicionarItem = useCallback(
+    async (item) => {
+      if (!idUsuario || !item?.id) return;
+      const idCarrinhoAtual = await garantirCarrinhoId();
+      if (!idCarrinhoAtual) return;
+
+      const body = {
+        produto_id: item.id,
+        quantidade: item.quantidade ?? 1,
+        ...(item.preco != null ? { preco_unitario: item.preco } : {}),
+      };
+
       const res = await fetch(
         `${BACKEND_URL}/carrinho/${idCarrinhoAtual}/adicionar_item`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            produto_id: item.id,
-            quantidade: item.quantidade || 1,
-            preco_unitario: item.preco,
-          }),
+          body: JSON.stringify(body),
         }
       );
+
       if (!res.ok) {
-        const text = await res.text();
-        console.error("Erro no backend ao adicionar item:", text);
+        console.error("Erro ao adicionar item:", await res.text());
         return;
       }
 
-      // Atualiza estado local
-      setDadosCheckout((prev) => {
-        const itemExistente = prev.itensPedido.find((i) => i.id === item.id);
-        const novosItens = itemExistente
-          ? prev.itensPedido.map((i) =>
-              i.id === item.id
-                ? { ...i, quantidade: i.quantidade + (item.quantidade || 1) }
-                : i
-            )
-          : [
-              ...prev.itensPedido,
-              {
-                id: item.id,
-                quantidade: item.quantidade || 1,
-                preco: item.preco,
-              },
-            ];
+      await fetchCarrinho(idCarrinhoAtual);
+    },
+    [idUsuario, garantirCarrinhoId, fetchCarrinho]
+  );
 
-        const subtotal = novosItens.reduce(
-          (acc, i) => acc + i.quantidade * i.preco,
-          0
-        );
-        return {
-          ...prev,
-          itensPedido: novosItens,
-          valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
-        };
-      });
-    } catch (err) {
-      console.error("Erro ao adicionar item:", err);
-    }
-  };
+  const removerItem = useCallback(
+    async (idItem) => {
+      if (!idUsuario || !idItem) return;
+      const idCarrinhoAtual = await garantirCarrinhoId();
+      if (!idCarrinhoAtual) return;
 
-  // --- Remover item ---
-  const removerItem = async (idItem) => {
-    if (!idItem) return;
-    const idCarrinhoAtual = await garantirCarrinho();
-
-    try {
       const res = await fetch(
         `${BACKEND_URL}/carrinho/${idCarrinhoAtual}/remover_item/${idItem}`,
         {
@@ -150,34 +132,20 @@ export const CarrinhoProvider = ({ children, idUsuario }) => {
         }
       );
       if (!res.ok) {
-        const text = await res.text();
-        console.error("Erro no backend ao remover item:", text);
+        console.error("Erro ao remover item:", await res.text());
         return;
       }
+      await fetchCarrinho(idCarrinhoAtual);
+    },
+    [idUsuario, garantirCarrinhoId, fetchCarrinho]
+  );
 
-      setDadosCheckout((prev) => {
-        const novosItens = prev.itensPedido.filter((i) => i.id !== idItem);
-        const subtotal = novosItens.reduce(
-          (acc, i) => acc + i.quantidade * i.preco,
-          0
-        );
-        return {
-          ...prev,
-          itensPedido: novosItens,
-          valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
-        };
-      });
-    } catch (err) {
-      console.error("Erro ao remover item:", err);
-    }
-  };
+  const atualizarQuantidade = useCallback(
+    async (idItem, quantidade) => {
+      if (!idUsuario || !idItem || quantidade < 0) return;
+      const idCarrinhoAtual = await garantirCarrinhoId();
+      if (!idCarrinhoAtual) return;
 
-  // --- Atualizar quantidade ---
-  const atualizarQuantidade = async (idItem, quantidade) => {
-    if (!idItem || quantidade <= 0) return;
-    const idCarrinhoAtual = await garantirCarrinho();
-
-    try {
       const res = await fetch(
         `${BACKEND_URL}/carrinho/${idCarrinhoAtual}/atualizar_item`,
         {
@@ -187,40 +155,23 @@ export const CarrinhoProvider = ({ children, idUsuario }) => {
         }
       );
       if (!res.ok) {
-        const text = await res.text();
-        console.error("Erro no backend ao atualizar item:", text);
+        console.error("Erro ao atualizar item:", await res.text());
         return;
       }
+      await fetchCarrinho(idCarrinhoAtual);
+    },
+    [idUsuario, garantirCarrinhoId, fetchCarrinho]
+  );
 
-      setDadosCheckout((prev) => {
-        const novosItens = prev.itensPedido.map((i) =>
-          i.id === idItem ? { ...i, quantidade } : i
-        );
-        const subtotal = novosItens.reduce(
-          (acc, i) => acc + i.quantidade * i.preco,
-          0
-        );
-        return {
-          ...prev,
-          itensPedido: novosItens,
-          valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
-        };
-      });
-    } catch (err) {
-      console.error("Erro ao atualizar quantidade:", err);
-    }
-  };
-
-  // --- Limpar carrinho ---
-  const limparCarrinho = async () => {
-    const idCarrinhoAtual = await garantirCarrinho();
+  const limparCarrinho = useCallback(async () => {
+    const idCarrinhoAtual = dadosCheckout.idCarrinho;
     if (idCarrinhoAtual) {
       try {
         await fetch(`${BACKEND_URL}/deletar_carrinho/${idCarrinhoAtual}`, {
           method: "DELETE",
         });
-      } catch (err) {
-        console.error("Erro ao deletar carrinho:", err);
+      } catch (e) {
+        console.error("Erro ao deletar carrinho:", e);
       }
     }
     setDadosCheckout({
@@ -228,12 +179,13 @@ export const CarrinhoProvider = ({ children, idUsuario }) => {
       itensPedido: [],
       valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
     });
-  };
+  }, [dadosCheckout.idCarrinho]);
 
   return (
     <CarrinhoContext.Provider
       value={{
         dadosCheckout,
+        carregarOuCriarCarrinho,
         adicionarItem,
         removerItem,
         atualizarQuantidade,

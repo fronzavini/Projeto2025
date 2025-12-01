@@ -1,8 +1,20 @@
 "use client";
-
 import React, { useState } from "react";
 import styles from "../styles/produtoDetalhe.module.css";
-import { useCarrinho } from "../context/carrinhoContext";
+// ❌ removido useCarrinho
+// import { useCarrinho } from "../context/carrinhoContext";
+import { addItem } from "../lib/cartApi"; // ✅ helper que fala com o backend
+
+function toNumberBR(v) {
+  if (typeof v === "number") return v;
+  if (!v) return 0;
+  return Number(
+    String(v)
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+  );
+}
 
 export default function ProdutoDetalhe({
   id,
@@ -15,42 +27,76 @@ export default function ProdutoDetalhe({
 }) {
   const [imagemAtual, setImagemAtual] = useState(imagemPrincipal);
   const [adicionado, setAdicionado] = useState(false);
-  const { adicionarItem } = useCarrinho();
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState(null);
+
   const [cep, setCep] = useState("");
 
   const imagens = [imagemPrincipal, imagemSecundaria, imagemTerciaria].filter(
     Boolean
   );
 
-  const handleTrocarImagem = (novaImagem) => {
-    setImagemAtual(novaImagem);
-  };
+  const handleTrocarImagem = (novaImagem) => setImagemAtual(novaImagem);
 
-  const precoFormatado = Number(preco).toLocaleString("pt-BR", {
+  const precoNum = toNumberBR(preco);
+  const precoFormatado = Number(precoNum).toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    setErro(null);
     if (!id) return;
 
-    adicionarItem({
-      id: id.toString(),
-      nome,
-      preco: Number(preco),
-      quantidade: 1,
-      imagem: imagemPrincipal,
-    });
+    try {
+      const userData =
+        typeof window !== "undefined"
+          ? localStorage.getItem("usuario_loja")
+          : null;
+      const idUsuario =
+        (userData && JSON.parse(userData)?.id) ||
+        (typeof window !== "undefined"
+          ? Number(localStorage.getItem("idUsuario"))
+          : null);
 
-    setAdicionado(true);
-    setTimeout(() => setAdicionado(false), 2000);
+      if (!idUsuario) {
+        setErro("Você precisa estar logado para adicionar ao carrinho.");
+        return;
+      }
+
+      setLoading(true);
+
+      const resp = await addItem(idUsuario, {
+        produtoId: Number(id),
+        quantidade: 1,
+        // se o backend buscar o preço atual, pode omitir:
+        preco: isNaN(precoNum) ? undefined : precoNum,
+      });
+
+      // Checagem defensiva de erro vindo do backend
+      const rawMsg = (resp?.message || resp?.erro || "")
+        .toString()
+        .toLowerCase();
+      if (!resp || rawMsg.includes("erro")) {
+        setErro("Não foi possível adicionar o produto. Tente novamente.");
+        return;
+      }
+
+      setAdicionado(true);
+      setTimeout(() => setAdicionado(false), 2000);
+    } catch (e) {
+      console.error("Erro ao adicionar ao carrinho:", e);
+      setErro("Erro ao adicionar ao carrinho. Tente novamente mais tarde.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCalcularCep = (e) => {
     e.preventDefault();
     if (!cep) return alert("Informe um CEP válido");
+    // Aqui você pode chamar sua API de frete/CEP
     console.log("CEP informado:", cep);
-    // Aqui você pode chamar a API de CEP
   };
 
   return (
@@ -92,7 +138,8 @@ export default function ProdutoDetalhe({
         <button
           onClick={handleAddToCart}
           className={styles.botaoSacola}
-          disabled={adicionado}
+          disabled={adicionado || loading}
+          title={loading ? "Adicionando..." : "Adicionar à sacola"}
         >
           {adicionado ? "ADICIONADO" : "ADICIONAR À SACOLA"}
         </button>
@@ -102,6 +149,7 @@ export default function ProdutoDetalhe({
             Produto adicionado ao carrinho!
           </p>
         )}
+        {erro && <p className={styles.mensagemErro}>{erro}</p>}
 
         {/* Opções de entrega */}
         <div className={styles.opcaoEntrega}>

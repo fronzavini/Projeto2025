@@ -1,35 +1,81 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import styles from "../styles/carrinho.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useCarrinho } from "../context/carrinhoContext";
+import { updateItem, removeItem } from "../lib/cartApi"; // ⬅️ rotas do backend
 
 export default function ItemCarrinho({ produto }) {
-  const { removerItem, atualizarQuantidade } = useCarrinho();
+  // Estado local para feedback imediato
+  const [qtd, setQtd] = useState(Number(produto.quantidade || 1));
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState(null);
 
-  // Calcula o total do item formatado
-  const precoTotalFormatado = (produto.preco * produto.quantidade)
-    .toFixed(2)
-    .replace(".", ",");
+  const precoUnit = Number(produto.preco || 0);
+  const totalItem = (precoUnit * qtd).toFixed(2).replace(".", ",");
 
-  // Aumentar quantidade
-  const handleAumentar = () => {
-    atualizarQuantidade(produto.id, produto.quantidade + 1);
-  };
-
-  // Diminuir quantidade
-  const handleDiminuir = () => {
-    if (produto.quantidade > 1) {
-      atualizarQuantidade(produto.id, produto.quantidade - 1);
+  function getUserId() {
+    try {
+      const userData =
+        typeof window !== "undefined"
+          ? localStorage.getItem("usuario_loja")
+          : null;
+      const parsed = userData ? JSON.parse(userData) : null;
+      return (
+        parsed?.id ||
+        (typeof window !== "undefined"
+          ? Number(localStorage.getItem("idUsuario"))
+          : null)
+      );
+    } catch {
+      return null;
     }
-  };
+  }
 
-  // Remover item do carrinho
-  const handleRemover = () => {
-    removerItem(produto.id);
-  };
+  async function alterarQuantidade(novaQtd) {
+    if (novaQtd < 1) return;
+    const userId = getUserId();
+    if (!userId) {
+      setErro("Você precisa estar logado para alterar o carrinho.");
+      return;
+    }
+    try {
+      setLoading(true);
+      setErro(null);
+      await updateItem(userId, {
+        produtoId: Number(produto.id),
+        quantidade: Number(novaQtd),
+      });
+      setQtd(novaQtd); // feedback instantâneo
+      // Recarrega para sincronizar totais/itens no painel direito
+      if (typeof window !== "undefined") window.location.reload();
+    } catch (e) {
+      console.error(e);
+      setErro("Não foi possível atualizar a quantidade. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function remover() {
+    const userId = getUserId();
+    if (!userId) {
+      setErro("Você precisa estar logado para alterar o carrinho.");
+      return;
+    }
+    try {
+      setLoading(true);
+      setErro(null);
+      await removeItem(userId, Number(produto.id));
+      if (typeof window !== "undefined") window.location.reload();
+    } catch (e) {
+      console.error(e);
+      setErro("Não foi possível remover o item. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className={styles.itemProduto}>
@@ -49,7 +95,9 @@ export default function ItemCarrinho({ produto }) {
         <button
           className={styles.botaoRemover}
           aria-label="Remover item"
-          onClick={handleRemover}
+          onClick={remover}
+          disabled={loading}
+          title={loading ? "Removendo..." : "Remover"}
         >
           <FontAwesomeIcon icon={faTrashCan} />
         </button>
@@ -62,25 +110,33 @@ export default function ItemCarrinho({ produto }) {
           <div className={styles.controleQuantidade}>
             <button
               className={styles.botaoMenos}
-              onClick={handleDiminuir}
-              disabled={produto.quantidade <= 1}
+              onClick={() => alterarQuantidade(qtd - 1)}
+              disabled={qtd <= 1 || loading}
+              title={loading ? "Atualizando..." : "Diminuir"}
             >
               −
             </button>
             <input
               type="number"
-              value={produto.quantidade}
+              value={qtd}
               readOnly
               className={styles.inputQuantidade}
             />
-            <button className={styles.botaoMais} onClick={handleAumentar}>
+            <button
+              className={styles.botaoMais}
+              onClick={() => alterarQuantidade(qtd + 1)}
+              disabled={loading}
+              title={loading ? "Atualizando..." : "Aumentar"}
+            >
               +
             </button>
           </div>
         </div>
 
-        <p className={styles.precoProduto}>R$ {precoTotalFormatado}</p>
+        <p className={styles.precoProduto}>R$ {totalItem}</p>
       </div>
+
+      {erro && <p className={styles.mensagemErro}>{erro}</p>}
 
       {/* Link para explorar mais produtos */}
       <a href="/flores" className={styles.linkExplorarMais}>

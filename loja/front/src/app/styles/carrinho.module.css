@@ -557,3 +557,6 @@ body {
   }
 }
 
+.mensagemErro {
+  color: #d9534f;
+}

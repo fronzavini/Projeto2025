@@ -14,7 +14,9 @@ import { faUser } from "@fortawesome/free-regular-svg-icons";
 
 import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
-import { useCarrinho } from "../context/carrinhoContext";
+// ⬇️ removido useCarrinho
+// import { useCarrinho } from "../context/carrinhoContext";
+import { getCartByUser } from "../lib/cartApi"; // ⬅️ usa o helper das rotas
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -28,14 +30,10 @@ export default function Nav() {
   const [usuario, setUsuario] = useState(null);
   const [abrirUsuarioMenu, setAbrirUsuarioMenu] = useState(false);
 
+  const [totalItens, setTotalItens] = useState(0); // ⬅️ contador do carrinho
+
   const router = useRouter();
   const pathname = usePathname();
-
-  const { dadosCheckout } = useCarrinho();
-  const totalItens = dadosCheckout.itensPedido.reduce(
-    (acc, item) => acc + item.quantidade,
-    0
-  );
 
   // Detecta scroll
   useEffect(() => {
@@ -49,15 +47,49 @@ export default function Nav() {
     const token = localStorage.getItem("token_loja");
     const userData = localStorage.getItem("usuario_loja");
 
-
     if (token && userData) {
       setLogado(true);
-      setUsuario(JSON.parse(userData));
+      try {
+        setUsuario(JSON.parse(userData));
+      } catch {
+        setUsuario(null);
+      }
     } else {
       setLogado(false);
       setUsuario(null);
     }
   }, []);
+
+  // Busca quantidade de itens no carrinho (backend)
+  useEffect(() => {
+    async function carregarContador() {
+      try {
+        const userData = localStorage.getItem("usuario_loja");
+        const idUsuario =
+          (userData && JSON.parse(userData)?.id) ||
+          Number(localStorage.getItem("idUsuario")) ||
+          null;
+
+        if (!idUsuario) {
+          setTotalItens(0);
+          return;
+        }
+
+        const carrinho = await getCartByUser(idUsuario);
+        const total =
+          (carrinho?.produtos || []).reduce(
+            (acc, p) => acc + Number(p.quantidade || 0),
+            0
+          ) || 0;
+        setTotalItens(total);
+      } catch (e) {
+        console.error("Erro ao carregar contador do carrinho:", e);
+        setTotalItens(0);
+      }
+    }
+
+    carregarContador();
+  }, [logado]);
 
   // Clique no ícone do usuário
   const handleUsuarioClick = () => {
@@ -72,9 +104,11 @@ export default function Nav() {
   const handleLogout = () => {
     localStorage.removeItem("token_loja");
     localStorage.removeItem("usuario_loja");
+    localStorage.removeItem("cart:" + (usuario?.id ?? "")); // limpa cache do carrinho deste usuário (se existir)
     setLogado(false);
     setUsuario(null);
     setAbrirUsuarioMenu(false);
+    setTotalItens(0);
     router.refresh();
     router.push("/");
   };

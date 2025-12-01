@@ -1,10 +1,219 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMoneyBillTransfer } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/checkout.module.css";
 
-const PrincipalCheckout = ({ itens, valoresTotais }) => {
-  const item = itens?.[0] || {};
+const BASE =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
+  "http://127.0.0.1:5000";
+
+// normaliza "0,50", "0.50", "1.234,56" -> Number em reais
+function normalizePrice(v) {
+  if (v == null) return 0;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  let s = String(v).trim();
+  if (s.includes(",") && !s.includes(".")) {
+    s = s.replace(/\./g, "");
+    s = s.replace(",", ".");
+  } else {
+    s = s.replace(/,/g, "");
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// obtém ID do usuário salvo no login
+function getUserId() {
+  try {
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("usuario_loja")
+        : null;
+    const obj = raw ? JSON.parse(raw) : null;
+    return (
+      obj?.id ||
+      (typeof window !== "undefined"
+        ? Number(localStorage.getItem("idUsuario"))
+        : null)
+    );
+  } catch {
+    return null;
+  }
+}
+
+const PrincipalCheckout = () => {
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  // dados vindos do backend
+  const [itens, setItens] = useState([]); // [{id, nome, imagem, quantidade, preco}]
+  const [valoresTotais, setValoresTotais] = useState({
+    subtotal: 0,
+    total: 0,
+    frete: "Grátis",
+  });
+
+  // carrega carrinho + detalhes dos produtos
+  useEffect(() => {
+    (async () => {
+      setErro(null);
+      try {
+        const userId = getUserId();
+        if (!userId) {
+          setErro("Você precisa estar logado para finalizar o pedido.");
+          return;
+        }
+
+        // 1) carregar carrinho do usuário
+        const resCarrinho = await fetch(`${BASE}/carrinho/usuario/${userId}`, {
+          cache: "no-store",
+        });
+        if (!resCarrinho.ok) {
+          setErro("Não foi possível carregar seu carrinho.");
+          return;
+        }
+        const carrinho = await resCarrinho.json();
+        const itensBrutos = Array.isArray(carrinho?.produtos)
+          ? carrinho.produtos
+          : [];
+
+        // 2) enriquecer com nome/imagens do produto
+        const itensEnriquecidos = await Promise.all(
+          itensBrutos.map(async (p) => {
+            try {
+              const r = await fetch(`${BASE}/produto_id/${p.produto_id}`, {
+                cache: "no-store",
+              });
+              const prod = r.ok ? await r.json() : null;
+              return {
+                id: p.produto_id,
+                nome: prod?.nome || `Produto #${p.produto_id}`,
+                imagem: prod?.imagem_1 || prod?.imagem || "/placeholder.png",
+                quantidade: Number(p.quantidade || 0),
+                preco: Number(p.preco_unitario || 0), // já vem do banco
+                vendidoPor: "Loja",
+                enviadoPor: "Loja",
+                cor: "Padrão",
+                tamanho: "Único",
+              };
+            } catch {
+              return {
+                id: p.produto_id,
+                nome: `Produto #${p.produto_id}`,
+                imagem: "/placeholder.png",
+                quantidade: Number(p.quantidade || 0),
+                preco: Number(p.preco_unitario || 0),
+                vendidoPor: "Loja",
+                enviadoPor: "Loja",
+                cor: "Padrão",
+                tamanho: "Único",
+              };
+            }
+          })
+        );
+
+        const subtotal = itensEnriquecidos.reduce(
+          (acc, it) => acc + Number(it.preco || 0) * Number(it.quantidade || 0),
+          0
+        );
+
+        setItens(itensEnriquecidos);
+        setValoresTotais({ subtotal, total: subtotal, frete: "Grátis" });
+      } catch (e) {
+        console.error(e);
+        setErro("Falha ao carregar dados do checkout.");
+      }
+    })();
+  }, []);
+
+  // primeiro item para preencher vitrine da sua UI
+  const item = useMemo(() => itens?.[0] || {}, [itens]);
+
+  const handleFinalizar = async () => {
+    setErro(null);
+
+    // valida usuário (email)
+    const rawUser =
+      typeof window !== "undefined"
+        ? localStorage.getItem("usuario_loja")
+        : null;
+    const user = rawUser ? JSON.parse(rawUser) : null;
+    const email = user?.email || "cliente@teste.com";
+
+    // total em REAIS (ex.: 0.50)
+    const total = normalizePrice(valoresTotais?.total || 0);
+
+    if (!total || total <= 0) {
+      setErro("Valor total inválido para pagamento.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // você pode usar id do pedido/venda se já tiver; aqui uso um timestamp legível
+      const orderId = `WEB-${Date.now()}`;
+
+      const res = await fetch(`${BASE}/create_pix_payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: orderId,
+          amount: total, // ✅ em reais (0.5 = 50 centavos)
+          email,
+        }),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok || !data?.ok) {
+        const msg =
+          data?.detalhe?.message ||
+          data?.detalhe?.cause?.[0]?.description ||
+          data?.erro ||
+          "Falha ao criar pagamento PIX.";
+        setErro(msg);
+        return;
+      }
+
+      // guarda infos úteis
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "pix_payment",
+          JSON.stringify({
+            payment_id: data.payment_id,
+            status: data.status,
+            external_reference: data.external_reference,
+            amount: total,
+          })
+        );
+      }
+
+      // abre o boleto/qr do pix
+      if (data.ticket_url) {
+        window.open(data.ticket_url, "_blank", "noopener,noreferrer");
+      } else if (data.qr_code_base64) {
+        const w = window.open();
+        w.document.write(
+          `<img src="data:image/png;base64,${data.qr_code_base64}" style="max-width:100%"/>`
+        );
+      } else {
+        setErro("Pagamento criado, mas não veio o link do PIX.");
+      }
+    } catch (e) {
+      console.error(e);
+      setErro("Erro ao processar o pagamento. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.containerPrincipal}>
@@ -63,13 +272,22 @@ const PrincipalCheckout = ({ itens, valoresTotais }) => {
         </h3>
 
         <p className={styles.valorPagamento}>
-          R${" "}
-          {Number(valoresTotais.total || 0)
+          R{"$ "}
+          {Number(normalizePrice(valoresTotais?.total || 0))
             .toFixed(2)
             .replace(".", ",")}
         </p>
 
-        <button className={styles.botaoFinalizar}>FINALIZAR PEDIDO</button>
+        <button
+          className={styles.botaoFinalizar}
+          onClick={handleFinalizar}
+          disabled={loading}
+          title={loading ? "Gerando PIX..." : "Finalizar pedido"}
+        >
+          {loading ? "GERANDO PIX..." : "FINALIZAR PEDIDO"}
+        </button>
+
+        {erro && <p className={styles.mensagemErro}>{erro}</p>}
       </div>
     </div>
   );

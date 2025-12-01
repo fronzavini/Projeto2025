@@ -1,30 +1,134 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "../styles/carrinho.module.css";
-import { useCarrinho } from "../context/carrinhoContext"; // <<-- NOVO: Importa o hook
 
-// REMOVIDA A PROP { dadosResumo }
+// Usa .env NEXT_PUBLIC_BACKEND_URL se existir
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
+
 function ResumoCompra() {
-  // PEGA OS DADOS DO ESTADO GLOBAL
-  const { dadosCheckout } = useCarrinho();
-  const { valoresTotais, itensPedido } = dadosCheckout;
+  const [dadosCheckout, setDadosCheckout] = useState({
+    valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
+    itensPedido: [],
+  });
 
   const [cupom, setCupom] = useState("");
+  const [desconto, setDesconto] = useState(0);
+  const [aplicando, setAplicando] = useState(false);
+  const [erroCupom, setErroCupom] = useState(null);
+  const [okCupom, setOkCupom] = useState(null);
 
-  // Garante que o valor seja formatado
   const formatCurrency = (value) =>
-    value?.toFixed(2).replace(".", ",") || "0,00";
+    Number(value || 0)
+      .toFixed(2)
+      .replace(".", ",");
 
-  // Usamos o número real de itens do Contexto
-  const numItens = itensPedido.length;
+  const numItens = dadosCheckout.itensPedido.length;
 
-  // Função fictícia para aplicar cupom
-  const handleAplicarCupom = () => {
-    // Em um app real, isso atualizaria o estado global via atualizarDadosCheckout
-    alert(`Cupom aplicado: ${cupom}`);
-    setCupom("");
+  // Carrega carrinho do usuário no backend
+  useEffect(() => {
+    (async () => {
+      try {
+        const userData =
+          typeof window !== "undefined"
+            ? localStorage.getItem("usuario_loja")
+            : null;
+
+        const idUsuario =
+          (userData && JSON.parse(userData)?.id) ||
+          (typeof window !== "undefined"
+            ? Number(localStorage.getItem("idUsuario"))
+            : null);
+
+        if (!idUsuario) return;
+
+        const res = await fetch(
+          `${BACKEND_URL}/carrinho/usuario/${idUsuario}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) return;
+
+        const carrinho = await res.json();
+        const subtotal = Number(carrinho?.valorTotal || 0);
+
+        const itensPedido = (carrinho?.produtos || []).map((p) => ({
+          id: p.produto_id,
+          quantidade: Number(p.quantidade || 0),
+          preco: Number(p.preco_unitario || 0),
+          nome: `Produto #${p.produto_id}`,
+        }));
+
+        setDadosCheckout({
+          valoresTotais: { subtotal, total: subtotal, frete: "Grátis" },
+          itensPedido,
+        });
+        setDesconto(0);
+        setErroCupom(null);
+        setOkCupom(null);
+      } catch (e) {
+        console.error("Erro ao carregar resumo do carrinho:", e);
+      }
+    })();
+  }, []);
+
+  const handleAplicarCupom = async () => {
+    setErroCupom(null);
+    setOkCupom(null);
+
+    const subtotalAtual = Number(dadosCheckout.valoresTotais.subtotal || 0);
+    if (!cupom) {
+      setErroCupom("Informe um cupom.");
+      return;
+    }
+    if (subtotalAtual <= 0) {
+      setErroCupom("Subtotal inválido para aplicar cupom.");
+      return;
+    }
+
+    try {
+      setAplicando(true);
+      const resp = await fetch(`${BACKEND_URL}/calcular_desconto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          valor_total: subtotalAtual,
+          codigo_cupom: cupom.trim(),
+        }),
+      });
+
+      // backend responde JSON sempre
+      const data = await resp.json().catch(() => null);
+
+      if (!resp.ok || !data || data.resultado !== "ok") {
+        const msg =
+          data?.detalhes ||
+          data?.erro ||
+          "Não foi possível aplicar o cupom. Tente novamente.";
+        setErroCupom(msg);
+        return;
+      }
+
+      const novoDesconto = Number(data.desconto || 0);
+      const novoTotal = Number(data.valor_final || subtotalAtual);
+
+      setDesconto(novoDesconto);
+      setDadosCheckout((prev) => ({
+        ...prev,
+        valoresTotais: {
+          ...prev.valoresTotais,
+          total: novoTotal,
+        },
+      }));
+      setOkCupom(`Cupom aplicado: ${cupom.toUpperCase()}`);
+      setCupom("");
+    } catch (e) {
+      console.error(e);
+      setErroCupom("Erro ao aplicar o cupom. Tente novamente.");
+    } finally {
+      setAplicando(false);
+    }
   };
 
   return (
@@ -36,8 +140,7 @@ function ResumoCompra() {
           Subtotal ({numItens} item{numItens > 1 ? "s" : ""})
         </span>
         <span className={styles.valorSubtotal}>
-          {/* Usamos o valor numérico para formatação */}
-          R$ {formatCurrency(valoresTotais.subtotal)}
+          R$ {formatCurrency(dadosCheckout.valoresTotais.subtotal)}
         </span>
       </div>
 
@@ -48,10 +151,12 @@ function ResumoCompra() {
             Chega dia <strong>23 de Dezembro</strong>
           </p>
         </div>
-        <span className={styles.valorFrete}>{valoresTotais.frete}</span>
+        <span className={styles.valorFrete}>
+          {dadosCheckout.valoresTotais.frete}
+        </span>
       </div>
 
-      {/* Cupom direto com input */}
+      {/* Cupom */}
       <div className={styles.linhaCupom}>
         <label className={styles.cupomLabel}>Cupom de desconto</label>
         <div className={styles.cupomInputGrupo}>
@@ -62,22 +167,48 @@ function ResumoCompra() {
             onChange={(e) => setCupom(e.target.value)}
             className={styles.inputCupom}
           />
-          <button onClick={handleAplicarCupom} className={styles.botaoAplicar}>
-            Aplicar
+          <button
+            onClick={handleAplicarCupom}
+            className={styles.botaoAplicar}
+            disabled={aplicando}
+            title={aplicando ? "Aplicando..." : "Aplicar cupom"}
+          >
+            {aplicando ? "Aplicando..." : "Aplicar"}
           </button>
         </div>
+
+        {/* feedback do cupom */}
+        {erroCupom && (
+          <p className={styles.mensagemErro} style={{ marginTop: 8 }}>
+            {erroCupom}
+          </p>
+        )}
+        {okCupom && (
+          <p className={styles.mensagemAdicionado} style={{ marginTop: 8 }}>
+            {okCupom}
+          </p>
+        )}
       </div>
+
+      {/* mostra a linha de desconto quando houver */}
+      {desconto > 0 && (
+        <div className={styles.linhaResumo}>
+          <span>Desconto</span>
+          <span className={styles.valorSubtotal}>
+            - R$ {formatCurrency(desconto)}
+          </span>
+        </div>
+      )}
 
       <div className={styles.divisorTotal}></div>
 
       <div className={`${styles.linhaResumo} ${styles.valorTotal}`}>
         <span>Valor total</span>
         <span className={styles.valorFinal}>
-          R$ {formatCurrency(valoresTotais.total)}
+          R$ {formatCurrency(dadosCheckout.valoresTotais.total)}
         </span>
       </div>
 
-      {/* O Link apenas navega, pois os dados já estão no Contexto */}
       <Link href="/checkout">
         <button className={styles.botaoFinalizar}>Próxima etapa</button>
       </Link>

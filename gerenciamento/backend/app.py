@@ -883,140 +883,115 @@ def listar_servicopersonalizado():
     return jsonify(servicos)
 
 
-# --- Criar carrinho ---
-# curl -X POST http://127.0.0.1:5000/criar_carrinho -H "Content-Type: application/json" -d '{"idUsuario":1}'
 @app.route('/criar_carrinho', methods=['POST'])
 def criar_carrinho():
-    dados = request.json
+    dados = request.json or {}
     id_usuario = dados.get("idUsuario") or dados.get("id_usuario")
+    if not id_usuario:
+        return jsonify({"resultado": "erro", "detalhes": "idUsuario é obrigatório"}), 400
     carrinho = Carrinho.criarCarrinho(id_usuario)
-    return jsonify({"message": "Carrinho criado com sucesso", "carrinho": carrinho.json()}), 201
+    return jsonify({"resultado": "ok", "carrinho": carrinho.json()}), 201
 
-# --- Deletar carrinho ---
-# curl -X DELETE http://127.0.0.1:5000/deletar_carrinho/1
+# Deletar carrinho
 @app.route('/deletar_carrinho/<int:id>', methods=['DELETE'])
 def deletar_carrinho(id):
-    resultado = Carrinho.excluirCarrinho(id)
-    return jsonify({"message": resultado})
+    msg = Carrinho.excluirCarrinho(id)
+    return jsonify({"resultado": "ok", "message": msg})
 
-# --- Listar todos os carrinhos ---
-# curl -X GET http://127.0.0.1:5000/listar_carrinhos
+# Listar todos
 @app.route('/listar_carrinhos', methods=['GET'])
 def listar_carrinhos():
     carrinhos = Carrinho.listarCarrinhos()
     return jsonify([c.json() for c in carrinhos])
 
-# --- Listar carrinho específico pelo ID ---
-# curl -X GET http://127.0.0.1:5000/carrinho/1
+# Obter carrinho por ID
 @app.route('/carrinho/<int:id>', methods=['GET'])
-def listar_carrinho(id):
+def obter_carrinho(id):
     conexao = conectar_banco()
-    cursor = conexao.cursor(pymysql.cursors.DictCursor)
     try:
-        cursor.execute("SELECT * FROM carrinho_de_compra WHERE id = %s", (id,))
-        c = cursor.fetchone()
-        if not c:
-            return jsonify({"message": "Carrinho não encontrado"}), 404
-
-        carrinho = Carrinho(c['id'], c['idUsuario'])
-        carrinho.valorTotal = float(c['valorTotal'])
-
-        cursor.execute("SELECT produto_id, quantidade, preco_unitario FROM itens_carrinho WHERE carrinho_id = %s", (c['id'],))
-        itens = cursor.fetchall()
-        carrinho.produtos = [
-            {"produto_id": i['produto_id'], "quantidade": i['quantidade'], "preco_unitario": float(i['preco_unitario'])}
-            for i in itens
-        ]
-        return jsonify(carrinho.json())
+        with conexao.cursor(pymysql.cursors.DictCursor) as c:
+            c.execute("SELECT id, idUsuario, valorTotal FROM carrinho_de_compra WHERE id=%s", (id,))
+            row = c.fetchone()
+            if not row:
+                return jsonify({"resultado": "erro", "detalhes": "Carrinho não encontrado"}), 404
+            carrinho = Carrinho(row["id"], row["idUsuario"], valorTotal=row["valorTotal"])
+            carrinho.atualizarProdutos()
+            return jsonify(carrinho.json())
     finally:
-        cursor.close()
         conexao.close()
 
-# --- Listar carrinho de um usuário específico ---
-# curl -X GET http://127.0.0.1:5000/carrinho/usuario/1
+# Obter carrinho por idUsuario
 @app.route('/carrinho/usuario/<int:id_usuario>', methods=['GET'])
-def listar_carrinho_usuario(id_usuario):
+def obter_carrinho_por_usuario(id_usuario):
     conexao = conectar_banco()
-    cursor = conexao.cursor(pymysql.cursors.DictCursor)
     try:
-        cursor.execute("SELECT * FROM carrinho_de_compra WHERE idUsuario = %s", (id_usuario,))
-        c = cursor.fetchone()
-        if not c:
-            return jsonify({"message": "Carrinho não encontrado"}), 404
-
-        carrinho = Carrinho(c['id'], c['idUsuario'])
-        carrinho.valorTotal = float(c['valorTotal'])
-
-        cursor.execute("SELECT produto_id, quantidade, preco_unitario FROM itens_carrinho WHERE carrinho_id = %s", (c['id'],))
-        itens = cursor.fetchall()
-        carrinho.produtos = [
-            {"produto_id": i['produto_id'], "quantidade": i['quantidade'], "preco_unitario": float(i['preco_unitario'])}
-            for i in itens
-        ]
-        return jsonify(carrinho.json())
+        with conexao.cursor(pymysql.cursors.DictCursor) as c:
+            c.execute("SELECT id, idUsuario, valorTotal FROM carrinho_de_compra WHERE idUsuario=%s", (id_usuario,))
+            row = c.fetchone()
+            if not row:
+                return jsonify({"resultado": "erro", "detalhes": "Carrinho não encontrado"}), 404
+            carrinho = Carrinho(row["id"], row["idUsuario"], valorTotal=row["valorTotal"])
+            carrinho.atualizarProdutos()
+            return jsonify(carrinho.json())
     finally:
-        cursor.close()
         conexao.close()
 
-# --- Adicionar item ao carrinho ---
-# curl -X POST http://127.0.0.1:5000/carrinho/1/adicionar_item -H "Content-Type: application/json" -d '{"produto_id":2,"quantidade":3,"preco_unitario":50.0}'
+# Adicionar item
+# POST /carrinho/<id>/adicionar_item  body: {"produto_id":1,"quantidade":2,"preco_unitario":12.5 (opcional)}
 @app.route('/carrinho/<int:id>/adicionar_item', methods=['POST'])
-def adicionar_item(id):
-    dados = request.json
-    produto_id = dados.get("produto_id")
-    quantidade = dados.get("quantidade", 1)
-    preco_unitario = dados.get("preco_unitario")
-    
-    carrinho = Carrinho(id, None)
-    carrinho.adicionarItem(produto_id, quantidade, preco_unitario)
-    return jsonify({"message": "Item adicionado", "carrinho": carrinho.json()})
+def carrinho_adicionar_item(id):
+    dados = request.json or {}
+    try:
+        carrinho = Carrinho(id, None)
+        carrinho.adicionarItem(
+            produto_id=dados.get("produto_id"),
+            quantidade=dados.get("quantidade", 1),
+            preco_unitario=dados.get("preco_unitario")  # se None, classe busca no banco
+        )
+        return jsonify({"resultado": "ok", "carrinho": carrinho.json()})
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": str(e)}), 400
 
-# --- Remover item do carrinho ---
-# curl -X DELETE http://127.0.0.1:5000/carrinho/1/remover_item/2
+# Remover item
 @app.route('/carrinho/<int:id>/remover_item/<int:produto_id>', methods=['DELETE'])
-def remover_item(id, produto_id):
-    carrinho = Carrinho(id, None)
-    carrinho.removerItem(produto_id)
-    return jsonify({"message": "Item removido", "carrinho": carrinho.json()})
+def carrinho_remover_item(id, produto_id):
+    try:
+        carrinho = Carrinho(id, None)
+        carrinho.removerItem(produto_id)
+        return jsonify({"resultado": "ok", "carrinho": carrinho.json()})
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": str(e)}), 400
 
-# --- Atualizar quantidade de item ---
-# curl -X PUT http://127.0.0.1:5000/carrinho/1/atualizar_item -H "Content-Type: application/json" -d '{"produto_id":2,"quantidade":5}'
+# Atualizar quantidade (idempotente)
+# PUT /carrinho/<id>/atualizar_item  body: {"produto_id":1,"quantidade":5}
 @app.route('/carrinho/<int:id>/atualizar_item', methods=['PUT'])
-def atualizar_item(id):
-    dados = request.json
+def carrinho_atualizar_item(id):
+    dados = request.json or {}
     produto_id = dados.get("produto_id")
     quantidade = dados.get("quantidade")
+    if produto_id is None or quantidade is None:
+        return jsonify({"resultado": "erro", "detalhes": "produto_id e quantidade são obrigatórios"}), 400
 
-    # Remove o item antigo
-    carrinho = Carrinho(id, None)
-    carrinho.removerItem(produto_id)
-
-    if quantidade > 0:
-        # Busca o preço atual do produto
-        conexao = conectar_banco()
-        cursor = conexao.cursor()
-        cursor.execute("SELECT preco FROM produtos WHERE id = %s", (produto_id,))
-        preco = cursor.fetchone()[0]
-        cursor.close()
-        conexao.close()
-
-        carrinho.adicionarItem(produto_id, quantidade, preco)
-
-    return jsonify({"message": "Item atualizado", "carrinho": carrinho.json()})
-# ROTAS DE VENDA
-#curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
-from datetime import datetime
-import pymysql
-
-def _parse_date(d):
-    if not d:
-        return None
+    # Remove e re-insere com a nova quantidade (>0), ou só remove (=0)
     try:
-        if "-" in d:
-            return datetime.strptime(d, "%Y-%m-%d").date()
-        return datetime.strptime(d, "%d/%m/%Y").date()
-    except Exception:
-        return None
+        carrinho = Carrinho(id, None)
+        carrinho.removerItem(produto_id)
+        if int(quantidade) > 0:
+            # buscar preço atual do produto
+            conexao = conectar_banco()
+            try:
+                with conexao.cursor() as c:
+                    c.execute("SELECT preco FROM produtos WHERE id=%s", (produto_id,))
+                    row = c.fetchone()
+                    if not row:
+                        return jsonify({"resultado": "erro", "detalhes": "Produto não encontrado"}), 404
+                    preco = float(row[0])
+            finally:
+                conexao.close()
+            carrinho.adicionarItem(produto_id, quantidade, preco)
+        return jsonify({"resultado": "ok", "carrinho": carrinho.json()})
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": str(e)}), 400
 
 @app.route("/criar_venda", methods=["POST"])
 def criar_venda():
@@ -1408,27 +1383,30 @@ def criar_usuario_loja():
     usuario = dados.get("usuario")
     senha = dados.get("senha")
 
-    # 1) Criar usuário
+    if not cliente_id or not usuario or not senha:
+        return jsonify({"resultado": "erro", "detalhes": "cliente_id, usuario e senha são obrigatórios"}), 400
+
+    # 1) Cria o usuário da loja
     usuario_id = UsuarioLoja.criarUsuarioLoja(cliente_id, usuario, senha)
     if not usuario_id:
-        return jsonify({"message": "Erro ao criar usuário"}), 500
+        return jsonify({"resultado": "erro", "detalhes": "Falha ao criar usuário da loja"}), 500
 
-    # 2) Criar carrinho
-    carrinho_data = Carrinho.criarCarrinho(usuario_id)
-    if not carrinho_data:
-        return jsonify({"message": "Erro ao criar carrinho"}), 500
+    # 2) Cria (ou recupera) o carrinho para esse idUsuario = usuario_id
+    try:
+        carrinho = Carrinho.criarCarrinho(usuario_id)
+    except Exception as e:
+        return jsonify({"resultado": "erro", "detalhes": f"Usuário criado, mas falhou ao criar carrinho: {e}"}), 500
 
-    # 3) Retornar apenas dados serializáveis
+    # 3) Resposta serializável
     return jsonify({
-        "message": "Usuário e carrinho criados com sucesso",
+        "resultado": "ok",
         "usuario": {
             "id": usuario_id,
-            "usuario": usuario,
-            "cliente_id": cliente_id
+            "cliente_id": cliente_id,
+            "usuario": usuario
         },
-        "carrinho": carrinho_data
-    })
-
+        "carrinho": carrinho.json()
+    }), 201
 
 
 # curl -X PUT http://127.0.0.1:5000/editar_usuario_loja/1 -H "Content-Type: application/json" -d '{"cliente_id":2,"usuario":"cliente_novo","senha":"nova_senha"}'
