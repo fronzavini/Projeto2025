@@ -9,9 +9,29 @@ from classes import Cliente, Funcionario, Produto, Fornecedor, Cupom, ServicoPer
 from flask_cors import CORS
 from pymysql.err import MySQLError
 import jwt
+from datetime import timezone
+from dotenv import load_dotenv
+import os
+import requests
+import uuid
+from json import JSONDecodeError
+from pathlib import Path
+
 
 SECRET_KEY = "minha_chave_super_secreta_123!@#"  # guarde em .env idealmente
 
+load_dotenv(dotenv_path=Path(__file__).with_name('.env'))
+
+MP_BASE  = os.getenv("MERCADOPAGO_BASE_URL") or "https://api.mercadopago.com"
+MP_TOKEN = (
+    os.getenv("MERCADOPAGO_ACCESS_TOKEN")
+    or os.getenv("MP_ACCESS_TOKEN")
+    or os.getenv("MERCADO_PAGO_TOKEN")
+    or os.getenv("MERCADOPAGO_TOKEN")
+)
+
+# debug opcional para ver se carregou
+print("MP_TOKEN prefix:", (MP_TOKEN or "")[:7])  # deve imprimir 'APP_USR'
 
 
 app = Flask(__name__)
@@ -263,7 +283,7 @@ def login_sistema():
         payload = {
             "usuario_id": usuario_sistema['id'],
             "funcionario_id": usuario_sistema['funcionario_id'],
-            "exp": datetime.utcnow() + timedelta(hours=8)
+            "exp": datetime.now(timezone.utc) + timedelta(hours=8)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
@@ -275,6 +295,7 @@ def login_sistema():
         '''
         cursor.execute(query_func, (usuario_sistema['funcionario_id'],))
         func = cursor.fetchone()
+
         funcionario = {
             'id': func[0],
             'nome': func[1],
@@ -284,19 +305,8 @@ def login_sistema():
             'telefone': func[5]
         }
 
-        # Perfil (se existir)
+        # ✅ PERFIL REMOVIDO (NÃO EXISTE NO SEU BANCO)
         perfil = None
-        if funcionario.get('perfil_id'):
-            cursor.execute('SELECT id, nome, permissoes, ativo FROM perfis WHERE id = %s', 
-                           (funcionario['perfil_id'],))
-            p = cursor.fetchone()
-            if p:
-                perfil = {
-                    'id': p[0],
-                    'nome': p[1],
-                    'permissoes': p[2],
-                    'ativo': bool(p[3])
-                }
 
         return jsonify({
             "resultado": "ok",
@@ -312,6 +322,7 @@ def login_sistema():
         })
 
     except Exception as e:
+        print("ERRO NO LOGIN:", e)
         return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
 
     finally:
@@ -900,7 +911,7 @@ def listar_carrinhos():
 @app.route('/carrinho/<int:id>', methods=['GET'])
 def listar_carrinho(id):
     conexao = conectar_banco()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor(pymysql.cursors.DictCursor)
     try:
         cursor.execute("SELECT * FROM carrinho_de_compra WHERE id = %s", (id,))
         c = cursor.fetchone()
@@ -926,7 +937,7 @@ def listar_carrinho(id):
 @app.route('/carrinho/usuario/<int:id_usuario>', methods=['GET'])
 def listar_carrinho_usuario(id_usuario):
     conexao = conectar_banco()
-    cursor = conexao.cursor(dictionary=True)
+    cursor = conexao.cursor(pymysql.cursors.DictCursor)
     try:
         cursor.execute("SELECT * FROM carrinho_de_compra WHERE idUsuario = %s", (id_usuario,))
         c = cursor.fetchone()
@@ -994,37 +1005,131 @@ def atualizar_item(id):
     return jsonify({"message": "Item atualizado", "carrinho": carrinho.json()})
 # ROTAS DE VENDA
 #curl -X POST http://127.0.0.1:5000/criar_venda -H "Content-Type: application/json" -d '{"cliente":1,"funcionario":1,"produtos":[{"id":1,"quantidade":2}],"valorTotal":100.00,"dataVenda":"2025-09-11","entrega":true,"dataEntrega":"2025-09-15"}'
-@app.route('/criar_venda', methods=['POST'])
-def criar_venda():
-    dados = request.json or {}
+from datetime import datetime
+import pymysql
+
+def _parse_date(d):
+    if not d:
+        return None
     try:
-        cliente = dados.get("cliente")
-        funcionario = dados.get("funcionario")
-        produtos = dados.get("produtos", [])
-        valorTotal = dados.get("valorTotal")
-        dataVenda = dados.get("dataVenda")
-        entrega = dados.get("entrega")
-        dataEntrega = dados.get("dataEntrega")
-        pago = dados.get("pago", False)
+        if "-" in d:
+            return datetime.strptime(d, "%Y-%m-%d").date()
+        return datetime.strptime(d, "%d/%m/%Y").date()
+    except Exception:
+        return None
 
-        resultado = Venda.criarVenda(
-            cliente, funcionario, produtos, valorTotal, dataVenda, entrega, dataEntrega, pago
-        )
+@app.route("/criar_venda", methods=["POST"])
+def criar_venda():
+    body = request.get_json(silent=True) or {}
+    print("\n[CRIAR_VENDA] payload:", body)  # <-- loga o que chegou
 
-        #id_venda = Venda.criarVenda(cliente, funcionario, produtos, valorTotal, dataVenda)
+    # 1) validação do payload (nomes esperados pelo front)
+    cliente = body.get("cliente")
+    funcionario = body.get("funcionario")
+    itens = body.get("produtos") or []
+    total = body.get("valorTotal")
+    forma_pagamento = body.get("formaPagamento")
+    entrega_flag = body.get("entrega", 0)
+    data_entrega = _parse_date(body.get("dataEntrega"))
+    data_venda = _parse_date(body.get("dataVenda"))
+    cupom = body.get("cupom")
+
+    faltando = []
+    if not cliente: faltando.append("cliente")
+    if not funcionario: faltando.append("funcionario")
+    if not itens: faltando.append("produtos")
+    if total is None: faltando.append("valorTotal")
+    if not forma_pagamento: faltando.append("formaPagamento")
+    if entrega_flag and not data_entrega:
+        faltando.append("dataEntrega (YYYY-MM-DD)")
+    if faltando:
+        print("[CRIAR_VENDA] faltando:", faltando)
+        return jsonify({"ok": False, "erro": "Campos ausentes/invalidos", "campos": faltando}), 400
+
+    # 2) conecta com DictCursor
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({"ok": False, "erro": "Falha ao conectar ao banco"}), 500
+
+    try:
+        with conexao.cursor(pymysql.cursors.DictCursor) as c:
+            # 3) valida FK cliente/funcionário (seus nomes de coluna/tabela)
+            c.execute("SELECT id FROM clientes WHERE id=%s", (cliente,))
+            row_cli = c.fetchone()
+            if not row_cli:
+                return jsonify({"ok": False, "erro": f"Cliente {cliente} inexistente"}), 400
+
+            c.execute("SELECT id FROM funcionarios WHERE id=%s", (funcionario,))
+            row_fun = c.fetchone()
+            if not row_fun:
+                return jsonify({"ok": False, "erro": f"Funcionário {funcionario} inexistente"}), 400
+
+            # 4) valida produtos e coleta preço atual (suas colunas: cod_produto, preco, quantidade_estoque)
+            itens_validos = []
+            for it in itens:
+                pid = it.get("id")
+                qtd = int(it.get("quantidade") or 0)
+                if not pid or qtd <= 0:
+                    return jsonify({"ok": False, "erro": "Produto sem id ou quantidade inválida"}), 400
+
+                c.execute("SELECT id, preco, quantidade_estoque FROM produtos WHERE id=%s", (pid,))
+                prod = c.fetchone()
+                if not prod:
+                    return jsonify({"ok": False, "erro": f"Produto {pid} inexistente"}), 400
+
+                itens_validos.append({
+                    "id": prod["id"],            # <-- usa 'id' que veio do SELECT
+                    "qtd": qtd,
+                    "preco": float(prod["preco"])
+                })
+
+            produtos_json = json.dumps([
+                {"id": it["id"], "quantidade": it["qtd"], "preco": it["preco"]}
+                for it in itens_validos
+            ])
+
+            # 5) cria a venda usando as colunas REAIS de 'vendas'
+            c.execute("""
+                INSERT INTO vendas (cliente, funcionario, produtos, valorTotal, dataVenda, pago)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                int(cliente),
+                int(funcionario),
+                produtos_json,                           # salva os itens como JSON no campo TEXT
+                float(total),
+                (data_venda or datetime.today().date()),
+                0 if not body.get("pago") else 1
+            ))
+            venda_id = c.lastrowid
+            print("[CRIAR_VENDA] venda_id:", venda_id)
 
 
-        transacao = TransacaoFinanceira.criarTransacao(
-            tipo="entrada",
-            categoria="venda",
-            descricao=f"Venda realizada em {dataVenda}",
-            valor=valorTotal,
-            data=dataVenda
-        )
+            # 6) insere itens (sua tabela/colunas: itens_venda (idVenda, idProduto, quantidade, preco_unitario))
+            '''for it in itens_validos:
+                c.execute("SELECT preco FROM produtos WHERE id=%s", (it["id"],))
+                preco_unit = float(c.fetchone()["preco"])
+                c.execute("""
+                    INSERT INTO itens_venda (idVenda, idProduto, quantidade, preco_unitario)
+                    VALUES (%s, %s, %s, %s)
+                """, (venda_id, it["id"], it["qtd"], preco_unit))'''
 
-        return jsonify({"message": "Venda criada.", "resultado": resultado, "transacao": transacao}), 201
+
+            conexao.commit()
+
+        # 7) retorno com id (o front usa como external_reference)
+        return jsonify({"ok": True, "id": venda_id}), 201
+
+    except pymysql.err.IntegrityError as e:
+        conexao.rollback()
+        print("[CRIAR_VENDA][IntegrityError]", str(e))
+        return jsonify({"ok": False, "erro": "IntegrityError", "detalhe": str(e)}), 400
     except Exception as e:
-        return jsonify({"message": "Erro ao criar venda.", "erro": str(e)}), 500
+        conexao.rollback()
+        import traceback; traceback.print_exc()
+        print("[CRIAR_VENDA][Exception]", str(e))
+        return jsonify({"ok": False, "erro": "Exception", "detalhe": str(e)}), 500
+    finally:
+        conexao.close()
 
 #curl -X DELETE http://127.0.0.1:5000/deletar_venda/1
 @app.route('/deletar_venda/<int:id>', methods=['DELETE'])
@@ -1078,6 +1183,162 @@ def listar_transacaofinanceira():
     transacoes = TransacaoFinanceira.listarTransacoes()
     return jsonify(transacoes)
 
+@app.route("/create_pix_payment", methods=["POST"])
+def create_pix_payment():
+    dados = request.get_json(silent=True) or {}
+    order_id = str(dados.get("order_id") or dados.get("pedido_id") or "")
+    amount   = dados.get("amount")
+    email    = dados.get("email") or "cliente@teste.com"
+
+    print("\n[PIX] payload recebido:", dados)
+
+    # 0) sanity checks
+    if not MP_TOKEN:
+        print("[PIX][ERRO] Token ausente. Defina MERCADOPAGO_ACCESS_TOKEN no .env")
+        return jsonify({"erro": "MERCADOPAGO_ACCESS_TOKEN ausente no .env"}), 500
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"erro": "amount inválido"}), 400
+    if amount <= 0:
+        return jsonify({"erro": "amount deve ser > 0"}), 400
+    if not order_id:
+        return jsonify({"erro": "order_id obrigatório"}), 400
+
+    # 1) monta payload
+    body = {
+        "transaction_amount": amount,
+        "payment_method_id": "pix",
+        "description": f"Pedido {order_id}",
+        "external_reference": order_id,
+        "payer": {"email": email},
+    }
+    headers = {
+        "Authorization": f"Bearer {MP_TOKEN}",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4()),
+    }
+
+    print("[PIX] BASE:", MP_BASE)
+    print("[PIX] HEADERS OK, chamando MP /v1/payments ...")
+
+    try:
+        resposta = requests.post(
+            f"{MP_BASE}/v1/payments",
+            json=body,
+            headers=headers,
+            timeout=30
+        )
+        status = resposta.status_code
+        texto  = resposta.text
+
+        print("[PIX] MP STATUS:", status)
+        print("[PIX] MP BODY  :", texto)
+
+        # 2) se MP devolver erro, não estoure 500 — repasse o erro
+        if status >= 300:
+            # tente parsear JSON pra devolver estruturado
+            try:
+                err_json = resposta.json()
+            except JSONDecodeError:
+                err_json = {"raw": texto}
+            return jsonify({"erro": "Erro do Mercado Pago", "detalhe": err_json}), 400
+
+        # 3) sucesso: extraia com segurança
+        mp = resposta.json()
+        tx = (mp.get("point_of_interaction") or {}).get("transaction_data") or {}
+
+        return jsonify({
+            "ok": True,
+            "payment_id": mp.get("id"),
+            "status": mp.get("status"),
+            "external_reference": mp.get("external_reference"),
+            "qr_code": tx.get("qr_code"),
+            "qr_code_base64": tx.get("qr_code_base64"),
+            "ticket_url": tx.get("ticket_url"),
+            "expires_at": tx.get("expires_at")
+        }), 201
+
+    except requests.Timeout:
+        print("[PIX][ERRO] Timeout chamando Mercado Pago")
+        return jsonify({"erro": "Timeout falando com o Mercado Pago"}), 504
+    except Exception as e:
+        # qualquer exceção agora vira 500 com detalhe e log
+        import traceback; traceback.print_exc()
+        return jsonify({"erro": "Falha interna ao criar pagamento", "detalhe": str(e)}), 500
+
+# GET /pix/status/<payment_id> — consulta status no MP
+@app.route("/pix/status/<int:payment_id>", methods=["GET"])
+def pix_status(payment_id):
+    if not MP_TOKEN:
+        return jsonify({"erro": "MERCADOPAGO_ACCESS_TOKEN ausente"}), 500
+
+    r = requests.get(
+        f"{MP_BASE}/v1/payments/{payment_id}",
+        headers={"Authorization": f"Bearer {MP_TOKEN}"},
+        timeout=20
+    )
+    data = r.json()
+    return jsonify({
+        "id": data.get("id"),
+        "status": data.get("status"),
+        "status_detail": data.get("status_detail"),
+        "external_reference": data.get("external_reference")
+    }), r.status_code
+
+
+# POST /webhooks/mercadopago — recebe notificação e atualiza o pedido
+@app.route("/webhooks/mercadopago", methods=["POST"])
+def webhook_mp():
+    body = request.get_json(silent=True) or {}
+    payment_id = (body.get("data") or {}).get("id") or body.get("id")
+    if not payment_id:
+        return jsonify({"ok": False, "motivo": "sem payment id"}), 400
+
+    # Confirma status consultando a API (fonte da verdade)
+    r = requests.get(
+        f"{MP_BASE}/v1/payments/{payment_id}",
+        headers={"Authorization": f"Bearer {MP_TOKEN}"},
+        timeout=20
+    )
+    info = r.json()
+    status = info.get("status")               # approved | pending | ...
+    external_ref = info.get("external_reference")  # usamos como id do pedido
+
+    # Atualiza banco (pedidos)
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({"ok": False, "motivo": "sem conexao banco"}), 500
+
+    try:
+        with conexao.cursor() as c:
+            # Marca forma_pagamento, estado e guarda o id/status do MP
+            c.execute("""
+                UPDATE pedidos
+                   SET forma_pagamento = 'pix',
+                       estado = CASE WHEN %s='approved' THEN 'recebido' ELSE estado END,
+                       mp_payment_id = %s,
+                       mp_status = %s
+                 WHERE id = %s
+            """, (status, str(payment_id), status, external_ref))
+        conexao.commit()
+    except Exception as e:
+        conexao.rollback()
+        return jsonify({"ok": False, "motivo": str(e)}), 500
+    finally:
+        conexao.close()
+
+    # Opcional: também marcar vendas como pagas se você vincula venda ao pedido
+    # (Descomente e ajuste se necessário)
+    # try:
+    #     conexao = conectar_banco()
+    #     with conexao.cursor() as c:
+    #         c.execute("UPDATE vendas SET pago = %s WHERE pedido = %s", (1 if status == "approved" else 0, external_ref))
+    #     conexao.commit()
+    # finally:
+    #     conexao.close()
+
+    return jsonify({"ok": True, "payment_id": payment_id, "status": status})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000) # , debug=True)
