@@ -895,3 +895,33 @@
   color: var(--foreground);
   margin-top: 0.5rem;
 }
+
+/* ====== ENDEREÇO DE ENTREGA ====== */
+.gridEndereco {
+  display: grid;
+  grid-template-columns: 2fr 0.7fr 1.5fr 1fr 2fr 0.6fr 2fr; /* logradouro, numero, bairro, cep, municipio, uf, complemento */
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.gridEndereco input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Em telas menores, ajusta para uma ou duas colunas */
+@media (max-width: 900px) {
+  .gridEndereco {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .gridEndereco {
+    grid-template-columns: 1fr;
+  }
+}

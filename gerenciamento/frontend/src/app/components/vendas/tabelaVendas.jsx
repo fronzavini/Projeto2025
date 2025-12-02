@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 import { Filtros } from "../filtros";
-import { FiltroDropdown } from "../filtrosDropdown";
 import VisualizarPedido from "./visualizarPedido";
 import styles from "../../styles/tabelas.module.css";
 
@@ -28,15 +27,16 @@ export default function TabelaVendas() {
 
       const resultado = await res.json();
 
+      // vendas: id, cliente, funcionario, pedido, produtos, valorTotal, dataVenda, pago
       const vendasFormatadas = (resultado || []).map((v) => ({
         id: v[0],
         cliente: v[1],
         funcionario: v[2],
-        produtos: v[3],
-        valorTotal: v[4],
-        dataVenda: v[5],
-        entrega: v[6],
-        dataEntrega: v[7],
+        pedido: v[3],
+        produtos: v[4],
+        valorTotal: v[5],
+        dataVenda: v[6],
+        pago: v[7],
       }));
 
       setVendas(vendasFormatadas);
@@ -60,9 +60,9 @@ export default function TabelaVendas() {
 
   // Dados filtrados com base nos filtros
   const filteredData = vendas.filter((item) => {
-    const idStr = item.id ? item.id.toString() : "";
+    const idStr = item.id ? String(item.id) : "";
     const dataVendaStr = item.dataVenda
-      ? item.dataVenda.toString().slice(0, 10)
+      ? String(item.dataVenda).slice(0, 10)
       : "";
 
     return (
@@ -87,7 +87,7 @@ export default function TabelaVendas() {
     }
   };
 
-  // Botão ação "Visualizar" e "Deletar"
+  // Botões de ação
   const actionTemplate = (rowData) => (
     <div className={styles.acoes}>
       <button
@@ -143,26 +143,20 @@ export default function TabelaVendas() {
           <Column
             field="dataVenda"
             header="Data Venda"
-            body={(rowData) => {
-              const date = new Date(rowData.dataVenda);
-              return date.toLocaleDateString("pt-BR");
-            }}
-          />
-          <Column
-            field="dataEntrega"
-            header="Data Entrega"
-            body={(rowData) => {
-              if (rowData.dataEntrega) {
-                const date = new Date(rowData.dataEntrega);
-                return date.toLocaleDateString("pt-BR");
-              }
-              return "-";
+            body={(row) => {
+              const d = row.dataVenda ? new Date(row.dataVenda) : null;
+              return d ? d.toLocaleDateString("pt-BR") : "-";
             }}
           />
           <Column
             field="valorTotal"
             header="Valor Total"
-            body={(rowData) => `R$ ${Number(rowData.valorTotal).toFixed(2)}`}
+            body={(row) => `R$ ${Number(row.valorTotal || 0).toFixed(2)}`}
+          />
+          <Column
+            field="pago"
+            header="Status"
+            body={(row) => (Number(row.pago) ? "Pago" : "Não pago")}
           />
           <Column
             body={actionTemplate}

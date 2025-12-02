@@ -71,7 +71,7 @@ class Cliente(PessoaFisica, PessoaJuridica):
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             '''
             valores = (
-                datetime.now(), nome, tipo, sexo, cpf, cnpj, rg, email, telefone,
+                datetime.today(), nome, tipo, sexo, cpf, cnpj, rg, email, telefone,
                 dataNasc, endCep, endRua, endNumero, endBairro, endComplemento, endUF, endMunicipio
             )
             cursor.execute(query, valores)

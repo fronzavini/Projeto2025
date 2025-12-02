@@ -53,6 +53,32 @@ def conectar_banco():
         return None
 
 
+# --- helpers (adicione em algum lugar no topo do arquivo) ---
+def _parse_date(s):
+    if not s:
+        return None
+    try:
+        # aceita 'YYYY-MM-DD' ou 'YYYY-MM-DDTHH:MM:SSZ'
+        return datetime.fromisoformat(s[:10]).date()
+    except Exception:
+        try:
+            return datetime.strptime(s[:10], "%Y-%m-%d").date()
+        except Exception:
+            return None
+
+def _norm_pagamento(fp):
+    """
+    Normaliza forma de pagamento para o ENUM do banco.
+    Seu schema tem ENUM('dinheiro','pix').
+    Front manda 'Pix' | 'Cartão' | 'Dinheiro'.
+    """
+    if not fp:
+        return None
+    f = str(fp).strip().lower()
+    if "pix" in f:
+        return "pix"
+    # 'cartão' não existe no ENUM atual; vamos tratar como 'dinheiro'
+    return "dinheiro"
 
 
 @app.route('/')
@@ -1048,53 +1074,56 @@ def carrinho_atualizar_item(id):
     except Exception as e:
         return jsonify({"resultado": "erro", "detalhes": str(e)}), 400
 
+# --- SUBSTITUA todo o endpoint /criar_venda por este ---
 @app.route("/criar_venda", methods=["POST"])
 def criar_venda():
     body = request.get_json(silent=True) or {}
-    print("\n[CRIAR_VENDA] payload:", body)  # <-- loga o que chegou
+    print("\n[CRIAR_VENDA] payload:", body)
 
-    # 1) validação do payload (nomes esperados pelo front)
+    # 1) validação do payload vindo do front
     cliente = body.get("cliente")
     funcionario = body.get("funcionario")
     itens = body.get("produtos") or []
     total = body.get("valorTotal")
-    forma_pagamento = body.get("formaPagamento")
-    entrega_flag = body.get("entrega", 0)
+    forma_pagamento_raw = body.get("formaPagamento")        # 'Pix' | 'Cartão' | 'Dinheiro'
+    entrega_flag = body.get("entrega", 0)                   # 1 ou 0
     data_entrega = _parse_date(body.get("dataEntrega"))
     data_venda = _parse_date(body.get("dataVenda"))
-    cupom = body.get("cupom")
+
+    # Endereço de entrega (opcional)
+    entrega_endereco = (body.get("entregaEndereco") or {})  # {logradouro, numero, bairro, cep, municipio, uf, complemento}
 
     faltando = []
     if not cliente: faltando.append("cliente")
     if not funcionario: faltando.append("funcionario")
     if not itens: faltando.append("produtos")
     if total is None: faltando.append("valorTotal")
-    if not forma_pagamento: faltando.append("formaPagamento")
     if entrega_flag and not data_entrega:
         faltando.append("dataEntrega (YYYY-MM-DD)")
     if faltando:
         print("[CRIAR_VENDA] faltando:", faltando)
         return jsonify({"ok": False, "erro": "Campos ausentes/invalidos", "campos": faltando}), 400
 
-    # 2) conecta com DictCursor
+    forma_pagamento = _norm_pagamento(forma_pagamento_raw)  # mapeia 'Pix'/'Dinheiro' -> ENUM('pix','dinheiro')
+    tipo_entrega = "entrega" if int(entrega_flag or 0) else "retirada"
+
+    # 2) conectar e iniciar transação
     conexao = conectar_banco()
     if not conexao:
         return jsonify({"ok": False, "erro": "Falha ao conectar ao banco"}), 500
 
     try:
         with conexao.cursor(pymysql.cursors.DictCursor) as c:
-            # 3) valida FK cliente/funcionário (seus nomes de coluna/tabela)
+            # 3) valida FK cliente/funcionário
             c.execute("SELECT id FROM clientes WHERE id=%s", (cliente,))
-            row_cli = c.fetchone()
-            if not row_cli:
+            if not c.fetchone():
                 return jsonify({"ok": False, "erro": f"Cliente {cliente} inexistente"}), 400
 
             c.execute("SELECT id FROM funcionarios WHERE id=%s", (funcionario,))
-            row_fun = c.fetchone()
-            if not row_fun:
+            if not c.fetchone():
                 return jsonify({"ok": False, "erro": f"Funcionário {funcionario} inexistente"}), 400
 
-            # 4) valida produtos e coleta preço atual (suas colunas: cod_produto, preco, quantidade_estoque)
+            # 4) valida produtos e coleta preço atual
             itens_validos = []
             for it in itens:
                 pid = it.get("id")
@@ -1108,7 +1137,7 @@ def criar_venda():
                     return jsonify({"ok": False, "erro": f"Produto {pid} inexistente"}), 400
 
                 itens_validos.append({
-                    "id": prod["id"],            # <-- usa 'id' que veio do SELECT
+                    "id": prod["id"],
                     "qtd": qtd,
                     "preco": float(prod["preco"])
                 })
@@ -1118,36 +1147,73 @@ def criar_venda():
                 for it in itens_validos
             ])
 
-            # 5) cria a venda usando as colunas REAIS de 'vendas'
+            # 5) cria PEDIDO primeiro (para usar como external_reference no PIX)
             c.execute("""
-                INSERT INTO vendas (cliente, funcionario, produtos, valorTotal, dataVenda, pago)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO pedidos (
+                    cliente_id, funcionario_id, forma_pagamento, estado, canal,
+                    valor_total, tipo_entrega, data_entrega,
+                    entrega_logradouro, entrega_numero, entrega_bairro, entrega_cep,
+                    entrega_municipio, entrega_uf, entrega_complemento
+                ) VALUES (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s, %s
+                )
             """, (
                 int(cliente),
                 int(funcionario),
-                produtos_json,                           # salva os itens como JSON no campo TEXT
+                forma_pagamento,              # ENUM('dinheiro','pix')
+                "recebido",                   # status inicial
+                "online",                     # ou 'presencial', conforme seu fluxo
                 float(total),
-                (data_venda or datetime.today().date()),
-                0 if not body.get("pago") else 1
+                tipo_entrega,                 # 'entrega' | 'retirada'
+                data_entrega,
+                entrega_endereco.get("logradouro"),
+                entrega_endereco.get("numero"),
+                entrega_endereco.get("bairro"),
+                entrega_endereco.get("cep"),
+                entrega_endereco.get("municipio"),
+                entrega_endereco.get("uf"),
+                entrega_endereco.get("complemento"),
+            ))
+            pedido_id = c.lastrowid
+            print("[CRIAR_VENDA] pedido_id:", pedido_id)
+
+            # 6) cria a VENDA vinculada ao pedido (pago=0)
+            c.execute("""
+                INSERT INTO vendas (cliente, funcionario, pedido, produtos, valorTotal, dataVenda, pago)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                int(cliente),
+                int(funcionario),
+                int(pedido_id),
+                produtos_json,
+                float(total),
+                (data_venda or date.today()),
+                0
             ))
             venda_id = c.lastrowid
             print("[CRIAR_VENDA] venda_id:", venda_id)
 
-
-            # 6) insere itens (sua tabela/colunas: itens_venda (idVenda, idProduto, quantidade, preco_unitario))
-            '''for it in itens_validos:
-                c.execute("SELECT preco FROM produtos WHERE id=%s", (it["id"],))
-                preco_unit = float(c.fetchone()["preco"])
-                c.execute("""
-                    INSERT INTO itens_venda (idVenda, idProduto, quantidade, preco_unitario)
-                    VALUES (%s, %s, %s, %s)
-                """, (venda_id, it["id"], it["qtd"], preco_unit))'''
-
+            # 7) registra transação financeira (entrada - venda)
+            c.execute("""
+                INSERT INTO transacoes_financeiras
+                    (tipo,  categoria, descricao,                       valor,        data_transacao)
+                VALUES
+                    (%s,    %s,        %s,                              %s,           %s)
+            """, (
+                "entrada",
+                "venda",
+                f"Venda #{venda_id} (Pedido #{pedido_id})",
+                float(total),
+                datetime.now()  # DATETIME
+            ))
 
             conexao.commit()
 
-        # 7) retorno com id (o front usa como external_reference)
-        return jsonify({"ok": True, "id": venda_id}), 201
+        # 8) retorno com id_venda e id_pedido
+        return jsonify({"ok": True, "id_venda": venda_id, "id_pedido": pedido_id}), 201
 
     except pymysql.err.IntegrityError as e:
         conexao.rollback()
@@ -1160,6 +1226,8 @@ def criar_venda():
         return jsonify({"ok": False, "erro": "Exception", "detalhe": str(e)}), 500
     finally:
         conexao.close()
+
+
 
 #curl -X DELETE http://127.0.0.1:5000/deletar_venda/1
 @app.route('/deletar_venda/<int:id>', methods=['DELETE'])
@@ -1325,32 +1393,63 @@ def webhook_mp():
     if not payment_id:
         return jsonify({"ok": False, "motivo": "sem payment id"}), 400
 
-    # Confirma status consultando a API (fonte da verdade)
-    r = requests.get(
-        f"{MP_BASE}/v1/payments/{payment_id}",
-        headers={"Authorization": f"Bearer {MP_TOKEN}"},
-        timeout=20
-    )
-    info = r.json()
-    status = info.get("status")               # approved | pending | ...
-    external_ref = info.get("external_reference")  # usamos como id do pedido
+    # Confirma status consultando a API do MP (fonte da verdade)
+    try:
+        r = requests.get(
+            f"{MP_BASE}/v1/payments/{payment_id}",
+            headers={"Authorization": f"Bearer {MP_TOKEN}"},
+            timeout=20
+        )
+        info = r.json()
+    except Exception as e:
+        return jsonify({"ok": False, "motivo": f"falha ao consultar MP: {e}"}), 502
 
-    # Atualiza banco (pedidos)
+    status = info.get("status")                     # approved | pending | ...
+    external_ref = info.get("external_reference")   # usamos como id do pedido
+
+    # tenta converter a ref para inteiro (id do pedido)
+    try:
+        pedido_id = int(external_ref)
+    except (TypeError, ValueError):
+        pedido_id = None
+
     conexao = conectar_banco()
     if not conexao:
         return jsonify({"ok": False, "motivo": "sem conexao banco"}), 500
 
     try:
         with conexao.cursor() as c:
-            # Marca forma_pagamento, estado e guarda o id/status do MP
-            c.execute("""
-                UPDATE pedidos
-                   SET forma_pagamento = 'pix',
-                       estado = CASE WHEN %s='approved' THEN 'recebido' ELSE estado END,
-                       mp_payment_id = %s,
-                       mp_status = %s
-                 WHERE id = %s
-            """, (status, str(payment_id), status, external_ref))
+            if pedido_id:
+                # Atualiza PEDIDO (forma_pagamento, status MP, id do MP)
+                c.execute("""
+                    UPDATE pedidos
+                       SET forma_pagamento = 'pix',
+                           -- mantém seu estado de negócio; opcionalmente pode-se
+                           -- mover para 'recebido' apenas quando aprovado:
+                           estado = CASE WHEN %s='approved' THEN estado ELSE estado END,
+                           mp_payment_id = %s,
+                           mp_status = %s
+                     WHERE id = %s
+                """, (status, str(payment_id), status, pedido_id))
+
+                # ✅ Sincroniza VENDAS.pago baseado no status do MP
+                c.execute("""
+                    UPDATE vendas
+                       SET pago = CASE WHEN %s='approved' THEN 1 ELSE 0 END
+                     WHERE pedido = %s
+                """, (status, pedido_id))
+            else:
+                # Fallback quando não veio/é inválido o external_reference:
+                # pelo menos registre o status no(s) pedido(s) que tiverem esse payment_id.
+                c.execute("""
+                    UPDATE pedidos
+                       SET forma_pagamento = 'pix',
+                           mp_payment_id = %s,
+                           mp_status = %s
+                     WHERE mp_payment_id = %s
+                """, (str(payment_id), status, str(payment_id)))
+                # sem pedido_id não dá para marcar vendas.pago de forma confiável
+
         conexao.commit()
     except Exception as e:
         conexao.rollback()
@@ -1358,20 +1457,7 @@ def webhook_mp():
     finally:
         conexao.close()
 
-    # Opcional: também marcar vendas como pagas se você vincula venda ao pedido
-    # (Descomente e ajuste se necessário)
-    # try:
-    #     conexao = conectar_banco()
-    #     with conexao.cursor() as c:
-    #         c.execute("UPDATE vendas SET pago = %s WHERE pedido = %s", (1 if status == "approved" else 0, external_ref))
-    #     conexao.commit()
-    # finally:
-    #     conexao.close()
-
-    return jsonify({"ok": True, "payment_id": payment_id, "status": status})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000) # , debug=True)
+    return jsonify({"ok": True, "payment_id": payment_id, "status": status, "external_reference": external_ref})
 
 
 # Rotas para usuarios_sistema
@@ -1495,6 +1581,72 @@ def buscar_usuario_loja(id):
     if not usuario:
         return jsonify({'resultado': 'erro', 'detalhes': 'Usuário não encontrado'}), 404
     return jsonify(usuario.json())
+
+@app.route('/pedidos/<int:id>', methods=['GET'])
+def obter_pedido_por_id(id):
+    conexao = conectar_banco()
+    if not conexao:
+        return jsonify({'resultado': 'erro', 'detalhes': 'Falha ao conectar ao banco'}), 500
+
+    try:
+        with conexao.cursor(pymysql.cursors.DictCursor) as c:
+            # Pedido (com forma_pagamento, tipo_entrega, data/endereço e campos do MP)
+            c.execute("""
+                SELECT
+                    p.id,
+                    p.cliente_id,
+                    p.funcionario_id,
+                    p.data_pedido,
+                    p.forma_pagamento,
+                    p.estado,
+                    p.canal,
+                    p.valor_total,
+                    p.tipo_entrega,
+                    p.data_entrega,
+                    p.entrega_logradouro,
+                    p.entrega_numero,
+                    p.entrega_bairro,
+                    p.entrega_cep,
+                    p.entrega_municipio,
+                    p.entrega_uf,
+                    p.entrega_complemento,
+                    p.mp_payment_id,
+                    p.mp_status
+                FROM pedidos p
+                WHERE p.id = %s
+                LIMIT 1
+            """, (id,))
+            pedido = c.fetchone()
+            if not pedido:
+                return jsonify({'resultado': 'erro', 'detalhes': 'Pedido não encontrado'}), 404
+
+            # Venda vinculada (para trazer pago, dataVenda, produtos, valorTotal)
+            c.execute("""
+                SELECT id, cliente, funcionario, pedido, produtos, valorTotal, dataVenda, pago
+                FROM vendas
+                WHERE pedido = %s
+                ORDER BY id DESC
+                LIMIT 1
+            """, (id,))
+            venda = c.fetchone()
+
+            if venda:
+                # Padroniza algumas chaves que o front usa
+                pedido['pago']       = int(venda.get('pago') or 0)
+                pedido['dataVenda']  = venda.get('dataVenda')
+                pedido['produtos']   = venda.get('produtos')  # JSON string
+                pedido['valorTotal'] = float(venda.get('valorTotal') or 0)
+            else:
+                pedido['pago']       = 0
+                pedido['dataVenda']  = None
+                pedido['produtos']   = None
+                pedido['valorTotal'] = float(pedido.get('valor_total') or 0)
+
+        return jsonify(pedido)
+    except Exception as e:
+        return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
+    finally:
+        conexao.close()
 
 
 

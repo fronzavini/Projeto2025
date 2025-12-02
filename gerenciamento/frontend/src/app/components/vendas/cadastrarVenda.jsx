@@ -27,6 +27,17 @@ export default function CadastrarVenda({ onClose }) {
   const [dataEntrega, setDataEntrega] = useState("");
   const [formaPagamento, setFormaPagamento] = useState("Pix");
 
+  // Endereço de entrega
+  const [entregaEndereco, setEntregaEndereco] = useState({
+    logradouro: "",
+    numero: "",
+    bairro: "",
+    cep: "",
+    municipio: "",
+    uf: "",
+    complemento: "",
+  });
+
   const [desconto, setDesconto] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -150,8 +161,14 @@ export default function CadastrarVenda({ onClose }) {
   const validarCupom = (cupom, itens, valorSubtotal) => {
     if (!cupom) return { valido: false, motivo: "Cupom inválido" };
 
-    if (cupom.valor_minimo && Number(valorSubtotal) < Number(cupom.valor_minimo)) {
-      return { valido: false, motivo: "Valor mínimo não atingido para este cupom." };
+    if (
+      cupom.valor_minimo &&
+      Number(valorSubtotal) < Number(cupom.valor_minimo)
+    ) {
+      return {
+        valido: false,
+        motivo: "Valor mínimo não atingido para este cupom.",
+      };
     }
 
     let descontoCalc = 0;
@@ -159,7 +176,9 @@ export default function CadastrarVenda({ onClose }) {
     if (String(cupom.tipo).toLowerCase() === "percentual") {
       const pct = Number(cupom.descontoPorcentagem || 0);
       descontoCalc = (valorSubtotal * pct) / 100.0;
-    } else if (["valor_fixo", "fixo"].includes(String(cupom.tipo).toLowerCase())) {
+    } else if (
+      ["valor_fixo", "fixo"].includes(String(cupom.tipo).toLowerCase())
+    ) {
       descontoCalc = Number(cupom.descontofixo || 0);
     } else if (String(cupom.tipo).toLowerCase() === "frete") {
       descontoCalc = 0;
@@ -215,7 +234,7 @@ export default function CadastrarVenda({ onClose }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: Number(total),
-        order_id: String(pedidoId),
+        order_id: String(pedidoId), // <- external_reference
         email: email || "cliente@teste.com",
       }),
     });
@@ -241,13 +260,29 @@ export default function CadastrarVenda({ onClose }) {
     return data;
   }
 
+  // -------------------- VALIDAÇÕES --------------------
+  const validaEntrega = () => {
+    if (tipoEntrega !== "entrega") return true;
+    if (!dataEntrega) {
+      alert("Informe a data de entrega.");
+      return false;
+    }
+    const { logradouro, numero, cep, municipio, uf } = entregaEndereco;
+    if (!logradouro || !numero || !cep || !municipio || !uf) {
+      alert(
+        "Preencha endereço de entrega: logradouro, número, CEP, município e UF."
+      );
+      return false;
+    }
+    return true;
+  };
+
   // -------------------- SALVAR VENDA --------------------
   const handleConfirmarVenda = async () => {
     if (!clienteSelecionado) return alert("Selecione um cliente");
     if (!funcionarioSelecionado) return alert("Selecione um funcionário");
     if (produtos.length === 0) return alert("Adicione pelo menos um produto");
-    if (tipoEntrega === "entrega" && !dataEntrega)
-      return alert("Informe a data de entrega");
+    if (!validaEntrega()) return;
 
     setLoading(true);
     setErrorMsg(null);
@@ -264,8 +299,9 @@ export default function CadastrarVenda({ onClose }) {
         dataVenda,
         entrega: tipoEntrega === "entrega" ? 1 : 0,
         dataEntrega: tipoEntrega === "entrega" ? dataEntrega : null,
-        formaPagamento,
+        formaPagamento, // o backend normaliza ('Pix' -> 'pix', 'Dinheiro' -> 'dinheiro', 'Cartão' -> 'dinheiro')
         pago: 0,
+        entregaEndereco: tipoEntrega === "entrega" ? entregaEndereco : null,
       };
 
       const res = await fetch("http://localhost:5000/criar_venda", {
@@ -277,7 +313,10 @@ export default function CadastrarVenda({ onClose }) {
       if (!res.ok) throw new Error("Erro ao criar venda");
 
       const retorno = await res.json().catch(() => ({}));
+
+      // usa id_pedido como external_reference do PIX
       const pedidoId =
+        retorno.id_pedido ||
         retorno.id ||
         retorno.pedidoId ||
         retorno.vendaId ||
@@ -292,6 +331,7 @@ export default function CadastrarVenda({ onClose }) {
         });
       }
 
+      // Atualiza estoques localmente
       for (const item of produtos) {
         const prod = produtosDisponiveis.find(
           (p) => String(p.id) === String(item.id)
@@ -307,7 +347,7 @@ export default function CadastrarVenda({ onClose }) {
       }
 
       alert("Venda criada com sucesso!");
-      onClose();
+      onClose?.();
     } catch (err) {
       console.error(err);
       setErrorMsg("Erro ao criar venda");
@@ -410,9 +450,7 @@ export default function CadastrarVenda({ onClose }) {
 
           <div className={styles.totalRow}>
             <span>Total itens</span>
-            <span className={styles.valorDireita}>
-              R${subtotal.toFixed(2)}
-            </span>
+            <span className={styles.valorDireita}>R${subtotal.toFixed(2)}</span>
           </div>
         </div>
 
@@ -431,7 +469,9 @@ export default function CadastrarVenda({ onClose }) {
 
           <div className={styles.resumoItem}>
             <span>Desconto</span>
-            <span className={styles.valorDireita}>- R${desconto.toFixed(2)}</span>
+            <span className={styles.valorDireita}>
+              - R${desconto.toFixed(2)}
+            </span>
           </div>
 
           <div className={styles.resumoItem}>
@@ -455,12 +495,91 @@ export default function CadastrarVenda({ onClose }) {
           </select>
 
           {tipoEntrega === "entrega" && (
-            <input
-              className={styles.inputEntrega}
-              type="date"
-              value={dataEntrega}
-              onChange={(e) => setDataEntrega(e.target.value)}
-            />
+            <>
+              <input
+                className={styles.inputEntrega}
+                type="date"
+                value={dataEntrega}
+                onChange={(e) => setDataEntrega(e.target.value)}
+              />
+              <div className={styles.gridEndereco}>
+                <input
+                  className={styles.input}
+                  placeholder="Logradouro"
+                  value={entregaEndereco.logradouro}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      logradouro: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="Número"
+                  value={entregaEndereco.numero}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      numero: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="Bairro"
+                  value={entregaEndereco.bairro}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      bairro: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="CEP"
+                  value={entregaEndereco.cep}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({ ...s, cep: e.target.value }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="Município"
+                  value={entregaEndereco.municipio}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      municipio: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="UF"
+                  maxLength={2}
+                  value={entregaEndereco.uf}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      uf: e.target.value.toUpperCase(),
+                    }))
+                  }
+                />
+                <input
+                  className={styles.input}
+                  placeholder="Complemento"
+                  value={entregaEndereco.complemento}
+                  onChange={(e) =>
+                    setEntregaEndereco((s) => ({
+                      ...s,
+                      complemento: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </>
           )}
         </div>
 
@@ -473,8 +592,8 @@ export default function CadastrarVenda({ onClose }) {
             onChange={(e) => setFormaPagamento(e.target.value)}
           >
             <option value="Pix">Pix</option>
-            <option value="Cartão">Cartão</option>
             <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão">Cartão</option>
           </select>
         </div>
 
