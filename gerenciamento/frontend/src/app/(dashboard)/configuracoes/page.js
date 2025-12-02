@@ -1,3 +1,4 @@
+// app/configuracoes/page.jsx (ou onde estiver seu componente)
 "use client";
 import { useEffect, useState } from "react";
 import styles from "../../styles/configuracoes.module.css";
@@ -8,6 +9,7 @@ import EditarUsuario from "@/app/components/configuracoes/editarUsuario";
 
 export default function Configuracoes() {
   const [tema, setTema] = useState("claro");
+  const [temaInicial, setTemaInicial] = useState("claro");
   const [usuario, setUsuario] = useState(null);
 
   // Carrega dados salvos
@@ -17,15 +19,35 @@ export default function Configuracoes() {
 
     setUsuario(userLS);
     setTema(temaLS);
+    setTemaInicial(temaLS);
 
+    // aplica o tema salvo ao entrar
     document.body.setAttribute(
       "data-theme",
       temaLS === "escuro" ? "dark" : "light"
     );
   }, []);
 
+  // PREVIEW ao vivo: aplica o tema conforme o estado muda (sem salvar)
+  useEffect(() => {
+    document.body.setAttribute(
+      "data-theme",
+      tema === "escuro" ? "dark" : "light"
+    );
+  }, [tema]);
+
+  // Ao sair da página sem salvar, restaura o tema original
+  useEffect(() => {
+    return () => {
+      document.body.setAttribute(
+        "data-theme",
+        temaInicial === "escuro" ? "dark" : "light"
+      );
+    };
+  }, [temaInicial]);
+
   const salvarConfiguracoes = async () => {
-    // 1. Aplica tema visual
+    // 1. (opcional – já está aplicado pelo preview)
     document.body.setAttribute(
       "data-theme",
       tema === "escuro" ? "dark" : "light"
@@ -63,12 +85,14 @@ export default function Configuracoes() {
       }
     }
 
+    // Atualiza o "temaInicial" para que o unmount não reverta após salvar
+    setTemaInicial(tema);
+
     alert("Configurações salvas com sucesso!");
   };
 
   const restaurarPadroes = () => {
-    setTema("claro");
-    // Se houver outros estados para restaurar, adicione aqui
+    setTema("claro"); // preview já troca na hora
   };
 
   return (
@@ -79,7 +103,6 @@ export default function Configuracoes() {
 
       <InterfaceCard tema={tema} setTema={setTema} />
 
-      {/* Formulário para o usuário editar sua senha */}
       {usuario && <EditarUsuario usuario={usuario} setUsuario={setUsuario} />}
 
       <div className={styles.botoes}>
