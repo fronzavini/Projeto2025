@@ -744,7 +744,7 @@ def criar_cupom():
     )
     return jsonify({"message": resultado})
 
-#curl -X PUT http://127.0.0.1:5000/editar_cupom/1 -H "Content-Type: application/json" -d '{"codigo":"PROMO20","tipo":"percentual","descontofixo":null,"descontoPorcentagem":20,"descontofrete":null,"validade":"2025-12-31","usos_permitidos":50,"valor_minimo":100}'
+
 @app.route('/editar_cupom/<int:id>', methods=['PUT'])
 def editar_cupom(id):
     dados = request.json
@@ -759,9 +759,11 @@ def editar_cupom(id):
         usos_permitidos=dados.get("usos_permitidos"),
         valor_minimo=dados.get("valor_minimo"),
         aplicacao=dados.get("aplicacao"),
-        produto=dados.get("produto")  # Nome do produto ou tipo
+        # >>> AQUI:
+        tipo_produto=dados.get("tipo_produto")  # nome do produto OU tipo/categoria
     )
     return jsonify({"message": resultado})
+
 
 #curl -X PATCH http://127.0.0.1:5000/desativar_cupom/1
 @app.route('/desativar_cupom/<int:id>', methods=['PATCH'])
