@@ -16,9 +16,12 @@ import requests
 import uuid
 from json import JSONDecodeError
 from pathlib import Path
-
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 SECRET_KEY = "minha_chave_super_secreta_123!@#"  # guarde em .env idealmente
+GOOGLE_CLIENT_ID = os.getenv("819591199026-d18qd05o0mak6n4hvd6lrcg449kq938j.apps.googleusercontent.com")  # seu client_id do Google
+JWT_SECRET = os.getenv("JWT_SECRET", "uma_chave_secreta_de_verdade")
 
 load_dotenv(dotenv_path=Path(__file__).with_name('.env'))
 
@@ -1649,6 +1652,120 @@ def obter_pedido_por_id(id):
         return jsonify({'resultado': 'erro', 'detalhes': str(e)}), 500
     finally:
         conexao.close()
+
+def gerar_jwt(payload, exp_days=7):
+    now = datetime.utcnow()
+    return jwt.encode(
+        {**payload, "iat": now, "exp": now + timedelta(days=exp_days)},
+        JWT_SECRET,
+        algorithm="HS256"
+    )
+
+def _get(row, idx_or_key):
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return row.get(idx_or_key)
+    return row[idx_or_key]
+
+@app.route("/auth/google", methods=["POST"])
+def auth_google():
+    data = request.json or {}
+    token_google = data.get("id_token")
+    if not token_google:
+        return jsonify({"resultado": "erro", "detalhes": "id_token ausente"}), 400
+
+    # 1) Verifica token Google
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            token_google, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except Exception:
+        return jsonify({"resultado": "erro", "detalhes": "ID token inválido"}), 401
+
+    email = idinfo.get("email")
+    email_verified = idinfo.get("email_verified", False)
+    sub_google = idinfo.get("sub")
+    nome_google = (idinfo.get("name") or "").strip()
+    nome_fallback = email.split("@")[0] if email else ""
+    nome = nome_google or nome_fallback or "Cliente"
+
+    if not email or not email_verified:
+        return jsonify({"resultado": "erro", "detalhes": "Email não verificado"}), 401
+
+    con = conectar_banco()
+    try:
+        with con.cursor() as cur:
+            # 2) CLIENTE: procura por email
+            cur.execute("SELECT id, google_id FROM clientes WHERE email=%s LIMIT 1", (email,))
+            row = cur.fetchone()
+
+            if not row:
+                # Insere cliente com o mínimo exigido pelo seu schema atual
+                cur.execute("""
+                    INSERT INTO clientes
+                        (dataCadastro, nome, tipo, email, estado, google_id)
+                    VALUES
+                        (CURDATE(), %s, 'fisico', %s, TRUE, %s)
+                """, (nome, email, sub_google))
+                cliente_id = cur.lastrowid
+            else:
+                cliente_id = _get(row, 0)
+                google_id_atual = _get(row, 1)
+                if not google_id_atual:
+                    cur.execute(
+                        "UPDATE clientes SET google_id=%s WHERE id=%s",
+                        (sub_google, cliente_id)
+                    )
+
+            # 3) USUÁRIO DA LOJA: 1-para-1 com cliente_id
+            cur.execute(
+                "SELECT id, usuario FROM usuarios_loja WHERE cliente_id=%s LIMIT 1",
+                (cliente_id,)
+            )
+            u = cur.fetchone()
+
+            if not u:
+                # usuario = email (único), senha = 'oauth' (placeholder NOT NULL)
+                # Se já existir 'usuario' com esse email pra outro cliente, gera sufixo
+                usuario_login = email
+                cur.execute("SELECT 1 FROM usuarios_loja WHERE usuario=%s LIMIT 1", (usuario_login,))
+                if cur.fetchone():
+                    usuario_login = f"{email}+{cliente_id}"
+
+                cur.execute("""
+                    INSERT INTO usuarios_loja (cliente_id, usuario, senha)
+                    VALUES (%s, %s, %s)
+                """, (cliente_id, usuario_login, "oauth"))
+                usuario_loja_id = cur.lastrowid
+                usuario_loja_login = usuario_login
+            else:
+                usuario_loja_id = _get(u, 0)
+                usuario_loja_login = _get(u, 1)
+
+        con.commit()
+    except Exception as e:
+        con.rollback()
+        return jsonify({"resultado": "erro", "detalhes": f"Falha no login Google: {e}"}), 500
+    finally:
+        try:
+            con.close()
+        except Exception:
+            pass
+
+    # 4) Gera JWT com sub = usuarios_loja.id (necessário pro carrinho: FK idUsuario -> usuarios_loja.id)
+    token = gerar_jwt({"sub": str(usuario_loja_id), "email": email})
+
+    usuario = {
+        "id": usuario_loja_id,     # este id será usado como idUsuario no carrinho
+        "cliente_id": cliente_id,  # id do cliente
+        "nome": nome,
+        "email": email,
+        "login": usuario_loja_login
+    }
+
+    return jsonify({"resultado": "ok", "token": token, "usuario": usuario})
+
 
 
 

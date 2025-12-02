@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS clientes (
     endMunicipio    VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB;
 
+ALTER TABLE clientes
+  MODIFY telefone VARCHAR(20) NULL,
+  MODIFY endCep VARCHAR(10) NULL,
+  MODIFY endRua VARCHAR(100) NULL,
+  MODIFY endNumero VARCHAR(10) NULL,
+  MODIFY endBairro VARCHAR(50) NULL,
+  MODIFY endComplemento VARCHAR(50) NULL,
+  MODIFY endUF CHAR(2) NULL,
+  MODIFY endMunicipio VARCHAR(50) NULL;
+
+
 CREATE TABLE IF NOT EXISTS funcionarios (
     id                INT AUTO_INCREMENT PRIMARY KEY,
     nome              VARCHAR(100) NOT NULL,
@@ -217,6 +228,9 @@ CREATE TABLE IF NOT EXISTS usuarios_sistema (
     tema_preferido   VARCHAR(50) DEFAULT 'claro',
     CONSTRAINT fk_us_func FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
 ) ENGINE=InnoDB;
+
+ALTER TABLE clientes ADD COLUMN google_id VARCHAR(50) NULL UNIQUE;
+ALTER TABLE clientes ADD UNIQUE (email);
 
 -- ======================================================================
 -- 5) Índices úteis
