@@ -1,6 +1,6 @@
-// components/PedidosList.jsx
+// src/app/components/PedidosList.jsx
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,7 +15,43 @@ const BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
   "http://127.0.0.1:5000";
 
-/* ---------------- PedidoCard (sem mudanças visuais) ---------------- */
+/* ================= Helpers ================= */
+const formatDate = (isoLike) => {
+  try {
+    if (!isoLike) return "";
+    const d = new Date(isoLike);
+    if (isNaN(d.getTime())) return String(isoLike);
+    return d.toLocaleDateString("pt-BR");
+  } catch {
+    return String(isoLike);
+  }
+};
+
+// Se a linha de /listar_vendas vier como array (tupla) ou dict:
+const F = (row, nameOrIndex) =>
+  Array.isArray(row) ? row[nameOrIndex] : row?.[nameOrIndex];
+
+const estadoToStatusUI = (estado, mpStatus) => {
+  const e = String(estado || "").toLowerCase();
+  const mp = String(mpStatus || "").toLowerCase();
+
+  if (e.includes("entreg")) return "entregue";
+  if (e.includes("envi") || e.includes("transport")) return "transporte";
+  if (e.includes("prep") || e.includes("separ")) return "separacao";
+  if (e.includes("cancel")) return "realizado";
+
+  // se aprovado no MP mas sem estado claro, considerar em separação
+  if (mp === "approved") return "separacao";
+
+  return "realizado";
+};
+
+const currency = (n) =>
+  `R$ ${Number(n || 0)
+    .toFixed(2)
+    .replace(".", ",")}`;
+
+/* ============== Card visual ============== */
 const PedidoCard = ({ pedido }) => {
   const trackingSteps = [
     { name: "Pedido realizado", icon: faBox, status: "realizado" },
@@ -42,29 +78,27 @@ const PedidoCard = ({ pedido }) => {
 
   return (
     <div className={styles.container}>
-      {/* COLUNA ESQUERDA - PRODUTO */}
+      {/* ESQUERDA - PRODUTO */}
       <div className={styles.productColumn}>
         <div className={styles.productImageWrapper}>
           <img src={firstItem.imageUrl} alt={firstItem.nome} />
         </div>
-
         <p className={styles.productName}>
           <strong>{firstItem.nome}</strong>
         </p>
-
         <p>
           Quantidade: <strong>{firstItem.quantidade}</strong>
         </p>
         <p>
-          Valor unitário:{" "}
-          <strong>R$ {firstItem.valorUnitario.toFixed(2)}</strong>
+          Valor unitário: <strong>{currency(firstItem.valorUnitario)}</strong>
         </p>
       </div>
 
-      {/* COLUNA CENTRAL - RASTREAMENTO */}
+      {/* CENTRO - RASTREAMENTO */}
       <div className={styles.trackingColumn}>
         <p className={styles.sellerInfo}>
-          Vendido e entregue por <strong>Floricultura Lilian</strong>
+          Vendido e entregue por{" "}
+          <strong>{pedido.entrega.transportadora || "Loja"}</strong>
         </p>
 
         <div className={styles.trackingBar}>
@@ -93,19 +127,11 @@ const PedidoCard = ({ pedido }) => {
         <p className={styles.deliveryForecast}>
           Previsão de entrega: <strong>até {pedido.entrega.previsao}</strong>
         </p>
-
-        <button
-          className={styles.cancelButton}
-          onClick={() => alert("Implementar rota de cancelamento (opcional).")}
-        >
-          CANCELAR PEDIDO
-        </button>
       </div>
 
-      {/* COLUNA DIREITA - RESUMO */}
+      {/* DIREITA - RESUMO */}
       <div className={styles.summaryColumn}>
         <h3 className={styles.summaryTitle}>Resumo da compra</h3>
-
         <p>
           Pedido: <strong>{pedido.id}</strong>
         </p>
@@ -113,9 +139,10 @@ const PedidoCard = ({ pedido }) => {
           Data do pedido: <strong>{pedido.dataRealizacao}</strong>
         </p>
         <p>
-          Valor total: <strong>R$ {pedido.resumo.valorTotal.toFixed(2)}</strong>
+          Valor total: <strong>{currency(pedido.resumo.valorTotal)}</strong>
         </p>
 
+        {/* Envia o objeto 'pedido' na query string como 'dados' */}
         <Link
           href={{
             pathname: `/pedido/${pedido.id}`,
@@ -130,85 +157,20 @@ const PedidoCard = ({ pedido }) => {
   );
 };
 
-/* ---------------- Helpers de mapeamento ---------------- */
-const estadoToStatusUI = (estado) => {
-  // mapeia estados do banco -> passos do seu front
-  const map = {
-    recebido: "realizado",
-    em_preparacao: "separacao",
-    enviado: "transporte",
-    entregue: "entregue",
-    cancelado: "realizado", // mantém no início; ajuste se quiser outro tratamento
-  };
-  return map[String(estado || "").toLowerCase()] || "realizado";
-};
-
-const formatDate = (isoLike) => {
-  try {
-    if (!isoLike) return "";
-    const d = new Date(isoLike);
-    if (isNaN(d.getTime())) return String(isoLike);
-    return d.toLocaleDateString("pt-BR");
-  } catch {
-    return String(isoLike);
-  }
-};
-
-// Se o backend devolver uma linha como array (SELECT padrão) ou dict, adaptamos:
-const readField = (row, nameOrIndex) =>
-  Array.isArray(row) ? row[nameOrIndex] : row?.[nameOrIndex];
-
-/* ---------------- Adaptadores de backend -> UI ---------------- */
-// PEDIDOS (preferencial)
-function adaptPedidoRow(row) {
-  // pedidos: (id, cliente_id, funcionario_id, data_pedido, forma_pagamento, estado, canal, valor_total, tipo_entrega, data_entrega)
-  const id = Number(readField(row, 0) ?? row?.id);
-  const data_pedido = readField(row, 3) ?? row?.data_pedido;
-  const forma_pagamento = readField(row, 4) ?? row?.forma_pagamento;
-  const estado = readField(row, 5) ?? row?.estado;
-  const valor_total = Number(readField(row, 7) ?? row?.valor_total ?? 0);
-  const data_entrega = readField(row, 9) ?? row?.data_entrega;
-
-  // Aqui não temos itens via rota — criamos 1 item “placeholder”
-  return {
-    id: String(id),
-    status: estadoToStatusUI(estado),
-    dataRealizacao: formatDate(data_pedido),
-    entrega: {
-      previsao: formatDate(data_entrega) || "—",
-      transportadora: "—",
-      timeline: [], // se quiser, pode gerar timeline baseada no estado
-    },
-    endereco: { principal: "", cidade: "", cep: "" },
-    formaPagamento: (forma_pagamento || "pix").toUpperCase(),
-    resumo: {
-      subtotal: valor_total,
-      frete: 0,
-      descontos: 0,
-      valorTotal: valor_total,
-    },
-    itens: [
-      {
-        nome: "Produto do pedido",
-        quantidade: 1,
-        valorUnitario: valor_total,
-        cor: "—",
-        tamanho: "—",
-        imageUrl: "/placeholder.png",
-      },
-    ],
-  };
-}
-
-// VENDAS (fallback)
+/* ============== Adaptadores de backend -> UI ============== */
+// A partir de /listar_vendas. Estrutura esperada (tupla ou dict):
+// id(0), cliente(1), funcionario(2), pedido(3), produtos(text JSON)(4), valorTotal(5), dataVenda(6), pago(7)
 function adaptVendaRow(row) {
-  // vendas: (id, cliente, funcionario, pedido, produtos(text JSON), valorTotal, dataVenda, pago)
-  const id = Number(readField(row, 0) ?? row?.id);
-  const valorTotal = Number(readField(row, 5) ?? row?.valorTotal ?? 0);
-  const dataVenda = readField(row, 6) ?? row?.dataVenda;
+  const id = Number(F(row, 0) ?? row?.id);
+  const cli = Number(F(row, 1) ?? row?.cliente);
+  const pedidoId = Number(F(row, 3) ?? row?.pedido);
+  const valorTotal = Number(F(row, 5) ?? row?.valorTotal ?? 0);
+  const dataVenda = F(row, 6) ?? row?.dataVenda;
+
+  // itens a partir do JSON de 'produtos'
   let itens = [];
   try {
-    const produtosText = readField(row, 4) ?? row?.produtos;
+    const produtosText = F(row, 4) ?? row?.produtos;
     const arr =
       typeof produtosText === "string"
         ? JSON.parse(produtosText)
@@ -217,9 +179,8 @@ function adaptVendaRow(row) {
       nome: `Produto #${p.id}`,
       quantidade: Number(p.quantidade || 1),
       valorUnitario: Number(p.preco || 0),
-      cor: "—",
-      tamanho: "—",
       imageUrl: "/placeholder.png",
+      produtoId: Number(p.id),
     }));
   } catch {
     itens = [
@@ -227,35 +188,33 @@ function adaptVendaRow(row) {
         nome: "Produto",
         quantidade: 1,
         valorUnitario: valorTotal,
-        cor: "—",
-        tamanho: "—",
         imageUrl: "/placeholder.png",
+        produtoId: null,
       },
     ];
   }
 
   return {
-    id: String(id),
-    status: "realizado", // vendas não tem estado de envio; começa no 1º passo
+    _clienteId: cli,
+    _pedidoId: pedidoId || null,
+    id: String(pedidoId || id), // mostramos o pedido quando existir
+    status: "realizado", // será refinado com dados de /pedidos/:id
     dataRealizacao: formatDate(dataVenda),
     entrega: {
+      transportadora: "Loja",
       previsao: "—",
-      transportadora: "—",
-      timeline: [],
     },
-    endereco: { principal: "", cidade: "", cep: "" },
-    formaPagamento: "PIX",
     resumo: {
       subtotal: valorTotal,
       frete: 0,
       descontos: 0,
-      valorTotal: valorTotal,
+      valorTotal,
     },
     itens,
   };
 }
 
-/* ---------------- Lista dinâmica de pedidos ---------------- */
+/* ============== Componente principal ============== */
 const PedidosList = () => {
   const [pedidos, setPedidos] = useState([]);
   const [erro, setErro] = useState(null);
@@ -265,9 +224,8 @@ const PedidosList = () => {
     (async () => {
       setCarregando(true);
       setErro(null);
-
       try {
-        // pega cliente_id do localStorage
+        // ID do cliente salvo no login da loja
         const raw =
           typeof window !== "undefined"
             ? localStorage.getItem("usuario_loja")
@@ -280,35 +238,81 @@ const PedidosList = () => {
           return;
         }
 
-        // 1) tenta listar pedidos por cliente (se você tiver criado a rota)
-        let pedidosList = [];
-        let res = await fetch(
-          `${BASE}/listar_pedidos?cliente_id=${encodeURIComponent(clienteId)}`,
-          { cache: "no-store" }
+        // 1) Carrega vendas e filtra pelo cliente
+        const res = await fetch(`${BASE}/listar_vendas`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Falha ao carregar vendas.");
+
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : data?.detalhes || [];
+        let pedidosList = rows
+          .map(adaptVendaRow)
+          .filter((p) => Number(p._clienteId) === Number(clienteId));
+
+        // 2) Enriquecer cada pedido com dados de /pedidos/:id
+        const enriched = await Promise.all(
+          pedidosList.map(async (p) => {
+            if (!p._pedidoId) return p;
+            try {
+              const r = await fetch(`${BASE}/pedidos/${p._pedidoId}`, {
+                cache: "no-store",
+              });
+              if (!r.ok) return p;
+              const det = await r.json();
+
+              const status = estadoToStatusUI(det?.estado, det?.mp_status);
+              const previsao = formatDate(det?.data_entrega) || "—";
+              const transportadora =
+                det?.tipo_entrega === "entrega" ? "Transportadora" : "Loja";
+
+              return {
+                ...p,
+                id: String(det?.id ?? p.id),
+                status,
+                dataRealizacao:
+                  formatDate(det?.data_pedido || det?.dataVenda) ||
+                  p.dataRealizacao,
+                entrega: {
+                  transportadora,
+                  previsao,
+                },
+                resumo: {
+                  ...p.resumo,
+                  valorTotal: Number(
+                    det?.valorTotal ?? det?.valor_total ?? p.resumo.valorTotal
+                  ),
+                },
+              };
+            } catch {
+              return p;
+            }
+          })
         );
 
-        if (res.ok) {
-          const data = await res.json();
-          const rows = Array.isArray(data) ? data : data?.detalhes || [];
-          pedidosList = rows.map(adaptPedidoRow);
-        } else {
-          // 2) fallback: usa vendas e adapta
-          res = await fetch(`${BASE}/listar_vendas`, { cache: "no-store" });
-          if (res.ok) {
-            const data = await res.json();
-            const rows = Array.isArray(data) ? data : data?.detalhes || [];
-            const rowsDoCliente = rows.filter((row) => {
-              // vendas: cliente está na coluna 1 (ou row.cliente)
-              const valor = readField(row, 1);
-              return Number(valor) === Number(clienteId);
-            });
-            pedidosList = rowsDoCliente.map(adaptVendaRow);
-          } else {
-            throw new Error("Falha ao carregar pedidos.");
-          }
-        }
+        // 3) Enriquecer imagem do primeiro item com /produto_id/:id
+        const withImages = await Promise.all(
+          enriched.map(async (p) => {
+            const first = p.itens?.[0];
+            if (!first?.produtoId) return p;
+            try {
+              const r = await fetch(`${BASE}/produto_id/${first.produtoId}`, {
+                cache: "no-store",
+              });
+              if (!r.ok) return p;
+              const prod = await r.json();
+              const img = prod?.imagem_1 || prod?.imagem || "/placeholder.png";
+              const nome = prod?.nome || first.nome;
+              const itens = [
+                { ...first, imageUrl: img, nome },
+                ...p.itens.slice(1),
+              ];
+              return { ...p, itens };
+            } catch {
+              return p;
+            }
+          })
+        );
 
-        setPedidos(pedidosList);
+        setPedidos(withImages);
       } catch (e) {
         console.error(e);
         setErro("Erro ao carregar seus pedidos.");
@@ -318,17 +322,13 @@ const PedidosList = () => {
     })();
   }, []);
 
-  if (carregando) {
+  if (carregando)
     return <div className={styles.listContainer}>Carregando pedidos...</div>;
-  }
-  if (erro) {
-    return <div className={styles.listContainer}>{erro}</div>;
-  }
-  if (!pedidos.length) {
+  if (erro) return <div className={styles.listContainer}>{erro}</div>;
+  if (!pedidos.length)
     return (
       <div className={styles.listContainer}>Você ainda não tem pedidos.</div>
     );
-  }
 
   return (
     <div className={styles.listContainer}>

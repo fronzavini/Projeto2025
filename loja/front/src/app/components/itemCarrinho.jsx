@@ -1,29 +1,31 @@
+// src/components/ItemCarrinho.jsx
 "use client";
-
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import styles from "../styles/carrinho.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { updateItem, removeItem } from "../lib/cartApi"; // ⬅️ rotas do backend
+import { updateItem, removeItem } from "../lib/cartApi";
 
-export default function ItemCarrinho({ produto }) {
-  // Estado local para feedback imediato
+export default function ItemCarrinho({ produto, onChanged }) {
   const [qtd, setQtd] = useState(Number(produto.quantidade || 1));
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
 
   const precoUnit = Number(produto.preco || 0);
-  const totalItem = (precoUnit * qtd).toFixed(2).replace(".", ",");
+  const totalItem = useMemo(
+    () => (precoUnit * qtd).toFixed(2).replace(".", ","),
+    [precoUnit, qtd]
+  );
 
-  function getUserId() {
+  const getUserId = () => {
     try {
-      const userData =
+      const raw =
         typeof window !== "undefined"
           ? localStorage.getItem("usuario_loja")
           : null;
-      const parsed = userData ? JSON.parse(userData) : null;
+      const obj = raw ? JSON.parse(raw) : null;
       return (
-        parsed?.id ||
+        obj?.id ||
         (typeof window !== "undefined"
           ? Number(localStorage.getItem("idUsuario"))
           : null)
@@ -31,27 +33,30 @@ export default function ItemCarrinho({ produto }) {
     } catch {
       return null;
     }
-  }
+  };
+
+  const refresh = () => {
+    if (onChanged) return onChanged(); // pai decide como atualizar
+    if (typeof window !== "undefined") window.location.reload(); // fallback
+  };
 
   async function alterarQuantidade(novaQtd) {
-    if (novaQtd < 1) return;
+    if (novaQtd < 1 || novaQtd === qtd) return;
     const userId = getUserId();
-    if (!userId) {
-      setErro("Você precisa estar logado para alterar o carrinho.");
-      return;
-    }
+    if (!userId)
+      return setErro("Você precisa estar logado para alterar o carrinho.");
     try {
       setLoading(true);
       setErro(null);
+      setQtd(novaQtd); // otimista
       await updateItem(userId, {
         produtoId: Number(produto.id),
         quantidade: Number(novaQtd),
       });
-      setQtd(novaQtd); // feedback instantâneo
-      // Recarrega para sincronizar totais/itens no painel direito
-      if (typeof window !== "undefined") window.location.reload();
+      refresh();
     } catch (e) {
       console.error(e);
+      setQtd(qtd); // rollback
       setErro("Não foi possível atualizar a quantidade. Tente novamente.");
     } finally {
       setLoading(false);
@@ -60,15 +65,13 @@ export default function ItemCarrinho({ produto }) {
 
   async function remover() {
     const userId = getUserId();
-    if (!userId) {
-      setErro("Você precisa estar logado para alterar o carrinho.");
-      return;
-    }
+    if (!userId)
+      return setErro("Você precisa estar logado para alterar o carrinho.");
     try {
       setLoading(true);
       setErro(null);
       await removeItem(userId, Number(produto.id));
-      if (typeof window !== "undefined") window.location.reload();
+      refresh();
     } catch (e) {
       console.error(e);
       setErro("Não foi possível remover o item. Tente novamente.");
@@ -79,19 +82,16 @@ export default function ItemCarrinho({ produto }) {
 
   return (
     <div className={styles.itemProduto}>
-      {/* Cabeçalho do produto */}
       <div className={styles.produtoHeader}>
         <img
           src={produto.imagem}
           alt={produto.nome}
           className={styles.imagemProduto}
         />
-
         <div className={styles.detalhesProduto}>
           <p className={styles.nomeProduto}>{produto.nome}</p>
           <p className={styles.refProduto}>Ref: # {produto.id}</p>
         </div>
-
         <button
           className={styles.botaoRemover}
           aria-label="Remover item"
@@ -103,7 +103,6 @@ export default function ItemCarrinho({ produto }) {
         </button>
       </div>
 
-      {/* Rodapé do produto */}
       <div className={styles.produtoFooter}>
         <div className={styles.grupoQuantidade}>
           <label className={styles.labelQuantidade}>Quantidade:</label>
@@ -137,8 +136,6 @@ export default function ItemCarrinho({ produto }) {
       </div>
 
       {erro && <p className={styles.mensagemErro}>{erro}</p>}
-
-      {/* Link para explorar mais produtos */}
       <a href="/flores" className={styles.linkExplorarMais}>
         Explorar mais produtos desta loja
       </a>

@@ -1,3 +1,4 @@
+// src/app/pedido/[id]/page.jsx
 "use client";
 
 import { useSearchParams } from "next/navigation";
@@ -5,8 +6,6 @@ import DetalhesPedido from "@/app/components/detalhesPedido";
 
 export default function Page() {
   const searchParams = useSearchParams();
-
-  // pega o valor do parâmetro "dados"
   const encoded = searchParams.get("dados");
 
   if (!encoded) {
@@ -14,7 +13,6 @@ export default function Page() {
   }
 
   let pedido = null;
-
   try {
     pedido = JSON.parse(encoded);
   } catch (e) {

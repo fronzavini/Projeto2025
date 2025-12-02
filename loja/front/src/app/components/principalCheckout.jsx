@@ -1,3 +1,4 @@
+// src/components/PrincipalCheckout.jsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -9,7 +10,7 @@ const BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
   "http://127.0.0.1:5000";
 
-// normaliza "0,50", "0.50", "1.234,56" -> Number em reais
+/* ================= Utils ================= */
 function normalizePrice(v) {
   if (v == null) return 0;
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -24,14 +25,29 @@ function normalizePrice(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
-// obtém ID do usuário salvo no login
-function getUserId() {
+function toYMD(date) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// obtém ID do usuário salvo no login e dados úteis
+function getUser() {
   try {
     const raw =
       typeof window !== "undefined"
         ? localStorage.getItem("usuario_loja")
         : null;
-    const obj = raw ? JSON.parse(raw) : null;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+function getUserId() {
+  const obj = getUser();
+  try {
     return (
       obj?.id ||
       (typeof window !== "undefined"
@@ -43,6 +59,7 @@ function getUserId() {
   }
 }
 
+/* ============== Componente ============== */
 const PrincipalCheckout = () => {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
@@ -92,7 +109,7 @@ const PrincipalCheckout = () => {
                 nome: prod?.nome || `Produto #${p.produto_id}`,
                 imagem: prod?.imagem_1 || prod?.imagem || "/placeholder.png",
                 quantidade: Number(p.quantidade || 0),
-                preco: Number(p.preco_unitario || 0), // já vem do banco
+                preco: Number(p.preco_unitario || prod?.preco || 0),
                 vendidoPor: "Loja",
                 enviadoPor: "Loja",
                 cor: "Padrão",
@@ -128,58 +145,106 @@ const PrincipalCheckout = () => {
     })();
   }, []);
 
-  // primeiro item para preencher vitrine da sua UI
+  // primeiro item pra UI
   const item = useMemo(() => itens?.[0] || {}, [itens]);
 
+  /* ============== Fluxo Finalizar (criar venda -> criar PIX) ============== */
   const handleFinalizar = async () => {
     setErro(null);
 
-    // valida usuário (email)
-    const rawUser =
-      typeof window !== "undefined"
-        ? localStorage.getItem("usuario_loja")
-        : null;
-    const user = rawUser ? JSON.parse(rawUser) : null;
+    const user = getUser();
     const email = user?.email || "cliente@teste.com";
+    const clienteId = user?.cliente_id; // retorno do /login_loja
+    const funcionarioId =
+      Number(
+        (typeof window !== "undefined" &&
+          localStorage.getItem("funcionario_id")) ||
+          1
+      ) || 1; // ajuste se tiver o id real do vendedor
 
-    // total em REAIS (ex.: 0.50)
     const total = normalizePrice(valoresTotais?.total || 0);
-
     if (!total || total <= 0) {
       setErro("Valor total inválido para pagamento.");
+      return;
+    }
+    if (!clienteId) {
+      setErro("Não foi possível identificar o cliente para criar a venda.");
+      return;
+    }
+    if (!itens.length) {
+      setErro("Seu carrinho está vazio.");
       return;
     }
 
     try {
       setLoading(true);
 
-      // você pode usar id do pedido/venda se já tiver; aqui uso um timestamp legível
-      const orderId = `WEB-${Date.now()}`;
+      // datas no formato YYYY-MM-DD
+      const hoje = toYMD(new Date());
+      const dtEntrega = toYMD(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
 
-      const res = await fetch(`${BASE}/create_pix_payment`, {
+      // 1) cria a VENDA/PEDIDO no backend (usa /criar_venda do seu app.py)
+      const vendaPayload = {
+        cliente: Number(clienteId),
+        funcionario: Number(funcionarioId),
+        produtos: itens.map((it) => ({
+          id: Number(it.id),
+          quantidade: Number(it.quantidade),
+        })),
+        valorTotal: Number(total),
+        formaPagamento: "Pix",
+        entrega: 1, // 1 = entrega ; 0 = retirada
+        dataEntrega: dtEntrega,
+        dataVenda: hoje,
+        // entregaEndereco: {...} // opcional; seu endpoint aceita este objeto
+      };
+
+      const rVenda = await fetch(`${BASE}/criar_venda`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vendaPayload),
+      });
+
+      const vendaData = await rVenda.json().catch(() => null);
+      if (!rVenda.ok || !vendaData?.ok) {
+        setErro(
+          vendaData?.detalhe ||
+            vendaData?.erro ||
+            vendaData?.detalhes ||
+            "Falha ao criar a venda."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const pedidoId = vendaData.id_pedido;
+      if (!pedidoId) {
+        setErro("Venda criada, mas não veio o ID do pedido.");
+        setLoading(false);
+        return;
+      }
+
+      // 2) cria pagamento PIX usando o pedidoId como external_reference
+      const rPix = await fetch(`${BASE}/create_pix_payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          order_id: orderId,
-          amount: total, // ✅ em reais (0.5 = 50 centavos)
+          order_id: String(pedidoId),
+          amount: Number(total),
           email,
         }),
       });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = null;
-      }
+      const data = await rPix.json().catch(() => null);
 
-      if (!res.ok || !data?.ok) {
+      if (!rPix.ok || !data?.ok) {
         const msg =
           data?.detalhe?.message ||
           data?.detalhe?.cause?.[0]?.description ||
           data?.erro ||
           "Falha ao criar pagamento PIX.";
         setErro(msg);
+        setLoading(false);
         return;
       }
 
@@ -192,6 +257,7 @@ const PrincipalCheckout = () => {
             status: data.status,
             external_reference: data.external_reference,
             amount: total,
+            pedido_id: pedidoId,
           })
         );
       }
@@ -201,11 +267,13 @@ const PrincipalCheckout = () => {
         window.open(data.ticket_url, "_blank", "noopener,noreferrer");
       } else if (data.qr_code_base64) {
         const w = window.open();
-        w.document.write(
-          `<img src="data:image/png;base64,${data.qr_code_base64}" style="max-width:100%"/>`
-        );
+        if (w) {
+          w.document.write(
+            `<img src="data:image/png;base64,${data.qr_code_base64}" style="max-width:100%"/>`
+          );
+        }
       } else {
-        setErro("Pagamento criado, mas não veio o link do PIX.");
+        setErro("Pagamento criado, mas não veio o link/QR do PIX.");
       }
     } catch (e) {
       console.error(e);
@@ -215,6 +283,7 @@ const PrincipalCheckout = () => {
     }
   };
 
+  /* ============== UI ============== */
   return (
     <div className={styles.containerPrincipal}>
       {/* 1. Seleção do Tipo de Entrega */}
@@ -252,9 +321,7 @@ const PrincipalCheckout = () => {
                 <input type="radio" name="frete" defaultChecked />
                 <span className={styles.rotuloFreteNormal}>Normal:</span>
                 <span className={styles.valorFreteGratis}>Grátis</span>
-                <span className={styles.dataEntrega}>
-                  Chega dia 23 de Dezembro
-                </span>
+                <span className={styles.dataEntrega}>Chega em até 7 dias</span>
               </div>
             </div>
           </div>
