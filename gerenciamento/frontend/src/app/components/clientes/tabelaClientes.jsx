@@ -34,7 +34,19 @@ export default function TabelaClientes() {
   const [modalEditar, setModalEditar] = useState(false);
   const [clienteParaEditar, setClienteParaEditar] = useState(null);
 
-  // Carregar clientes (normalizando para o formato da tabela)
+  // Travar/destravar scroll do body quando qualquer modal estiver aberto
+  useEffect(() => {
+    const aberto = modalVisualizar || modalEditar;
+    const cls = "modal-open";
+    if (aberto) {
+      document.body.classList.add(cls);
+    } else {
+      document.body.classList.remove(cls);
+    }
+    return () => document.body.classList.remove(cls);
+  }, [modalVisualizar, modalEditar]);
+
+  // Carregar clientes
   const carregarClientes = async () => {
     try {
       const response = await fetch("http://localhost:5000/listar_clientes", {
@@ -50,11 +62,9 @@ export default function TabelaClientes() {
       const raw = resultado.detalhes ?? resultado;
 
       const clientesFormatados = (Array.isArray(raw) ? raw : []).map((c) => {
-        // Normalizar quando backend já retornar objeto com chaves próximas ao schema
         if (c && typeof c === "object" && !Array.isArray(c)) {
-          // Priorizar nomes da sua tabela: dataCadastro, dataNasc, endRua, endCep, endNumero, endBairro, endComplemento, endUF, endMunicipio
           const id = c.id ?? c.ID ?? null;
-          const dataCadastro = c.dataCadastro ?? c.data_cadastro ?? c.dataCadastro ?? null;
+          const dataCadastro = c.dataCadastro ?? c.data_cadastro ?? null;
           const nome = c.nome ?? c.razao_social ?? "";
           const tipo = c.tipo ?? "fisico";
           const sexo = c.sexo ?? c.genero ?? "";
@@ -63,17 +73,20 @@ export default function TabelaClientes() {
           const rg = c.rg ?? null;
           const email = c.email ?? null;
           const telefone = c.telefone ?? c.telefone1 ?? "";
-          const dataNasc = c.dataNasc ?? c.data_nascimento ?? c.dataNascimento ?? "";
+          const dataNasc =
+            c.dataNasc ?? c.data_nascimento ?? c.dataNascimento ?? "";
           const estadoRaw = c.estado ?? c.status ?? 1;
-          const status = (estadoRaw === 1 || estadoRaw === true) ? "ativo" : "inativo";
+          const status =
+            estadoRaw === 1 || estadoRaw === true ? "ativo" : "inativo";
           const endCep = c.endCep ?? c.end_cep ?? c.cep ?? "";
           const endRua = c.endRua ?? c.end_rua ?? c.logradouro ?? "";
           const endNumero = c.endNumero ?? c.end_numero ?? c.numero ?? "";
           const endBairro = c.endBairro ?? c.end_bairro ?? c.bairro ?? "";
-          const endComplemento = c.endComplemento ?? c.end_complemento ?? c.complemento ?? "";
+          const endComplemento =
+            c.endComplemento ?? c.end_complemento ?? c.complemento ?? "";
           const endUF = c.endUF ?? c.end_uf ?? c.uf ?? "";
-          const endMunicipio = c.endMunicipio ?? c.end_municipio ?? c.cidade ?? "";
-
+          const endMunicipio =
+            c.endMunicipio ?? c.end_municipio ?? c.cidade ?? "";
           const documento = cpf || cnpj || "";
 
           return {
@@ -101,10 +114,8 @@ export default function TabelaClientes() {
           };
         }
 
-        // Se veio como array — tentar mapear por posição (fallback)
         if (Array.isArray(c)) {
           const arr = c;
-          // heurística baseada no schema: ajustar índices conforme seu backend real
           const id = arr[0] ?? null;
           const dataCadastro = arr[1] ?? null;
           const nome = arr[2] ?? "";
@@ -117,7 +128,8 @@ export default function TabelaClientes() {
           const telefone = arr[9] ?? "";
           const dataNasc = arr[10] ?? "";
           const estadoRaw = arr[11];
-          const status = (estadoRaw === 1 || estadoRaw === true) ? "ativo" : "inativo";
+          const status =
+            estadoRaw === 1 || estadoRaw === true ? "ativo" : "inativo";
           const endCep = arr[12] ?? "";
           const endRua = arr[13] ?? "";
           const endNumero = arr[14] ?? "";
@@ -125,7 +137,6 @@ export default function TabelaClientes() {
           const endComplemento = arr[16] ?? "";
           const endUF = arr[17] ?? "";
           const endMunicipio = arr[18] ?? arr[19] ?? "";
-
           const documento = cpf || cnpj || "";
 
           return {
@@ -153,7 +164,6 @@ export default function TabelaClientes() {
           };
         }
 
-        // fallback minimal
         return {
           id: null,
           dataCadastro: null,
@@ -191,18 +201,23 @@ export default function TabelaClientes() {
   }, []);
 
   // Filtragem
-  const filteredData = clientes.filter((item) =>
-    (!filtros.id || String(item.id).startsWith(filtros.id)) &&
-    (!filtros.cpf || (item.cpf && item.cpf.startsWith(filtros.cpf))) &&
-    (!filtros.nome || item.nome.toLowerCase().startsWith(filtros.nome.toLowerCase())) &&
-    (!filtros.telefone || (item.telefone && item.telefone.startsWith(filtros.telefone))) &&
-    (!filtros.status || item.status === filtros.status)
+  const filteredData = clientes.filter(
+    (item) =>
+      (!filtros.id || String(item.id).startsWith(filtros.id)) &&
+      (!filtros.cpf || (item.cpf && item.cpf.startsWith(filtros.cpf))) &&
+      (!filtros.nome ||
+        item.nome.toLowerCase().startsWith(filtros.nome.toLowerCase())) &&
+      (!filtros.telefone ||
+        (item.telefone && item.telefone.startsWith(filtros.telefone))) &&
+      (!filtros.status || item.status === filtros.status)
   );
 
   // Status template
   const statusTemplate = (rowData) => (
     <span
-      className={`${styles["status-badge"]} ${styles[rowData.status?.toLowerCase() || "indefinido"]}`}
+      className={`${styles["status-badge"]} ${
+        styles[rowData.status?.toLowerCase() || "indefinido"]
+      }`}
     >
       {rowData.status || "Indefinido"}
     </span>
@@ -239,12 +254,15 @@ export default function TabelaClientes() {
         className={styles.acaoBotao}
         onClick={async (e) => {
           e.stopPropagation();
-          if (!confirm(`Deseja realmente deletar o cliente "${rowData.nome}"?`)) return;
+          if (!confirm(`Deseja realmente deletar o cliente "${rowData.nome}"?`))
+            return;
 
           try {
             const response = await fetch(
               `http://127.0.0.1:5000/deletar_cliente/${rowData.id}`,
-              { method: "DELETE" }
+              {
+                method: "DELETE",
+              }
             );
 
             if (!response.ok) throw new Error("Erro ao deletar cliente.");
@@ -265,7 +283,21 @@ export default function TabelaClientes() {
   );
 
   return (
-    <div>
+    <>
+      {/* Estilo global mínimo para bloquear o scroll do body quando modal abre */}
+      <style jsx global>{`
+        body.modal-open {
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+          height: 100%;
+        }
+        /* opcional: evita scroll no container do fundo quando modal aberto */
+        body.modal-open .${styles["custom-table-container"]} {
+          overflow: hidden !important;
+        }
+      `}</style>
+
       {/* Filtros */}
       <div className={styles["filters-container"]}>
         <div className={styles.filtro}>
@@ -319,7 +351,11 @@ export default function TabelaClientes() {
           <Column field="nome" header="Nome" />
           <Column field="telefone" header="Telefone" />
           <Column field="status" header="Status" body={statusTemplate} />
-          <Column body={actionTemplate} header="Ações" style={{ width: "150px" }} />
+          <Column
+            body={actionTemplate}
+            header="Ações"
+            style={{ width: "150px" }}
+          />
         </DataTable>
 
         {/* Modais */}
@@ -344,6 +380,6 @@ export default function TabelaClientes() {
           />
         )}
       </div>
-    </div>
+    </>
   );
 }

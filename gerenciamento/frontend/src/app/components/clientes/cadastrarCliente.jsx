@@ -1,6 +1,6 @@
+"use client";
 import { useState } from "react";
 import styles from "../../styles/cadastrarCliente.module.css";
-import axios from "axios";
 
 export default function CadastrarCliente({ onClose }) {
   const [form, setForm] = useState({
@@ -30,12 +30,30 @@ export default function CadastrarCliente({ onClose }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const dadosCompletos = {
-      ...form,
-      cnpj: form.tipo === "juridico" ? form.cpf : "", // usa o campo do CPF como entrada do CNPJ
-      cpf: form.tipo === "fisico" ? form.cpf : "",
-      dataCadastro: new Date().toISOString().split("T")[0],
-      estado: true,
+    // ✅ Monta o payload exatamente como o backend espera
+    const payload = {
+      nome: form.nome,
+      tipo: form.tipo,
+      email: form.email,
+      telefone: form.telefone,
+
+      // endereço (nomes esperados no backend)
+      cep: form.endCep,
+      logradouro: form.endRua,
+      numero: form.endNumero,
+      bairro: form.endBairro,
+      complemento: form.endComplemento,
+      uf: form.endUF,
+      cidade: form.endMunicipio,
+
+      // pessoa física
+      cpf: form.tipo === "fisico" ? form.cpf : null,
+      rg: form.tipo === "fisico" ? form.rg : null,
+      sexo: form.tipo === "fisico" ? form.sexo : null,
+      data_nascimento: form.tipo === "fisico" ? form.dataNasc : null,
+
+      // pessoa jurídica
+      cnpj: form.tipo === "juridico" ? form.cnpj : null,
     };
 
     try {
@@ -45,14 +63,23 @@ export default function CadastrarCliente({ onClose }) {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dadosCompletos),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Erro ao cadastrar cliente.");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const msg =
+          data?.detalhes ||
+          data?.message ||
+          data?.erro ||
+          "Erro ao cadastrar cliente.";
+        throw new Error(msg);
+      }
 
       alert("Cliente cadastrado com sucesso!");
-      onClose();
+      onClose?.();
 
+      // limpa
       setForm({
         nome: "",
         tipo: "fisico",
@@ -73,15 +100,22 @@ export default function CadastrarCliente({ onClose }) {
       });
     } catch (error) {
       console.error(error);
-      alert("Erro ao cadastrar cliente.");
+      alert(error.message || "Erro ao cadastrar cliente.");
     }
   }
+
+  const isFisico = form.tipo === "fisico";
+  const isJuridico = form.tipo === "juridico";
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Novo cliente</h2>
-        <button className={styles.botaoCancelar} type="button" onClick={onClose}>
+        <button
+          className={styles.botaoCancelar}
+          type="button"
+          onClick={onClose}
+        >
           Cancelar
         </button>
       </div>
@@ -89,7 +123,9 @@ export default function CadastrarCliente({ onClose }) {
       <form onSubmit={handleSubmit}>
         {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome" className={styles.label}>Nome do cliente</label>
+          <label htmlFor="nome" className={styles.label}>
+            Nome do cliente
+          </label>
           <input
             className={styles.input}
             id="nome"
@@ -108,7 +144,7 @@ export default function CadastrarCliente({ onClose }) {
               type="radio"
               name="tipo"
               value="fisico"
-              checked={form.tipo === "fisico"}
+              checked={isFisico}
               onChange={handleChange}
               className={styles.radioInput}
             />
@@ -119,7 +155,7 @@ export default function CadastrarCliente({ onClose }) {
               type="radio"
               name="tipo"
               value="juridico"
-              checked={form.tipo === "juridico"}
+              checked={isJuridico}
               onChange={handleChange}
               className={styles.radioInput}
             />
@@ -127,7 +163,7 @@ export default function CadastrarCliente({ onClose }) {
           </label>
         </div>
 
-        {/* Sexo */}
+        {/* Sexo (apenas PF) */}
         <div className={styles.formGroup}>
           <label className={styles.label}>Sexo</label>
           <select
@@ -135,8 +171,8 @@ export default function CadastrarCliente({ onClose }) {
             className={styles.input}
             value={form.sexo}
             onChange={handleChange}
-            disabled={form.tipo !== "fisico"}
-            required={form.tipo === "fisico"}
+            disabled={!isFisico}
+            required={isFisico}
           >
             <option value="">Selecione</option>
             <option value="masculino">Masculino</option>
@@ -145,26 +181,28 @@ export default function CadastrarCliente({ onClose }) {
           </select>
         </div>
 
-        {/* CPF e RG */}
+        {/* Documento */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="cpf" className={styles.label}>
-              {form.tipo === "fisico" ? "CPF" : "CNPJ"}
+            <label htmlFor={isFisico ? "cpf" : "cnpj"} className={styles.label}>
+              {isFisico ? "CPF" : "CNPJ"}
             </label>
             <input
               className={styles.input}
-              id="cpf"
-              name="cpf"
+              id={isFisico ? "cpf" : "cnpj"}
+              name={isFisico ? "cpf" : "cnpj"}
               type="text"
-              value={form.cpf}
+              value={isFisico ? form.cpf : form.cnpj}
               onChange={handleChange}
               required
             />
           </div>
 
-          {form.tipo === "fisico" && (
+          {isFisico && (
             <div className={styles.formGroup}>
-              <label htmlFor="rg" className={styles.label}>RG</label>
+              <label htmlFor="rg" className={styles.label}>
+                RG
+              </label>
               <input
                 className={styles.input}
                 id="rg"
@@ -172,7 +210,7 @@ export default function CadastrarCliente({ onClose }) {
                 type="text"
                 value={form.rg}
                 onChange={handleChange}
-                required
+                required={isFisico}
               />
             </div>
           )}
@@ -180,7 +218,9 @@ export default function CadastrarCliente({ onClose }) {
 
         {/* Email */}
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>Email</label>
+          <label htmlFor="email" className={styles.label}>
+            Email
+          </label>
           <input
             className={styles.input}
             id="email"
@@ -194,7 +234,9 @@ export default function CadastrarCliente({ onClose }) {
 
         {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>Telefone</label>
+          <label htmlFor="telefone" className={styles.label}>
+            Telefone
+          </label>
           <input
             className={styles.input}
             id="telefone"
@@ -206,9 +248,11 @@ export default function CadastrarCliente({ onClose }) {
           />
         </div>
 
-        {/* Data de nascimento */}
+        {/* Data de nascimento (PF) */}
         <div className={styles.formGroup}>
-          <label htmlFor="dataNasc" className={styles.label}>Data de nascimento</label>
+          <label htmlFor="dataNasc" className={styles.label}>
+            Data de nascimento
+          </label>
           <input
             className={styles.inputDate}
             id="dataNasc"
@@ -216,15 +260,17 @@ export default function CadastrarCliente({ onClose }) {
             type="date"
             value={form.dataNasc}
             onChange={handleChange}
-            disabled={form.tipo !== "fisico"}
-            required={form.tipo === "fisico"}
+            disabled={!isFisico}
+            required={isFisico}
           />
         </div>
 
         {/* CEP e número */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="endCep" className={styles.label}>CEP</label>
+            <label htmlFor="endCep" className={styles.label}>
+              CEP
+            </label>
             <input
               className={styles.input}
               id="endCep"
@@ -237,7 +283,9 @@ export default function CadastrarCliente({ onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endNumero" className={styles.label}>Número</label>
+            <label htmlFor="endNumero" className={styles.label}>
+              Número
+            </label>
             <input
               className={styles.input}
               id="endNumero"
@@ -252,7 +300,9 @@ export default function CadastrarCliente({ onClose }) {
 
         {/* UF */}
         <div className={styles.formGroup}>
-          <label htmlFor="endUF" className={styles.label}>UF</label>
+          <label htmlFor="endUF" className={styles.label}>
+            UF
+          </label>
           <input
             className={styles.input}
             id="endUF"
@@ -267,7 +317,9 @@ export default function CadastrarCliente({ onClose }) {
         {/* Cidade e bairro */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="endMunicipio" className={styles.label}>Cidade</label>
+            <label htmlFor="endMunicipio" className={styles.label}>
+              Cidade
+            </label>
             <input
               className={styles.input}
               id="endMunicipio"
@@ -280,7 +332,9 @@ export default function CadastrarCliente({ onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endBairro" className={styles.label}>Bairro</label>
+            <label htmlFor="endBairro" className={styles.label}>
+              Bairro
+            </label>
             <input
               className={styles.input}
               id="endBairro"
@@ -295,7 +349,9 @@ export default function CadastrarCliente({ onClose }) {
 
         {/* Rua */}
         <div className={styles.formGroup}>
-          <label htmlFor="endRua" className={styles.label}>Logradouro</label>
+          <label htmlFor="endRua" className={styles.label}>
+            Logradouro
+          </label>
           <input
             className={styles.input}
             id="endRua"
@@ -309,7 +365,9 @@ export default function CadastrarCliente({ onClose }) {
 
         {/* Complemento */}
         <div className={styles.formGroup}>
-          <label htmlFor="endComplemento" className={styles.label}>Complemento</label>
+          <label htmlFor="endComplemento" className={styles.label}>
+            Complemento
+          </label>
           <input
             className={styles.input}
             id="endComplemento"
@@ -317,7 +375,6 @@ export default function CadastrarCliente({ onClose }) {
             type="text"
             value={form.endComplemento}
             onChange={handleChange}
-            required
           />
         </div>
 

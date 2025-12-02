@@ -82,8 +82,8 @@ export default function Sidebar() {
   const allowedRoutes = useMemo(() => {
     const MAP = {
       Administrador: ALL_ITEMS.map((i) => i.href),
-      Vendedor: ["/vendas", "/configuracoes"],
-      Estoque: ["/produtos", "/estoque", "/configuracoes"],
+      Vendedor: ["/", "/vendas", "/configuracoes"],
+      Estoque: ["/", "/produtos", "/estoque", "/configuracoes"],
     };
     const base = MAP[tipoUsuario] || MAP.Vendedor;
     // Home sempre permitida
