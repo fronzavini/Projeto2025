@@ -28,11 +28,6 @@ export default function Clientes() {
         </div>
       )}
 
-      <BotaoGenerico
-        texto="Importar por csv"
-        icone={faUserPlus}
-        onClick={() => setImportPopup(true)}
-      />
 
       {showImportPopup && (
         <div className={styles.popupOverlay}>
