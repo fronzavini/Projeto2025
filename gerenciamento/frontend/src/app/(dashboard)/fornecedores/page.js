@@ -26,12 +26,6 @@ export default function Fornecedores() {
         </div>
       )}
 
-      <BotaoGenerico
-        texto="Importar por csv"
-        icone={faPlus}
-        onClick={() => setImportPopup(true)}
-      />
-
       {showImportPopup && (
         <div className={styles.popupOverlay}>
           <div className={styles.popupContent}>
