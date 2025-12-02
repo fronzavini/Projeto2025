@@ -60,7 +60,6 @@ export default function ResumoCompra() {
         );
 
         if (!res.ok) {
-          // carrinho inexistente / 404 → deixa zerado
           setDadosCheckout({
             valoresTotais: { subtotal: 0, total: 0, frete: "Grátis" },
             itensPedido: [],
@@ -131,6 +130,15 @@ export default function ResumoCompra() {
       const data = await resp.json().catch(() => null);
 
       if (!resp.ok || !data || data.resultado !== "ok") {
+        // ❌ limpa storage se cupom inválido
+        try {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("cupom_aplicado");
+            localStorage.removeItem("cupom_desconto");
+            localStorage.removeItem("cupom_valor_final");
+            window.dispatchEvent(new Event("cupom:alterado"));
+          }
+        } catch {}
         const msg =
           data?.detalhes || data?.erro || "Cupom inválido ou expirado.";
         setErroCupom(msg);
@@ -139,9 +147,7 @@ export default function ResumoCompra() {
 
       // ✅ Usa exatamente o que o backend retorna
       const descontoAbs = Number(data.desconto || 0); // valor absoluto
-      const totalPosDesconto = Number(data.valor_final || 0); // já com mínimo 0.01 no back
-
-      // Somar frete (se houver)
+      const totalPosDesconto = Number(data.valor_final || 0); // total c/ desconto
       const totalComFrete = Math.max(0.01, totalPosDesconto + freteNum);
 
       // Limita desconto para não exceder o subtotal
@@ -157,6 +163,17 @@ export default function ResumoCompra() {
       }));
       setOkCupom(`Cupom aplicado: ${codigoUpper}`);
       setCupom("");
+
+      // ✅ PERSISTE para o Checkout/Resumo lateral
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("cupom_aplicado", codigoUpper);
+          localStorage.setItem("cupom_desconto", String(descontoAplicado));
+          localStorage.setItem("cupom_valor_final", String(totalPosDesconto));
+          // dispara evento simples p/ outros componentes ouvirem se quiserem
+          window.dispatchEvent(new Event("cupom:alterado"));
+        }
+      } catch {}
     } catch (e) {
       console.error(e);
       setErroCupom("Erro ao aplicar o cupom. Tente novamente.");
@@ -203,14 +220,14 @@ export default function ResumoCompra() {
             onChange={(e) => setCupom(e.target.value)}
             className={styles.inputCupom}
           />
-          <button
-            onClick={handleAplicarCupom}
-            className={styles.botaoAplicar}
-            disabled={aplicando}
-          >
-            {aplicando ? "Aplicando..." : "Aplicar"}
-          </button>
         </div>
+        <button
+          onClick={handleAplicarCupom}
+          className={styles.botaoAplicar}
+          disabled={aplicando}
+        >
+          {aplicando ? "Aplicando..." : "Aplicar"}
+        </button>
 
         {erroCupom && (
           <p className={styles.mensagemErro} style={{ marginTop: 8 }}>

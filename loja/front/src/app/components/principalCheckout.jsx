@@ -33,7 +33,6 @@ function toYMD(date) {
   return `${y}-${m}-${day}`;
 }
 
-// obtém ID do usuário salvo no login e dados úteis
 function getUser() {
   try {
     const raw =
@@ -59,6 +58,20 @@ function getUserId() {
   }
 }
 
+function getCupomFromStorage() {
+  try {
+    return (
+      (typeof window !== "undefined" &&
+        (localStorage.getItem("cupom_aplicado") || "")) ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+  } catch {
+    return "";
+  }
+}
+
 /* ============== Componente ============== */
 const PrincipalCheckout = () => {
   const [loading, setLoading] = useState(false);
@@ -71,8 +84,10 @@ const PrincipalCheckout = () => {
     total: 0,
     frete: "Grátis",
   });
+  const [desconto, setDesconto] = useState(0);
+  const [cupom, setCupom] = useState("");
 
-  // carrega carrinho + detalhes dos produtos
+  // carrega carrinho + detalhes dos produtos + aplica cupom (se houver)
   useEffect(() => {
     (async () => {
       setErro(null);
@@ -109,7 +124,9 @@ const PrincipalCheckout = () => {
                 nome: prod?.nome || `Produto #${p.produto_id}`,
                 imagem: prod?.imagem_1 || prod?.imagem || "/placeholder.png",
                 quantidade: Number(p.quantidade || 0),
-                preco: Number(p.preco_unitario || prod?.preco || 0),
+                preco: Number(
+                  p.preco_unitario != null ? p.preco_unitario : prod?.preco || 0
+                ),
                 vendidoPor: "Loja",
                 enviadoPor: "Loja",
                 cor: "Padrão",
@@ -136,8 +153,43 @@ const PrincipalCheckout = () => {
           0
         );
 
+        // 3) aplica cupom salvo (se houver)
+        const freteNum = 0; // "Grátis"
+        const codigo = getCupomFromStorage();
+        let total = Math.max(0.01, subtotal + freteNum);
+        let descAbs = 0;
+
+        if (codigo && subtotal > 0) {
+          try {
+            const resp = await fetch(`${BASE}/calcular_desconto`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                valor_total: subtotal,
+                codigo_cupom: codigo,
+              }),
+            });
+            const data = await resp.json().catch(() => null);
+            if (resp.ok && data?.resultado === "ok") {
+              // usa os números do backend
+              const backendDesconto = Number(data.desconto || 0);
+              const backendFinal = Number(data.valor_final || subtotal);
+              descAbs = Math.min(backendDesconto, subtotal);
+              total = Math.max(0.01, backendFinal + freteNum);
+              setCupom(codigo);
+            } else {
+              setCupom("");
+            }
+          } catch {
+            setCupom("");
+          }
+        } else {
+          setCupom("");
+        }
+
         setItens(itensEnriquecidos);
-        setValoresTotais({ subtotal, total: subtotal, frete: "Grátis" });
+        setDesconto(descAbs);
+        setValoresTotais({ subtotal, total, frete: "Grátis" });
       } catch (e) {
         console.error(e);
         setErro("Falha ao carregar dados do checkout.");
@@ -154,14 +206,15 @@ const PrincipalCheckout = () => {
 
     const user = getUser();
     const email = user?.email || "cliente@teste.com";
-    const clienteId = user?.cliente_id; // retorno do /login_loja
+    const clienteId = user?.cliente_id;
     const funcionarioId =
       Number(
         (typeof window !== "undefined" &&
           localStorage.getItem("funcionario_id")) ||
           1
-      ) || 1; // ajuste se tiver o id real do vendedor
+      ) || 1;
 
+    // ✅ usa o total já com desconto aplicado
     const total = normalizePrice(valoresTotais?.total || 0);
     if (!total || total <= 0) {
       setErro("Valor total inválido para pagamento.");
@@ -183,7 +236,7 @@ const PrincipalCheckout = () => {
       const hoje = toYMD(new Date());
       const dtEntrega = toYMD(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
 
-      // 1) cria a VENDA/PEDIDO no backend (usa /criar_venda do seu app.py)
+      // 1) cria VENDA/PEDIDO (valorTotal já com desconto)
       const vendaPayload = {
         cliente: Number(clienteId),
         funcionario: Number(funcionarioId),
@@ -191,12 +244,12 @@ const PrincipalCheckout = () => {
           id: Number(it.id),
           quantidade: Number(it.quantidade),
         })),
-        valorTotal: Number(total),
+        valorTotal: Number(total), // ✅ total final (com desconto)
         formaPagamento: "Pix",
-        entrega: 1, // 1 = entrega ; 0 = retirada
+        entrega: 1,
         dataEntrega: dtEntrega,
         dataVenda: hoje,
-        // entregaEndereco: {...} // opcional; seu endpoint aceita este objeto
+        // entregaEndereco: {...} // opcional
       };
 
       const rVenda = await fetch(`${BASE}/criar_venda`, {
@@ -224,13 +277,13 @@ const PrincipalCheckout = () => {
         return;
       }
 
-      // 2) cria pagamento PIX usando o pedidoId como external_reference
+      // 2) cria PIX com o mesmo total final
       const rPix = await fetch(`${BASE}/create_pix_payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           order_id: String(pedidoId),
-          amount: Number(total),
+          amount: Number(total), // ✅ total final (com desconto)
           email,
         }),
       });
@@ -248,7 +301,6 @@ const PrincipalCheckout = () => {
         return;
       }
 
-      // guarda infos úteis
       if (typeof window !== "undefined") {
         localStorage.setItem(
           "pix_payment",
@@ -258,11 +310,12 @@ const PrincipalCheckout = () => {
             external_reference: data.external_reference,
             amount: total,
             pedido_id: pedidoId,
+            cupom_aplicado: cupom || null,
+            desconto_aplicado: desconto || 0,
           })
         );
       }
 
-      // abre o boleto/qr do pix
       if (data.ticket_url) {
         window.open(data.ticket_url, "_blank", "noopener,noreferrer");
       } else if (data.qr_code_base64) {
@@ -338,12 +391,21 @@ const PrincipalCheckout = () => {
           Pagar com Pix
         </h3>
 
+        {/* valor já considera desconto + frete */}
         <p className={styles.valorPagamento}>
           R{"$ "}
           {Number(normalizePrice(valoresTotais?.total || 0))
             .toFixed(2)
             .replace(".", ",")}
         </p>
+
+        {/* badge de cupom aplicado */}
+        {cupom && (
+          <p className={styles.cupomInfo}>
+            Cupom aplicado: <strong>{cupom}</strong>{" "}
+            {desconto > 0 && `(− R$ ${desconto.toFixed(2).replace(".", ",")})`}
+          </p>
+        )}
 
         <button
           className={styles.botaoFinalizar}
