@@ -22,7 +22,7 @@ export default function TabelaEncomendas() {
 
   const carregarEncomendas = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_vendas", {
+      const res = await fetch("http://191.52.6.89:5000/listar_vendas", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -71,7 +71,7 @@ export default function TabelaEncomendas() {
   const handleDeletar = async (id) => {
     if (!confirm("Deseja realmente deletar esta encomenda?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/deletar_venda/${id}`, {
+      const res = await fetch(`http://191.52.6.89:5000/deletar_venda/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Erro ao deletar");

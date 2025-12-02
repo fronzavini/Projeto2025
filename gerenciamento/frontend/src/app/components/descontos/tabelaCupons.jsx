@@ -35,7 +35,7 @@ export default function TabelaCupons() {
   // Carregar cupons
   const carregarCupons = async () => {
     try {
-      const response = await fetch("http://localhost:5000/listar_cupons");
+      const response = await fetch("http://191.52.6.89:5000/listar_cupons");
 
       if (!response.ok) throw new Error("Erro ao carregar cupons.");
 
@@ -148,7 +148,7 @@ export default function TabelaCupons() {
 
           try {
             const response = await fetch(
-              `http://127.0.0.1:5000/deletar_cupom/${rowData.id}`,
+              `http://191.52.6.89:5000/deletar_cupom/${rowData.id}`,
               { method: "DELETE" }
             );
 

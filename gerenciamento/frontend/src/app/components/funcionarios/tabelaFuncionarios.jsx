@@ -31,7 +31,7 @@ export default function TabelaFuncionario() {
   const carregarFuncionarios = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/listar_funcionarios",
+        "http://191.52.6.89:5000/listar_funcionarios",
         {
           method: "GET",
           headers: { Accept: "application/json" },
@@ -130,7 +130,7 @@ export default function TabelaFuncionario() {
 
           try {
             const response = await fetch(
-              `http://127.0.0.1:5000/deletar_funcionario/${rowData.id}`,
+              `http://191.52.6.89:5000/deletar_funcionario/${rowData.id}`,
               { method: "DELETE" }
             );
 

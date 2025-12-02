@@ -13,7 +13,7 @@ export default function TabelaFinanceiro() {
 
   const carregarTransacoes = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_transacaofinanceira", {
+      const res = await fetch("http://191.52.6.89:5000/listar_transacaofinanceira", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -102,7 +102,7 @@ export default function TabelaFinanceiro() {
           if (!confirm("Deseja realmente deletar esta transação?")) return;
           try {
             const res = await fetch(
-              `http://localhost:5000/deletar_transacaofinanceira/${rowData.id}`,
+              `http://191.52.6.89:5000/deletar_transacaofinanceira/${rowData.id}`,
               { method: "DELETE" }
             );
             if (!res.ok) throw new Error("Erro ao deletar");

@@ -37,7 +37,7 @@ export default function CadastrarFuncionario({ onClose }) {
     const dadosCompletos = { ...form, estado: true };
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/criar_funcionario", {
+      const response = await fetch("http://191.52.6.89:5000/criar_funcionario", {
         method: "POST",
         headers: {
           Accept: "application/json",

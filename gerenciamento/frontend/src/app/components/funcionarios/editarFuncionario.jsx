@@ -29,7 +29,7 @@ export default function EditarFuncionario({ onClose, funcionario }) {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/editar_funcionario/${formData.id}`,
+        `http://191.52.6.89:5000/editar_funcionario/${formData.id}`,
         {
           method: "PUT",
           headers: {

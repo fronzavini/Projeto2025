@@ -73,7 +73,7 @@ export default function CadastrarVenda({ onClose }) {
   // -------------------- FETCHS --------------------
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_produtos");
+      const res = await fetch("http://191.52.6.89:5000/listar_produtos");
       const data = await res.json();
       const produtosFormatados = (data || []).map((p) => ({
         id: p[0],
@@ -92,7 +92,7 @@ export default function CadastrarVenda({ onClose }) {
 
   const carregarClientes = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_clientes");
+      const res = await fetch("http://191.52.6.89:5000/listar_clientes");
       const data = await res.json();
       const lista = (data?.detalhes || data || []).map((c) => ({
         id: c.id || c[0],
@@ -106,7 +106,7 @@ export default function CadastrarVenda({ onClose }) {
 
   const carregarFuncionarios = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_funcionarios");
+      const res = await fetch("http://191.52.6.89:5000/listar_funcionarios");
       const data = await res.json();
       const lista = (data || []).map((f) => ({
         id: f.id || f[0],
@@ -120,7 +120,7 @@ export default function CadastrarVenda({ onClose }) {
 
   const carregarCupons = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_cupons");
+      const res = await fetch("http://191.52.6.89:5000/listar_cupons");
       const data = await res.json();
       const lista = (data || []).map((c) => ({
         id: c.id || c[0],
@@ -229,7 +229,7 @@ export default function CadastrarVenda({ onClose }) {
 
   // -------------------- PIX: CRIAR PAGAMENTO --------------------
   async function criarPagamentoPix({ total, pedidoId, email }) {
-    const resp = await fetch("http://localhost:5000/create_pix_payment", {
+    const resp = await fetch("http://191.52.6.89:5000/create_pix_payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -304,7 +304,7 @@ export default function CadastrarVenda({ onClose }) {
         entregaEndereco: tipoEntrega === "entrega" ? entregaEndereco : null,
       };
 
-      const res = await fetch("http://localhost:5000/criar_venda", {
+      const res = await fetch("http://191.52.6.89:5000/criar_venda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -338,7 +338,7 @@ export default function CadastrarVenda({ onClose }) {
         );
         if (prod) {
           const newQty = Math.max(0, prod.quantidadeEstoque - item.quantidade);
-          await fetch(`http://localhost:5000/editar_produto/${item.id}`, {
+          await fetch(`http://191.52.6.89:5000/editar_produto/${item.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ quantidadeEstoque: newQty }),

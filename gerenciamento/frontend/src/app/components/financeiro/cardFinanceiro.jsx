@@ -23,7 +23,7 @@ export default function CardFinanceiro() {
   const carregarTotais = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/listar_transacaofinanceira"
+        "http://191.52.6.89:5000/listar_transacaofinanceira"
       );
       if (!res.ok) throw new Error("Erro ao carregar transações");
 

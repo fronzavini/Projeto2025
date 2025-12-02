@@ -46,7 +46,7 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
   useEffect(() => {
     async function carregarProdutos() {
       try {
-        const res = await fetch("http://localhost:5000/listar_produtos");
+        const res = await fetch("http://191.52.6.89:5000/listar_produtos");
         if (!res.ok) throw new Error("Erro ao carregar produtos.");
         const data = await res.json();
         const produtosFormatados = Array.isArray(data)
@@ -208,7 +208,7 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/editar_cupom/${cupomInicial?.id}`,
+        `http://191.52.6.89:5000/editar_cupom/${cupomInicial?.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json", Accept: "application/json" },

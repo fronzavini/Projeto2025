@@ -6,7 +6,7 @@
  * ======================= */
 export const BACKEND_URL =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://127.0.0.1:5000";
+  "http://191.52.6.89:5000";
 
 // alias de compatibilidade com código antigo
 export const BASE = BACKEND_URL;

@@ -18,7 +18,7 @@ export default function EntradaEstoque({ onClose, produto }) {
     try {
       const novaQuantidade = (produto.quantidade_estoque || 0) + parseInt(quantidade);
 
-      const res = await fetch(`http://localhost:5000/editar_produto/${produto.id}`, {
+      const res = await fetch(`http://191.52.6.89:5000/editar_produto/${produto.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

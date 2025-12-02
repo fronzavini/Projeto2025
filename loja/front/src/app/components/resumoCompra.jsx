@@ -7,7 +7,7 @@ import styles from "../styles/carrinho.module.css";
 
 const BACKEND_URL =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://127.0.0.1:5000";
+  "http://191.52.6.89:5000";
 
 export default function ResumoCompra() {
   const [dadosCheckout, setDadosCheckout] = useState({

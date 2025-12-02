@@ -36,7 +36,7 @@ export default function TabelaDescontos() {
 
   /*const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/listar_produtos", {
+      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -72,7 +72,7 @@ export default function TabelaDescontos() {
   // Carregar descontos
   const carregarDescontos = async () => {
     try {
-      const response = await fetch("http://localhost:5000/listar_cupons", {
+      const response = await fetch("http://191.52.6.89:5000/listar_cupons", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -188,7 +188,7 @@ export default function TabelaDescontos() {
 
           try {
             const response = await fetch(
-              `http://127.0.0.1:5000/deletar_cupom/${rowData.id}`,
+              `http://191.52.6.89:5000/deletar_cupom/${rowData.id}`,
               { method: "DELETE" }
             );
 

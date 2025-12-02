@@ -75,7 +75,7 @@ export default function ImportarCSV({ onClose }) {
       setDetectedHeaders(headers);
       // fetch table columns from backend
       try {
-        const res = await fetch(`http://localhost:5000/colunas_tabela?table=${tabela}`);
+        const res = await fetch(`http://191.52.6.89:5000/colunas_tabela?table=${tabela}`);
         const json = await res.json();
         if (res.ok && json && json.colunas) {
           const cols = json.colunas;
@@ -149,7 +149,7 @@ export default function ImportarCSV({ onClose }) {
     if (mapping) formData.append('mapping', mapping);
     if (delimiter) formData.append('delimiter', delimiter);
 
-    fetch('http://localhost:5000/importar_csv', {
+    fetch('http://191.52.6.89:5000/importar_csv', {
       method: 'POST',
       body: formData,
     })

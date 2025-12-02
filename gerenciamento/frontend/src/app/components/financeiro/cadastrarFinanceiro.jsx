@@ -80,7 +80,7 @@ export default function CadastrarFinanceiro({ onClose }) {
       };
 
       const response = await fetch(
-        "http://localhost:5000/criar_transacaofinanceira",
+        "http://191.52.6.89:5000/criar_transacaofinanceira",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

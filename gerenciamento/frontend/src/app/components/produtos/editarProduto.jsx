@@ -21,7 +21,7 @@ export default function EditarProduto({ onClose, produto }) {
   const [fornecedores, setFornecedores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  const API = "http://localhost:5000";
+  const API = "http://191.52.6.89:5000";
 
   // Preenche formData quando produto chegar (dados vindos do backend)
   useEffect(() => {

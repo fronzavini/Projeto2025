@@ -9,7 +9,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-const API = "http://127.0.0.1:5000";
+const API = "http://191.52.6.89:5000";
 
 export default function EditarOrcamento({ registro, onClose, onConfirm }) {
   const [form, setForm] = useState({

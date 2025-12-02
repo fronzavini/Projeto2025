@@ -19,7 +19,7 @@ export default function CadastrarProduto({ onClose }) {
   });
 
   const [fornecedores, setFornecedores] = useState([]);
-  const API = "http://localhost:5000";
+  const API = "http://191.52.6.89:5000";
 
   // Carregar fornecedores
   useEffect(() => {

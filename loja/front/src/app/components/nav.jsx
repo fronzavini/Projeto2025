@@ -16,7 +16,7 @@ import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
 import { getCartByUser } from "../lib/cartApi";
 
-const BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://191.52.6.89:5000";
 
 // Converte tanto tupla (SELECT * sem DictCursor) quanto objeto (DictCursor)
 function mapProduto(row) {

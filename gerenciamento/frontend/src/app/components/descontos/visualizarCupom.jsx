@@ -24,7 +24,7 @@ export default function VisualizarCupom({ onClose, cupom }) {
       setError(null);
 
       try {
-        const res = await fetch("http://localhost:5000/listar_cupons");
+        const res = await fetch("http://191.52.6.89:5000/listar_cupons");
         if (!res.ok) throw new Error("Erro ao buscar cupons.");
 
         const lista = await res.json();

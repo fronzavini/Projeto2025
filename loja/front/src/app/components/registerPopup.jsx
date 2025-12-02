@@ -49,7 +49,7 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
       // ----------------------------
       // 1) CRIAR CLIENTE NO BANCO
       // ----------------------------
-      const clienteResponse = await fetch("http://127.0.0.1:5000/criar_cliente", {
+      const clienteResponse = await fetch("http://191.52.6.89:5000/criar_cliente", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -85,7 +85,7 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
       // ----------------------------
       // 2) CRIAR USUARIO_LOJA
       // ----------------------------
-      const userResponse = await fetch("http://127.0.0.1:5000/criar_usuario_loja", {
+      const userResponse = await fetch("http://191.52.6.89:5000/criar_usuario_loja", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

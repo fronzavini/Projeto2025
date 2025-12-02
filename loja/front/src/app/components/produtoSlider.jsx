@@ -13,7 +13,7 @@ export default function ProdutoSlider() {
   const larguraCard = 280;
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/listar_produtos")
+    fetch("http://191.52.6.89:5000/listar_produtos")
       .then((res) => res.json())
       .then((data) => {
         const produtosFiltrados = data.filter(

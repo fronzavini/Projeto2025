@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
 import styles from "../../styles/tabelas.module.css";
 
-const API = "http://localhost:5000";
+const API = "http://191.52.6.89:5000";
 
 export default function TabelaUsuarios() {
   const [usuarios, setUsuarios] = useState([]);

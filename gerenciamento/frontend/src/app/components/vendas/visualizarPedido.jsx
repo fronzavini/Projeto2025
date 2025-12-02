@@ -31,7 +31,7 @@ export default function VisualizarPedido({ onClose, pedido }) {
     }
 
     setLoading(true);
-    fetch(`http://localhost:5000/pedidos/${pedido.pedido}`)
+    fetch(`http://191.52.6.89:5000/pedidos/${pedido.pedido}`)
       .then(async (res) => {
         if (!res.ok) {
           const txt = await res.text().catch(() => "");

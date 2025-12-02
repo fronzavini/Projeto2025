@@ -16,7 +16,7 @@ export default function LoginPopup({ fechar, irParaRegister }) {
     setCarregando(true);
 
     try {
-      const resp = await fetch("http://127.0.0.1:5000/login_loja", {
+      const resp = await fetch("http://191.52.6.89:5000/login_loja", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha: password }),

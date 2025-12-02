@@ -71,7 +71,7 @@ export default function TabelaFornecedores() {
           if (!confirm(`Deseja realmente deletar o fornecedor "${rowData.nome_empresa}"?`)) return;
 
           try {
-            const res = await fetch(`http://127.0.0.1:5000/deletar_fornecedor/${rowData.id}`, {
+            const res = await fetch(`http://191.52.6.89:5000/deletar_fornecedor/${rowData.id}`, {
               method: "DELETE",
             });
 
@@ -96,7 +96,7 @@ export default function TabelaFornecedores() {
   // carregar fornecedores do backend
 const carregarFornecedores = async () => {
   try {
-    const res = await fetch("http://localhost:5000/listar_fornecedores", {
+    const res = await fetch("http://191.52.6.89:5000/listar_fornecedores", {
       method: "GET",
       headers: {
         Accept: "application/json",

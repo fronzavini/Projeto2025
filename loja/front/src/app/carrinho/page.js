@@ -7,7 +7,7 @@ import styles from "../styles/carrinho.module.css";
 import { useRouter } from "next/navigation";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:5000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://191.52.6.89:5000";
 
 export default function Carrinho() {
   const router = useRouter();

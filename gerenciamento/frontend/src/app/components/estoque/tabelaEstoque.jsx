@@ -27,7 +27,7 @@ export default function TabelaEstoque() {
   // carregar produtos do backend
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("http://localhost:5000/listar_produtos", {
+      const res = await fetch("http://191.52.6.89:5000/listar_produtos", {
         method: "GET",
         headers: {
           Accept: "application/json",

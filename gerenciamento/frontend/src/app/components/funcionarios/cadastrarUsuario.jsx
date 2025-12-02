@@ -17,7 +17,7 @@ export default function CadastrarUsuario() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:5000/listar_funcionarios");
+        const res = await fetch("http://191.52.6.89:5000/listar_funcionarios");
         const data = await res.json();
         // backend devolve lista de tuplas -> [id, nome, cpf, ...]
         const lista = (data || []).map((f) => ({
@@ -75,7 +75,7 @@ export default function CadastrarUsuario() {
         tema_preferido: form.tema_preferido, // opcional
       };
 
-      const res = await fetch("http://localhost:5000/criar_usuario_sistema", {
+      const res = await fetch("http://191.52.6.89:5000/criar_usuario_sistema", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -60,7 +60,7 @@ export default function EditarFinanceiro({ onClose, registro }) {
       };
 
       const res = await fetch(
-        `http://localhost:5000/editar_transacaofinanceira/${registro.id}`,
+        `http://191.52.6.89:5000/editar_transacaofinanceira/${registro.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

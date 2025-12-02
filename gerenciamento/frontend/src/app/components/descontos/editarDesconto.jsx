@@ -22,7 +22,7 @@ export default function EditarDesconto({
 
   const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/listar_produtos", {
+      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -78,7 +78,7 @@ export default function EditarDesconto({
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/editar_cupom/${form.id}`,
+        `http://191.52.6.89:5000/editar_cupom/${form.id}`,
         {
           method: "PUT",
           headers: {

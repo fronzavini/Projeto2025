@@ -14,7 +14,7 @@ export default function ProdutoDetalhePage() {
   useEffect(() => {
     const fetchProduto = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/produto_id/${id}`);
+        const res = await fetch(`http://191.52.6.89:5000/produto_id/${id}`);
         const data = await res.json();
         if (res.ok) {
           setProduto(data);

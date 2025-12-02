@@ -25,7 +25,7 @@ export default function CadastrarFornecedor({ onClose }) {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/criar_fornecedor", {
+      const response = await fetch("http://191.52.6.89:5000/criar_fornecedor", {
         method: "POST",
         headers: {
           Accept: "application/json",

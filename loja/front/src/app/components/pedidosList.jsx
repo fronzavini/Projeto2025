@@ -13,7 +13,7 @@ import styles from "../styles/pedidos.module.css";
 
 const BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://127.0.0.1:5000";
+  "http://191.52.6.89:5000";
 
 /* ================= Helpers ================= */
 const formatDate = (isoLike) => {

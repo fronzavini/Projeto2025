@@ -24,7 +24,7 @@ export default function CadastrarCupom({ onClose }) {
   useEffect(() => {
     async function carregarProdutos() {
       try {
-        const res = await fetch("http://localhost:5000/listar_produtos");
+        const res = await fetch("http://191.52.6.89:5000/listar_produtos");
         if (!res.ok) throw new Error("Erro ao carregar produtos.");
         const data = await res.json();
         const produtosFormatados = Array.isArray(data)
@@ -73,7 +73,7 @@ export default function CadastrarCupom({ onClose }) {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/criar_cupom", {
+      const res = await fetch("http://191.52.6.89:5000/criar_cupom", {
         method: "POST",
         headers: {
           Accept: "application/json",
