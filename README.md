@@ -35,6 +35,7 @@ O sistema BellaDonna apresenta as seguintes funcionalidades principais:
 - Registro e controle de vendas
 - Relatórios financeiros
 - Centralização dos dados da loja física
+- Modo Claro e Escuro
 
 ### Loja online
 
