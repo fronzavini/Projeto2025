@@ -79,9 +79,6 @@ Com o desenvolvimento do BellaDonna, foi possível:
 - Integrar autenticação externa e meios de pagamento
 - Trabalhar com versionamento de código em equipe
 - Planejar e estruturar um sistema completo, do administrativo ao e-commerce
-
-Além do aspecto técnico, o projeto contribuiu para o desenvolvimento de organização, planejamento, documentação e trabalho colaborativo.
-
 ---
 
 ## 🚀 Possíveis melhorias futuras
@@ -93,22 +90,3 @@ Entre as principais melhorias previstas para o projeto estão:
 - Reformulação principalmente da interface do módulo de vendas, para se adequar melhor ao dia a dia de um comércio
 - Melhorias na usabilidade e na experiência do usuário
 - Criação de novos relatórios e indicadores para apoio à tomada de decisão
-
----
-
-## ▶️ Como executar o projeto
-
-### Pré-requisitos
-
-- Node.js instalado  
-- Python instalado  
-- MySQL instalado  
-
----
-
-### 🔧 Back-end
-
-1. Clone o repositório:
-
-```bash
-git clone <url-do-repositorio>
