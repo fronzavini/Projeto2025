@@ -1,0 +1,423 @@
+.nav {
+  position: absolute; /* fica sobre o banner */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px 8vw;
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: 1.15rem;
+  letter-spacing: 0.4px;
+  color: #fff;
+  transition: all 0.4s ease;
+}
+
+.scrolled {
+  position: fixed; /* fixa no topo ao rolar */
+  top: 0;
+  left: 0;
+  background: #fff;
+  color: #3f2121;
+  padding: 15px 8vw;
+  /*box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);8*/
+}
+
+.scrolled .menu li a:hover,
+.scrolled .user li svg:hover,
+.scrolled .menuIcon :hover {
+  color: #753838;
+}
+
+/* Links */
+.menu,
+.user {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu {
+  flex: 1;
+  justify-content: center;
+  gap: 5rem;
+}
+
+.user {
+  display: flex;
+  gap: 2.5rem;
+  margin-left: auto;
+}
+
+.menu li a,
+.user li svg {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.menu li a.active {
+  text-decoration: underline;
+}
+
+.menu li a:hover,
+.user li svg:hover {
+  color: #ededed; /* tom dourado suave */
+}
+
+/* MENU MOBILE */
+.menuIcon {
+  display: none; /* só aparece no mobile */
+  font-size: 1.8rem;
+  cursor: pointer;
+  z-index: 1100;
+  color: #fff; /* ícone hamburger branco */
+}
+
+/* Menu mobile aberto */
+.menuMobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* ocupa toda a tela */
+  background: #fff;
+  backdrop-filter: blur(12px); /* efeito blur elegante */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* profundidade */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 1000;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.menuMobile ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.menuMobile ul li {
+  margin: 1rem 0;
+}
+
+.menuMobile ul li a {
+  color: #3f2121; /* link escuro elegante */
+  font-size: 2rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.menuMobile ul li a:hover,
+.menuMobile ul li a.active {
+  color: #a38756; /* tom dourado suave */
+  text-decoration: underline;
+}
+
+/* ESCONDER MENU DESKTOP NO MOBILE */
+@media (max-width: 768px) {
+  .menu {
+    display: none;
+  }
+
+  .user {
+    gap: 1.5rem;
+  }
+
+  .menuIcon {
+    display: block;
+  }
+
+  .scrolled {
+    background: #fff;
+    color: #3f2121;
+  }
+}
+
+.scrolled .menuIcon {
+  color: #3f2121;
+}
+
+.searchBar {
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  background: white;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+  animation: fade 0.2s ease;
+}
+
+.searchBar input {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 200px;
+}
+
+.searchBar button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.iconClick {
+  cursor: pointer;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustes para o search bar  */
+/* --- BARRA DE BUSCA EXPANDIDA --- */
+
+/* 1. Estado Inicial (Antes de rolar) */
+.searchContainer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 8vw;
+  background: transparent;
+  box-shadow: none;
+  z-index: 999;
+  animation: slideDown 0.3s ease-out;
+}
+
+/* 2. Estado ROLADO (Com a classe .scrolled) */
+.scrolled + .searchContainer {
+  position: fixed;
+  top: 65px; /* Ajuste conforme o tamanho da navbar */
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Caixa de Busca */
+.searchBox {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 30px;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+}
+
+/* Ícones e Inputs */
+.searchIcon {
+  color: #753838;
+  font-size: 1.1rem;
+  margin-right: 10px;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  padding: 5px 0;
+  font-size: 1rem;
+  color: #3f2121;
+  background: transparent;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.closeSearch {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #753838;
+  margin-left: 10px;
+  transition: color 0.3s ease;
+}
+
+.closeSearch:hover {
+  color: #a38756;
+}
+
+/* Animação de entrada */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .searchContainer {
+    padding: 10px 4vw;
+  }
+}
+
+/* Pop-up usuário logado */
+.usuarioMenu {
+  position: absolute;
+  top: 60px; /* distância do topo da navbar */
+  right: 8vw; /* alinhado com o padding da navbar */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 1100;
+  animation: fadeSlide 0.25s ease forwards;
+  overflow: hidden;
+}
+
+.usuarioMenu button {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #3f2121;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.usuarioMenu button:hover {
+  background: #f5f0ef;
+  color: #753838;
+}
+
+/* Animação do pop-up */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile: ajustar posição e tamanho */
+@media (max-width: 768px) {
+  .usuarioMenu {
+    right: 20px;
+    top: 55px;
+    min-width: 140px;
+  }
+}
+
+.cartIcon {
+  position: relative;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* container da caixa de busca já existente... */
+
+.resultadosContainer {
+  position: absolute;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.resultadoItem {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.resultadoItem:hover {
+  background: #f7f7f7;
+}
+
+.resultadoImg {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.resultadoInfo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.resultadoNome {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.resultadoPreco {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.semResultados,
+.loading {
+  padding: 12px;
+  color: #777;
+}

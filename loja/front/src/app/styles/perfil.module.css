@@ -1,0 +1,391 @@
+/* ---- NOVO WRAPPER PRINCIPAL (Para centralizar e envolver o Breadcrumb) ---- */
+
+body {
+  background-color: white;
+}
+
+.perfilWrapper {
+  width: 100%;
+  max-width: 1200px; /* Limite máximo de largura */
+  margin: 0 auto; /* Centraliza na página */
+  padding: 20px 0;
+}
+
+/* ---- BREADCRUMB HOME > PEDIDOS ---- */
+.breadcrumb {
+  font-size: 14px;
+  color: #707070;
+  margin-bottom: 15px;
+  /* Alinha o Breadcrumb com o conteúdo real da sidebar */
+  padding-left: 20px;
+}
+
+.breadcrumbLink {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumbLink:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 8px;
+  color: #aaa;
+}
+
+.breadcrumbCurrent {
+  font-weight: bold;
+  color: #333;
+}
+
+/* ---- CONTAINER DO LAYOUT FLEX (SIDEBAR + MAIN) ---- */
+.container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* ---- SIDEBAR ---- */
+.sidebar {
+  width: 250px;
+  /* Removendo a borda e o padding original para usar o novo design */
+  padding: 0;
+  background: #fff;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Item padrão do menu */
+.sidebar ul li {
+  font-size: 16.5px;
+  /* Espaçamento conforme ajuste visual */
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Espaço entre ícone e texto */
+  color: #555;
+  border-left: 4px solid transparent; /* Base para a barra ativa */
+}
+
+/* Estilo para os ícones (SVG ou i.fas) */
+.sidebar ul li svg,
+.sidebar ul li i {
+  font-size: 18px;
+  width: 20px; /* Garante alinhamento consistente */
+  text-align: center;
+}
+
+/* Efeito hover para os itens ATIVOS (com funcionalidade) */
+.sidebar ul li:hover:not(.sair):not(.menuItemPlaceholder) {
+  background: #f7f7f7;
+}
+
+.sidebar ul li.active {
+  font-weight: bold;
+  color: #333;
+  border-left: 4px solid #007bff;
+  background-color: transparent;
+}
+
+/* Novo: Separador Visual (Linha fina entre seções) */
+.menuSeparator {
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 8px 0;
+}
+
+/* Novo: Estilo para itens placeholder (Trocas e Vales) - Sem funcionalidade */
+.menuItemPlaceholder {
+  color: #555;
+  font-size: 16.5px;
+  padding: 12px 20px;
+  cursor: default;
+  background: none !important;
+}
+
+/* Sair */
+.sair {
+  margin-top: 30px;
+  color: #cc4444;
+}
+
+.sairBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  font-size: 16.5px;
+  color: #cc4444;
+  cursor: pointer;
+  padding: 14px 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+  text-align: left;
+}
+
+.sairBtn:hover {
+  background: #fbeaea;
+}
+
+/* ---- MAIN ---- */
+.main {
+  flex: 1;
+  padding: 40px;
+  /* Borda vertical que separa a sidebar do main content */
+  border-left: 1px solid #e5e5e5;
+}
+
+/* CONTAINER GERAL */
+.perfilFormContainer {
+  max-width: 650px;
+  background: #ffffff;
+}
+
+.titulo {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* --- FORM STYLING --- */
+.perfilForm {
+  width: 100%;
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 25px 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  border-top: 3px solid #3b82f6;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
+}
+
+.perfilForm h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.perfilForm form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* --- DUAS COLUNAS --- */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.perfilForm label {
+  font-size: 14px;
+  color: #444;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.perfilForm input,
+.perfilForm select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.perfilForm input:focus,
+.perfilForm select:focus {
+  border-color: #3b82f6;
+}
+
+.perfilForm hr {
+  margin: 25px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.perfilForm button {
+  margin-top: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.perfilForm button:hover {
+  background: #2563eb;
+}
+
+/* =======================================================
+   RESPONSIVIDADE PERFIL
+   ======================================================= */
+
+/* Tablets e telas médias */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column; /* Sidebar em cima do main */
+  }
+
+  .sidebar {
+    width: 100%;
+    border-left: none;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .main {
+    padding: 20px;
+    border-left: none;
+  }
+
+  .perfilWrapper {
+    padding: 15px 10px;
+  }
+
+  .perfilForm {
+    padding: 20px;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+}
+
+/* Mobile (telas pequenas) */
+@media (max-width: 768px) {
+  .breadcrumb {
+    padding-left: 10px;
+    font-size: 13px;
+  }
+
+  .breadcrumbSeparator {
+    margin: 0 5px;
+  }
+
+  .sidebar ul li {
+    font-size: 15px;
+    padding: 10px 15px;
+  }
+
+  .sidebar ul li svg,
+  .sidebar ul li i {
+    font-size: 16px;
+    width: 18px;
+  }
+
+  .sairBtn {
+    font-size: 15px;
+    padding: 12px 8px;
+  }
+
+  .main {
+    padding: 15px;
+  }
+
+  .perfilFormContainer {
+    max-width: 100%;
+  }
+
+  .perfilForm {
+    padding: 20px;
+    margin: 20px 10px;
+  }
+
+  .titulo,
+  .perfilForm h2 {
+    font-size: 20px;
+  }
+
+  .row {
+    grid-template-columns: 1fr; /* Coluna única no mobile */
+    gap: 12px;
+  }
+
+  .perfilForm label {
+    font-size: 13px;
+  }
+
+  .perfilForm input,
+  .perfilForm select {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .perfilForm button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Extra small devices (menos de 480px) */
+@media (max-width: 480px) {
+  .breadcrumb {
+    font-size: 12px;
+  }
+
+  .sidebar ul li {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .sairBtn {
+    font-size: 14px;
+    padding: 10px 6px;
+  }
+
+  .main {
+    padding: 10px;
+  }
+
+  .perfilForm {
+    margin: 15px 5px;
+    padding: 15px;
+  }
+
+  .titulo,
+  .perfilForm h2 {
+    font-size: 18px;
+  }
+
+  .perfilForm label {
+    font-size: 12px;
+  }
+
+  .perfilForm input,
+  .perfilForm select {
+    font-size: 12px;
+    padding: 7px 8px;
+  }
+
+  .perfilForm button {
+    font-size: 13px;
+    padding: 8px;
+  }
+}

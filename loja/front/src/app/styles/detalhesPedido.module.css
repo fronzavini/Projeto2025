@@ -1,0 +1,397 @@
+/* src/styles/detalhesPedido.module.css */
+
+/* --- Variáveis de Cores --- */
+:root {
+  --primary-color: #007bff; /* Azul primário para títulos e links */
+  --success-color: #38c172; /* Verde para status e frete Grátis */
+  --secondary-text: #707070;
+  --dark-text: #333;
+  --border-color: #e0e0e0;
+  --background-gray: #f8f8f8;
+  --discount-color: #dc3545; /* Vermelho para descontos */
+}
+
+/* -------------------------------------- */
+/* LAYOUT GERAL E WRAPPER */
+/* -------------------------------------- */
+
+.pageWrapper {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
+  font-family: Arial, sans-serif;
+  color: var(--dark-text);
+}
+
+.header {
+  margin-bottom: 25px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.contentWrapper {
+  display: flex;
+  gap: 30px;
+}
+
+/* -------------------------------------- */
+/* COLUNA ESQUERDA (STATUS E ITENS) */
+/* -------------------------------------- */
+
+.leftColumn {
+  flex: 2; /* Ocupa mais espaço */
+  border: 1px solid var(--border-color);
+  padding: 25px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.deliveryHeader {
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.deliveryTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 5px;
+}
+
+.sellerInfo {
+  font-size: 14px;
+  color: var(--secondary-text);
+}
+
+/* --- LINHA DO TEMPO (TIMELINE) --- */
+.timelineWrapper {
+  margin-bottom: 30px;
+  position: relative;
+  padding-top: 15px; /* Espaço para a linha de progresso */
+}
+
+.timelineSteps {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Linha de Progresso Base */
+.timelineBar {
+  position: absolute;
+  top: 25px; /* Alinha com o centro vertical do ícone */
+  left: 15px;
+  right: 15px;
+  height: 2px;
+  background-color: var(--border-color);
+  z-index: 1;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--success-color); /* Verde para a parte preenchida */
+  transition: width 0.5s ease-in-out;
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  width: 20%; /* 5 passos * 20% = 100% */
+  z-index: 2; /* Fica acima da linha de progresso */
+}
+
+.timelineIconWrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border-color); /* Cinza padrão */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background 0.3s;
+  z-index: 10;
+}
+
+.timelineIcon {
+  font-size: 16px;
+  color: #fff;
+}
+
+/* Status Concluído (Verde) */
+.timelineItem.completed .timelineIconWrapper {
+  background: var(--success-color);
+}
+
+.timelineDate {
+  font-size: 11px;
+  color: var(--secondary-text);
+  margin-top: 5px;
+  line-height: 1.3;
+}
+
+.timelineLabel {
+  font-size: 13px;
+  color: var(--secondary-text);
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.timelineItem.completed .timelineLabel {
+  color: var(--dark-text);
+  font-weight: 600;
+}
+
+/* Previsão de Entrega e Botão */
+.deliveryPrediction {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dark-text);
+  margin-top: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.cancelButton {
+  background: none;
+  border: 2px solid var(--secondary-text);
+  color: var(--secondary-text);
+  padding: 8px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 14px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cancelButton:hover {
+  border-color: var(--dark-text);
+  color: var(--dark-text);
+}
+
+/* --- SEÇÃO DE ITENS --- */
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  color: var(--dark-text);
+}
+
+.itemCard {
+  display: flex;
+  gap: 20px;
+  padding: 15px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.itemsSection > .itemCard:last-child {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.itemImageContainer {
+  width: 80px;
+  height: 80px;
+  background: var(--background-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  /* Simulação da imagem */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.itemDetails {
+  flex-grow: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.itemName {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--dark-text);
+}
+
+.itemTotalValue {
+  font-weight: bold;
+  color: var(--dark-text);
+  margin-top: 8px;
+}
+
+/* -------------------------------------- */
+/* COLUNA DIREITA (RESUMO) */
+/* -------------------------------------- */
+
+.rightColumn {
+  flex: 1;
+  min-width: 300px;
+  background: var(--background-gray);
+  border-radius: 8px;
+  padding: 25px;
+}
+
+.summaryBox {
+  /* O conteúdo fica dentro do background cinza */
+}
+
+.summaryTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--dark-text);
+}
+
+.summaryId {
+  font-size: 14px;
+  color: var(--secondary-text);
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.summarySubtitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* Bloco de Endereço */
+.addressBlock {
+  font-size: 14px;
+  color: var(--secondary-text);
+  line-height: 1.4;
+  margin-bottom: 25px;
+}
+
+.addressType {
+  font-weight: bold;
+  color: var(--dark-text);
+  margin-bottom: 3px;
+}
+
+/* Forma de Pagamento */
+.paymentMethod {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+.paymentIcon {
+  margin-right: 10px;
+}
+
+.paymentText {
+  font-weight: 600;
+  color: var(--dark-text);
+  flex-grow: 1;
+}
+
+.paymentValue {
+  font-weight: bold;
+  color: var(--dark-text);
+}
+
+/* Detalhes de Preço */
+.priceDetail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--secondary-text);
+  line-height: 2;
+}
+
+.freeShipping {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.discount {
+  color: var(--discount-color);
+  font-weight: bold;
+}
+
+/* Linha Total */
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 15px;
+  margin-top: 15px;
+  border-top: 1px solid var(--border-color);
+}
+
+.totalLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.totalValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-text);
+}
+
+/* -------------------------------------- */
+/* BOTÃO DE RODAPÉ */
+/* -------------------------------------- */
+
+.footer {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.backButton {
+  background-color: #dc3545; /* Vermelho forte */
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.backButton:hover {
+  background-color: #c82333;
+}
+
+/* --- Responsividade --- */
+
+@media (max-width: 992px) {
+  .contentWrapper {
+    flex-direction: column;
+  }
+  .rightColumn {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 600px) {
+  .timelineWrapper {
+    overflow-x: auto;
+  }
+  .timelineSteps {
+    min-width: 600px; /* Garante que os 5 passos cabem lado a lado */
+    justify-content: flex-start;
+  }
+  .timelineBar {
+    min-width: 570px; /* Ajuste para o tamanho dos passos */
+    right: 30px;
+  }
+}

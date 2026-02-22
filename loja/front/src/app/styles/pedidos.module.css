@@ -1,0 +1,316 @@
+/* Variáveis de Cores (Opcional, mas útil) */
+:root {
+  --primary-color: #38c172; /* Verde dos status ativos */
+  --secondary-color: #707070; /* Cor do texto cinza */
+  --border-color: #e0e0e0;
+  --text-dark: #333;
+  --text-active-green: #38c172;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Coluna do Produto --- */
+.productColumn {
+  width: 200px;
+  padding-right: 20px;
+  border-right: 1px solid var(--border-color);
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+/* NOVO: Wrapper da Imagem (Substitui o placeholder) */
+.productImageWrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+  background-color: #f0f0f0;
+}
+
+.productName {
+  font-size: 16px;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+/* --- Coluna de Acompanhamento (Tracking) --- */
+.trackingColumn {
+  flex-grow: 1;
+  padding: 0 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.sellerInfo {
+  font-size: 14px;
+  color: var(--secondary-color);
+  margin-bottom: 20px;
+}
+
+.trackingBar {
+  width: 100%;
+  margin-bottom: 20px;
+  padding-top: 15px;
+}
+
+/* AJUSTE DE ALINHAMENTO PARA 4 PASSOS */
+.progressBar {
+  position: absolute;
+  top: 70px;
+  left: 25px; /* Início no centro do primeiro ícone (50px / 2) */
+  right: 25px; /* Fim no centro do último ícone */
+  height: 2px;
+  background-color: var(--border-color);
+  z-index: 1;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.5s ease-in-out;
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* AJUSTE DE LARGURA: 100% / 4 passos = 25% */
+  width: 25%;
+}
+
+.stepIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  background-color: #fff;
+}
+
+.stepIcon svg {
+  color: var(--secondary-color); /* Cor padrão dos ícones (Cinza) */
+}
+
+.stepInfo {
+  font-size: 12px;
+}
+
+.stepDate {
+  font-size: 11px;
+  color: var(--secondary-color);
+}
+
+.stepName {
+  font-size: 13px;
+  color: var(--secondary-color);
+  font-weight: bold;
+}
+
+/* Estilos para o status ativo */
+.active .stepIcon {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.active .stepIcon svg {
+  color: #fff; /* Ícone branco para status ativo */
+}
+
+.active .stepName {
+  color: var(--text-dark);
+}
+
+/* --- Previsão de Entrega e Botão Cancelar --- */
+.deliveryForecast {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.cancelButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border: 1px solid var(--secondary-color);
+  background-color: #fff;
+  color: var(--secondary-color);
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #f5f5f5;
+}
+
+/* --- Coluna de Resumo --- */
+.summaryColumn {
+  width: 200px;
+  padding-left: 20px;
+  border-left: 1px solid var(--border-color);
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.summaryTitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.summaryColumn p {
+  margin-bottom: 10px;
+}
+
+.detailsButton {
+  width: 100%;
+  padding: 10px 0;
+  margin-top: 20px;
+  border: 1px solid var(--secondary-color);
+  background-color: #fff;
+  color: var(--text-dark);
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.detailsButton:hover {
+  background-color: #f5f5f5;
+}
+
+/* =======================================================
+   RESPONSIVIDADE GERAL
+   ======================================================= */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    padding: 15px;
+    gap: 20px;
+  }
+
+  .productColumn,
+  .summaryColumn {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+  }
+
+  .trackingColumn {
+    padding: 0 0;
+  }
+
+  .progressBar {
+    left: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trackingColumn {
+    padding: 0;
+  }
+
+  .step {
+    width: 25%;
+    font-size: 11px;
+  }
+
+  .stepIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+
+  .stepInfo {
+    font-size: 11px;
+  }
+
+  .stepDate {
+    font-size: 10px;
+  }
+
+  .stepName {
+    font-size: 12px;
+  }
+
+  .deliveryForecast,
+  .sellerInfo,
+  .summaryColumn p {
+    font-size: 13px;
+  }
+
+  .detailsButton,
+  .cancelButton {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .steps {
+    gap: 5px;
+  }
+
+  .step {
+    width: auto;
+    flex: 1;
+    min-width: 50px;
+  }
+
+  .stepIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .stepInfo,
+  .stepDate,
+  .stepName {
+    font-size: 10px;
+  }
+
+  .trackingColumn {
+    padding: 0 5px;
+  }
+
+  .deliveryForecast,
+  .sellerInfo,
+  .summaryColumn p {
+    font-size: 12px;
+  }
+
+  .detailsButton,
+  .cancelButton {
+    font-size: 13px;
+    padding: 6px 0;
+  }
+}

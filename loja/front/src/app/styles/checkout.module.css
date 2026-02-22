@@ -1,0 +1,563 @@
+/* --- Paleta de Cores --- */
+/* Baseado na imagem fornecida */
+:root {
+  --color-primary-blue: #0a427c; /* Azul Escuro do Header Lateral e Botões Principais */
+  --color-accent-pink: #d81b60; /* Rosa/Magenta do botão Finalizar */
+  --color-success-green: #28a745; /* Verde do Frete Grátis e Aprovação Pix */
+  --color-link-blue: #0a427c; /* MUDANÇA: Link agora usa o azul primário para consistência */
+  --color-page-bg: #f8f9fa; /* Fundo da página */
+  --color-border-subtle: #ddd; /* AJUSTE: Usando um tom mais claro para a maioria das bordas */
+  --color-text-normal: #555;
+  --color-text-dark: #333;
+}
+
+/* --- Layout Geral (Flexbox) --- */
+
+.containerGeral {
+  width: 95%;
+  max-width: 1200px;
+  margin: 20px auto;
+  /* AJUSTE: Removendo 'Geist Sans' (pode não estar disponível) e usando Arial/sans-serif */
+  font-family: Arial, sans-serif;
+  color: var(--color-text-dark);
+  background-color: var(--color-page-bg);
+  padding: 10px;
+}
+
+/* Novo wrapper para as colunas */
+.colunasConteudo {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.colunaPrincipal {
+  flex: 2;
+  min-width: 500px;
+  /* Manter fundo branco nos elementos internos */
+}
+
+.colunaLateral {
+  flex: 1;
+  max-width: 350px;
+}
+
+/* --- Botão de Voltar --- */
+
+.areaVoltar {
+  margin-bottom: 20px;
+}
+
+.botaoVoltar {
+  background: none;
+  border: none;
+  color: var(--color-link-blue);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 0;
+  font-weight: bold;
+}
+
+.botaoVoltar:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------- */
+/* ESTILOS DA COLUNA PRINCIPAL (ESQUERDA) */
+/* ---------------------------------------------------- */
+
+.containerPrincipal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- Seções em Branco (Entrega, Pagamento) --- */
+.secaoEntrega,
+.secaoPagamento {
+  border: 1px solid var(--color-border-subtle);
+  padding: 20px;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); /* AJUSTE: Sombra mais suave */
+}
+
+.tituloSecaoPrincipal {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 15px;
+}
+
+/* --- Destaque de Produtos e Frete (Seção Entrega) --- */
+.vendedor {
+  font-size: 13px;
+  color: var(--color-text-normal);
+  margin-bottom: 15px;
+}
+
+.infoProdutoFrete {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start; /* Alinhamento superior */
+}
+
+.blocoImagem {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #ddd; /* Borda da imagem na imagem real */
+  border-radius: 4px;
+  overflow: hidden; /* Garantir que a imagem fique dentro da borda */
+}
+
+/* Você precisará de uma tag <img> aqui no HTML */
+
+.detalhesProduto {
+  flex-grow: 1;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.nomeProduto {
+  font-weight: bold;
+  color: var(--color-text-dark);
+  margin-bottom: 5px;
+}
+
+.opcoesFrete {
+  margin-left: auto;
+  min-width: 200px;
+}
+
+.opcaoFrete {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.rotuloFreteNormal {
+  font-weight: normal; /* AJUSTE: Texto "Normal:" não é negrito */
+  color: var(--color-text-normal);
+}
+
+.valorFreteGratis {
+  color: var(--color-success-green);
+  font-weight: bold;
+  font-size: 13px;
+  margin-left: 5px;
+}
+
+.dataEntrega {
+  color: var(--color-text-normal);
+  font-size: 12px;
+}
+
+/* --- Seção de Pagamento (Pix) --- */
+
+.iconePix {
+  color: var(--color-success-green);
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+.aprovacao {
+  background-color: #e6ffec;
+  color: var(--color-success-green);
+  font-weight: bold;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.valorPagamento {
+  font-size: 28px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.passosPix {
+  list-style-type: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-text-normal);
+  margin-bottom: 30px;
+}
+
+.passosPix li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.passosPix li::before {
+  content: counter(
+    passo-counter
+  ); /* Mantenho o estilo, mas você precisará do `counter-reset` no elemento pai */
+  /* ... (Estilo do círculo) ... */
+}
+
+/* Botão FINALIZAR */
+.botaoFinalizar {
+  width: 100%;
+  background-color: var(--color-accent-pink);
+  color: white;
+  border: none;
+  padding: 15px 15px; /* AJUSTE: Padding parece ser ligeiramente menor na imagem */
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: none; /* REMOVENDO sombra que não está visível na imagem */
+}
+
+.botaoFinalizar:hover {
+  background-color: #c01851;
+}
+
+/* ---------------------------------------------------- */
+/* ESTILOS DA COLUNA LATERAL (DIREITA) */
+/* ---------------------------------------------------- */
+
+.containerResumoLateral {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: none; /* REMOVENDO sombra, pois o bloco principal não tem */
+  overflow: hidden; /* Para garantir que o header arredonde a borda */
+}
+
+/* Cabeçalho Lateral (Azul Escuro) */
+.cabecalhoLateral {
+  background-color: var(--color-primary-blue);
+  color: white;
+  padding: 15px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  font-weight: bold; /* AJUSTE: Título ligeiramente mais negrito */
+}
+
+.cabecalhoLateral h4 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: inherit; /* Herda o negrito */
+}
+
+.iconeTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0px; /* AJUSTE: Remove margin-bottom desnecessária */
+}
+
+.tituloSecao {
+  font-size: 14px;
+  font-weight: normal; /* AJUSTE: Títulos internos como "Endereço de entrega" são normais */
+  color: var(--color-text-dark);
+  margin: 0;
+}
+
+/* Ícones de Entrega/Resumo - Suavizados */
+.iconeCasa,
+.iconeRecibo {
+  font-size: 16px;
+  color: var(
+    --color-primary-blue
+  ); /* AJUSTE: Ícones laterais usam o azul principal */
+}
+
+/* Seção Endereço Lateral */
+.secaoEnderecoLateral {
+  padding: 15px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.detalhesEnderecoLateral {
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--color-text-normal);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+/* AJUSTE: Nome do destinatário em destaque */
+.nomeEnderecoLateral {
+  font-weight: bold;
+  color: var(--color-text-dark);
+  margin: 3px 0 5px 0;
+}
+
+/* Link "Quer receber seu pedido..." */
+.textoMudarEndereco {
+  font-size: 12px;
+  color: var(
+    --color-text-normal
+  ); /* AJUSTE: O texto 'Quer receber...' é cinza */
+  cursor: default; /* Não é um link interativo */
+  margin-top: 10px;
+  display: block;
+}
+
+/* Botão USAR OUTRO ENDEREÇO */
+.botaoUsarOutroEndereco {
+  background-color: var(--color-primary-blue);
+  color: white;
+  border: none;
+  padding: 8px 15px; /* AJUSTE: Padding menor para este botão */
+  border-radius: 4px;
+  font-size: 13px; /* AJUSTE: Fonte ligeiramente menor */
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px; /* AJUSTE: Margem menor */
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.botaoUsarOutroEndereco:hover {
+  background-color: #083660;
+}
+
+/* Seção Resumo Detalhado */
+
+.secaoResumoDetalhado {
+  padding: 15px;
+}
+
+.cabecalhoItensResumo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: normal; /* AJUSTE: Cabeçalho do resumo não é negrito */
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 8px;
+  color: var(--color-text-normal);
+}
+
+.cabecalhoItensResumo p:nth-child(1) {
+  flex-grow: 1;
+}
+.cabecalhoItensResumo p:nth-child(2) {
+  width: 35px;
+  text-align: right;
+}
+.cabecalhoItensResumo p:nth-child(3) {
+  width: 70px;
+  text-align: right;
+}
+
+.itemResumo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-normal);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.itemResumo > div {
+  flex-grow: 1;
+  padding-right: 10px;
+}
+
+.nomeItemResumo {
+  font-weight: bold;
+  color: var(--color-text-dark); /* Nome do item em negrito e cor escura */
+  margin: 0;
+}
+
+.vendidoPor {
+  font-size: 11px;
+  color: #777;
+  margin-top: 3px;
+  font-style: normal; /* AJUSTE: Removendo itálico */
+}
+
+.quantidadeItemResumo {
+  width: 35px;
+  text-align: right;
+  flex-shrink: 0;
+  margin: 0;
+  font-weight: bold; /* Quantidade em destaque, como na imagem */
+}
+
+.precoItemResumo {
+  width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Totais */
+.linhaTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.rotuloTotal {
+  font-weight: normal;
+}
+
+.valorFrete {
+  color: var(--color-success-green);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.montanteTotal {
+  font-weight: bold;
+  font-size: 16px;
+  color: #000;
+}
+
+.linkRodape {
+  padding-top: 15px;
+  border-top: 1px solid #eee; /* AJUSTE: Borda de separação */
+  text-align: center;
+  margin-top: 15px;
+}
+
+.linkRodape a {
+  color: var(--color-primary-blue); /* AJUSTE: Link do rodapé azul primário */
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.linkRodape a:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------- */
+/* RESPONSIVIDADE (MEDIA QUERIES - MANTIDAS) */
+/* ---------------------------------------------------- */
+
+/* Telas com largura de 1024px ou menos (Ex: Laptops menores) */
+@media (max-width: 1024px) {
+  .containerGeral {
+    width: 98%;
+  }
+  .colunaPrincipal {
+    min-width: 450px;
+  }
+}
+
+/* Telas com largura de 768px ou menos (Ex: Tablets na vertical, maioria dos celulares grandes) */
+@media (max-width: 768px) {
+  .colunasConteudo {
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .colunaPrincipal,
+  .colunaLateral {
+    flex: auto;
+    max-width: 100%;
+    min-width: unset;
+  }
+
+  /* Ajuste para o botão USAR OUTRO ENDEREÇO */
+  .botaoUsarOutroEndereco {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  /* Ajuste no resumo para evitar quebra de linha desnecessária */
+  .cabecalhoItensResumo p:nth-child(2) {
+    width: 35px;
+  }
+}
+
+/* Telas com largura de 480px ou menos (Ex: Celulares) */
+@media (max-width: 480px) {
+  .containerGeral {
+    margin: 10px auto;
+    padding: 0 5px;
+  }
+
+  /* Reduz o padding interno das seções */
+  .secaoEntrega,
+  .secaoPagamento,
+  .secaoEnderecoLateral,
+  .secaoResumoDetalhado {
+    padding: 15px;
+  }
+
+  /* Ajuste no layout de frete/produto para telas muito pequenas */
+  .infoProdutoFrete {
+    flex-direction: column;
+  }
+
+  .opcoesFrete {
+    margin-left: 0;
+    margin-top: 15px;
+    min-width: unset;
+  }
+}
+
+/* Formulário de novo endereço */
+.formNovoEndereco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.formNovoEndereco input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: border 0.2s;
+}
+
+.formNovoEndereco input:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 4px rgba(108, 99, 255, 0.4);
+}
+
+.botaoSalvarEndereco {
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  background-color: #6c63ff;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.botaoSalvarEndereco:hover {
+  background-color: #574fdb;
+}
+
+/* Botão USAR OUTRO ENDEREÇO */
+.botaoUsarOutroEndereco {
+  margin-top: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  background-color: #fff;
+  border: 1px solid #6c63ff;
+  color: #6c63ff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.botaoUsarOutroEndereco:hover {
+  background-color: #6c63ff;
+  color: #fff;
+}

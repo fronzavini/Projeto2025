@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.content {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tablets (até 1024px) */
+@media (max-width: 1024px) {
+  .content {
+    padding: 16px;
+  }
+}
+
+/* Smartphones (até 768px) */
+@media (max-width: 768px) {
+  .content {
+    padding: 12px;
+  }
+}
+
+/* Pequenos smartphones (até 480px) */
+@media (max-width: 480px) {
+  .content {
+    padding: 8px;
+  }
+}

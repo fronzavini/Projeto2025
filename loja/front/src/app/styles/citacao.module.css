@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap");
+
+.citacao {
+  background-color: #f3f3f1; /* tom mais suave */
+  text-align: center;
+  padding: 4rem 2rem;
+  font-family: "Cormorant Garamond", serif;
+  color: #3f2121;
+}
+
+.aspas {
+  font-size: 9rem;
+  color: #804700;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+
+.texto {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #000;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.autor {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #804700; /* dourado elegante */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}

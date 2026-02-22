@@ -1,0 +1,70 @@
+/* styles/userMenu.module.css */
+.menuPopup {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  width: 180px;
+  z-index: 999;
+  padding: 8px 0;
+}
+
+.menuItem {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+  transition: 0.2s;
+}
+
+.menuItem:hover {
+  background-color: #f3e7e0;
+  color: #753838;
+}
+
+/* --- Responsividade Menu Popup --- */
+@media (max-width: 768px) {
+  .menuPopup {
+    top: 45px; /* Ajusta a posição */
+    right: 10px; /* Pequeno padding da borda */
+    width: 160px; /* Largura menor em tablets e mobiles */
+  }
+
+  .menuItem {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menuPopup {
+    top: 40px;
+    right: 5px;
+    width: 140px; /* Mais estreito para telas pequenas */
+  }
+
+  .menuItem {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Para telas muito pequenas, garantir que o menu não ultrapasse a tela */
+@media (max-width: 360px) {
+  .menuPopup {
+    width: 120px;
+    right: 5px;
+  }
+
+  .menuItem {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

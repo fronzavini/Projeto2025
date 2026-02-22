@@ -1,0 +1,86 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.dropArea {
+  border: 2px dashed #999;
+  border-radius: 1rem;
+  padding: 2rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #555;
+  position: relative;
+}
+
+.active {
+  border-color: #16a34a;
+  background-color: #f0fdf4;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileName {
+  margin-top: 1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.errorMsg {
+  margin-top: 0.5rem;
+  color: #dc2626; /* vermelho */
+  font-weight: 500;
+}
+
+.submitBtn {
+  margin-top: 1.5rem;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submitBtn:hover {
+  background-color: #15803d;
+}

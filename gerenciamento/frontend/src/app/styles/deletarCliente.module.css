@@ -1,0 +1,189 @@
+/* Overlays */
+.overlay,
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--popup-overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.popupContent {
+  background-color: var(--popup-content-bg);
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container simplificado */
+.container {
+  padding: 24px 28px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-sizing: border-box;
+  box-shadow: none;
+}
+
+/* Header simples */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--modal-title-color);
+}
+
+/* Botão fechar discreto */
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: var(--botao-fechar-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+  color: var(--botao-fechar-hover-color);
+}
+
+/* Botão deletar */
+.botaoDeletar {
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  background-color: var(--botao-deletar-bg);
+  color: var(--botao-text-color);
+  border: none;
+  border-radius: 6px;
+  width: 100%;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 0.6rem;
+}
+
+.botaoDeletar:hover {
+  background-color: var(--botao-deletar-hover-bg);
+}
+
+.botaoDeletar:active {
+  background-color: var(--botao-deletar-active-bg);
+}
+
+/* Botão cancelar */
+.botaoCancelar {
+  background: none;
+  border: none;
+  color: var(--botao-bg); /* roxo do projeto */
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.botaoCancelar:hover {
+  color: var(--botao-hover-bg);
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 1024px) {
+  .popupContent,
+  .container {
+    padding: 20px;
+    max-width: 450px;
+  }
+
+  .headerTitle {
+    font-size: 1.4rem;
+  }
+
+  .botaoDeletar {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .closeButton {
+    font-size: 20px;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .popupContent,
+  .container {
+    padding: 16px;
+    max-width: 95%;
+  }
+
+  .headerTitle {
+    font-size: 1.3rem;
+  }
+
+  .botaoDeletar {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .closeButton {
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popupContent,
+  .container {
+    padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .headerTitle {
+    font-size: 1.2rem;
+  }
+
+  .botaoDeletar {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .botaoCancelar {
+    font-size: 0.95rem;
+  }
+
+  .closeButton {
+    font-size: 16px;
+    top: 6px;
+    right: 6px;
+  }
+}

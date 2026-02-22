@@ -1,0 +1,409 @@
+/*
+ * ARQUIVO: produto.module.css
+ * ESTILOS GERAIS DE LAYOUT
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+
+.container {
+  display: grid;
+  /* Define duas colunas: uma para as imagens (flexível) e outra para info (largura fixa) */
+  grid-template-columns: 1fr 380px;
+  /* Define duas linhas: A primeira para Imagens/Info, a segunda para a Descrição */
+  grid-template-rows: auto auto;
+  /* Areas para melhor organização */
+  grid-template-areas:
+    "imagens info"
+    "descricao descricao";
+  gap: 30px; /* Espaço entre as colunas */
+  max-width: 1200px; /* Limite a largura do container */
+  margin: 40px auto; /* Centraliza na página */
+  padding: 0 20px;
+  font-family: "Lato", sans-serif;
+}
+
+/* -------------------------------------------
+ * COLUNA ESQUERDA: IMAGENS
+ * ------------------------------------------- */
+.colunaImagens {
+  grid-area: imagens;
+  display: flex;
+  gap: 15px;
+}
+
+.imagensMenores {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.imagemMenor {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 1px solid #ccc; /* Borda sutil como na imagem */
+  cursor: pointer;
+}
+
+.imagemPrincipalContainer {
+  position: relative;
+  flex-grow: 1; /* Ocupa o espaço restante */
+}
+
+.imagemPrincipal {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+}
+
+.botaoSimilares {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 8px 20px; /* Ajustado padding */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666; /* Cor do texto mais cinza */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex; /* Para alinhar o Q com o texto */
+  align-items: center;
+  gap: 5px;
+  font-weight: normal;
+  margin-right: 15px;
+}
+
+.botaoSimilares:hover {
+  background-color: #f0f0f0;
+}
+
+.pesquisa {
+  color: #666; /* Cor do ícone similar ao texto */
+  font-size: 14px;
+}
+/* -------------------------------------------
+ * COLUNA DIREITA: INFORMAÇÕES
+ * ------------------------------------------- */
+.colunaInfo {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+}
+
+.nome {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  color: #000;
+}
+
+.precoContainer {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.preco {
+  font-size: 32px;
+  font-weight: bold;
+  color: #3b3b3b;
+  margin: 0 10px 0 0;
+}
+
+.aVista {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.botaoSacola {
+  background-color: #804700; /* Cor marrom específica da imagem */
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px; /* Mais arredondado para ser uma pílula */
+  margin-bottom: 30px;
+  transition: background-color 0.2s;
+  letter-spacing: 0.5px; /* Leve espaçamento entre letras como na imagem */
+}
+
+.botaoSacola:hover {
+  background-color: #6c340b; /* Tom mais escuro no hover */
+}
+
+/* ------------------ Opções de Entrega ------------------ */
+
+.opcoesEntregaTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+  margin-bottom: 15px;
+}
+
+.opcaoEntrega {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.entregaHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.entregaTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.entregaDetalhe {
+  font-size: 14px;
+  color: #666;
+}
+
+.entregaDescricao {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0 10px 0;
+}
+
+.formCep {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  align-items: center; /* Alinha verticalmente input e botão */
+}
+
+.inputCep {
+  padding: 10px 15px; /* Ajustado padding */
+  border: 1px solid #ccc;
+  border-radius: 20px; /* Mais arredondado */
+  font-size: 16px;
+  width: 120px; /* Largura ajustada para o placeholder 00000-000 */
+  text-align: center;
+  outline: none; /* Remove a borda de foco padrão */
+}
+
+.inputCep::placeholder {
+  color: #aaa; /* Cor do placeholder mais clara */
+}
+
+.inputCep:focus {
+  border-color: #804700; /* Borda fica marrom no foco */
+}
+
+.botaoCep {
+  background-color: #804700; /* Mesma cor do botão da sacola */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 20px; /* Mais arredondado */
+  transition: background-color 0.2s;
+  letter-spacing: 0.5px; /* Leve espaçamento entre letras */
+}
+
+.botaoCep:hover {
+  background-color: #6c340b;
+}
+
+.naoSabeCep {
+  font-size: 13px;
+  color: #007bff; /* Cor de link para dar ênfase */
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+/* -------------------------------------------
+ * DESCRIÇÃO DO PRODUTO (ABAIXO)
+ * ------------------------------------------- */
+.descricaoCompleta {
+  grid-area: descricao;
+  border-top: 1px solid #eee; /* Linha de separação como na imagem */
+  padding-top: 30px;
+  margin-top: 20px;
+}
+
+.descricaoTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.descricaoText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #555;
+  /* O texto na imagem tem alinhamento justificado ou quase, por isso o max-width */
+  max-width: 800px;
+}
+
+/* ================================
+   RESPONSIVIDADE
+================================ */
+
+/* --------- TELAS GRANDES (até 1200px) --------- */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr 340px;
+    padding: 0 15px;
+  }
+
+  .imagemMenor {
+    width: 80px;
+    height: 80px;
+  }
+
+  .preco {
+    font-size: 28px;
+  }
+
+  .botaoSacola {
+    font-size: 15px;
+    padding: 13px 26px;
+  }
+}
+
+/* --------- TABLETS (até 900px) --------- */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "imagens"
+      "info"
+      "descricao";
+  }
+
+  .colunaImagens {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .imagensMenores {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .imagemMenor {
+    width: 85px;
+    height: 85px;
+  }
+
+  .colunaInfo {
+    text-align: center;
+  }
+
+  .precoContainer {
+    justify-content: center;
+  }
+
+  .botaoSacola {
+    width: 90%;
+    max-width: 350px;
+    margin: 0 auto 30px auto;
+  }
+
+  .formCep {
+    justify-content: center;
+  }
+}
+
+/* --------- CELULARES GRANDES (até 600px) --------- */
+@media (max-width: 600px) {
+  .container {
+    margin: 20px auto;
+    gap: 20px;
+  }
+
+  .imagemMenor {
+    width: 70px;
+    height: 70px;
+  }
+
+  .imagemPrincipal {
+    max-height: 400px;
+  }
+
+  .nome {
+    font-size: 23px;
+    margin-bottom: 8px;
+  }
+
+  .preco {
+    font-size: 26px;
+  }
+
+  .botaoSacola {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .inputCep {
+    width: 100px;
+    font-size: 14px;
+  }
+
+  .botaoCep {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .descricaoText {
+    font-size: 14px;
+  }
+}
+
+/* --------- CELULARES PEQUENOS (até 420px) --------- */
+@media (max-width: 420px) {
+  .imagemMenor {
+    width: 60px;
+    height: 60px;
+  }
+
+  .botaoSacola {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+
+  .nome {
+    font-size: 20px;
+  }
+
+  .preco {
+    font-size: 22px;
+  }
+}
+
+.mensagemAdicionado {
+  color: green;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
