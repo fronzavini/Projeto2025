@@ -40,8 +40,8 @@ O sistema BellaDonna apresenta as seguintes funcionalidades principais:
 
 - Catálogo de produtos integrado ao sistema de gerenciamento
 - Sincronização automática de estoque entre sistema e loja virtual
-- Autenticação de usuários utilizando login com **:contentReference[oaicite:0]{index=0}**
-- Pagamento via Pix integrado à API do **:contentReference[oaicite:1]{index=1}**
+- Autenticação de usuários utilizando login com Google
+- Pagamento via Pix integrado à API do Mercado Pago
 - Geração automática da cobrança Pix no momento da finalização da compra
 - Confirmação de pagamento integrada ao sistema, permitindo o registro automático da venda
 
