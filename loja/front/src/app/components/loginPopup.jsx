@@ -1,3 +1,4 @@
+// src/app/components/loginPopup.jsx
 "use client";
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
@@ -5,54 +6,111 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import styles from "../styles/loginPopup.module.css";
 
+const BASE =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
+  "http://192.168.18.155:5000";
+
 export default function LoginPopup({ fechar, irParaRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [carregandoGoogle, setCarregandoGoogle] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setCarregando(true);
-
+  function salvarSessaoEFechar(dados) {
+    // Esperado: { resultado: "ok", token, usuario }
     try {
-      const resp = await fetch("http://191.52.6.89:5000/login_loja", {
+      localStorage.setItem("token_loja", dados.token);
+      localStorage.setItem("usuario_loja", JSON.stringify(dados.usuario));
+    } catch {}
+    alert("Login realizado com sucesso!");
+    if (fechar) fechar();
+    if (typeof window !== "undefined") window.location.reload();
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (carregando || carregandoGoogle) return;
+    setCarregando(true);
+    try {
+      const resp = await fetch(`${BASE}/login_loja`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha: password }),
       });
 
-      const dados = await resp.json();
+      const dados = await resp.json().catch(() => null);
 
-      if (dados.resultado === "erro") {
-        alert(dados.detalhes);
+      if (!resp.ok || !dados || dados.resultado === "erro") {
+        const msg =
+          dados?.detalhes ||
+          dados?.erro ||
+          "Não foi possível realizar o login.";
+        alert(msg);
         setCarregando(false);
         return;
       }
-
-      // Salvar token no localStorage
-      localStorage.setItem("token_loja", dados.token);
-      localStorage.setItem("usuario_loja", JSON.stringify(dados.usuario));
-
-      alert("Login realizado com sucesso!");
-
-      fechar && fechar();
-      
-      window.location.reload();
-
-
+      salvarSessaoEFechar(dados);
     } catch (error) {
       console.error("Erro ao tentar login:", error);
       alert("Erro ao conectar ao servidor.");
+      setCarregando(false);
     }
+  }
 
-    setCarregando(false);
-  };
+  async function handleGoogleSuccess(credenciais) {
+    try {
+      setCarregandoGoogle(true);
+      const id_token =
+        credenciais?.credential || credenciais?.idToken || credenciais?.tokenId;
+
+      if (!id_token) {
+        alert("Token do Google ausente.");
+        setCarregandoGoogle(false);
+        return;
+      }
+
+      const resp = await fetch(`${BASE}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token }),
+      });
+
+      const dados = await resp.json().catch(() => null);
+
+      if (!resp.ok || !dados || dados.resultado !== "ok") {
+        const msg =
+          dados?.detalhes || dados?.erro || "Falha ao autenticar com o Google.";
+        alert(msg);
+        setCarregandoGoogle(false);
+        return;
+      }
+
+      salvarSessaoEFechar(dados);
+    } catch (e) {
+      console.error("Erro no login Google:", e);
+      alert("Erro ao processar login com Google.");
+      setCarregandoGoogle(false);
+    }
+  }
+
+  function handleGoogleError(err) {
+    const msg = String(err?.message || err || "");
+    if (msg.includes("AbortError") || msg.includes("popup_closed_by_user")) {
+      return; // silêncio para fechar popup
+    }
+    console.error("GoogleLogin error:", err);
+    alert("Erro no Google Login.");
+  }
 
   return (
     <div className={styles.overlay}>
       <div className={styles.popup}>
-        <button className={styles.closeBtn} onClick={fechar}>
+        <button
+          className={styles.closeBtn}
+          onClick={fechar}
+          aria-label="Fechar"
+        >
           <FontAwesomeIcon icon={faTimes} />
         </button>
 
@@ -61,7 +119,9 @@ export default function LoginPopup({ fechar, irParaRegister }) {
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.label}>Email:</label>
+              <label htmlFor="email" className={styles.label}>
+                Email:
+              </label>
               <input
                 type="email"
                 id="email"
@@ -69,11 +129,14 @@ export default function LoginPopup({ fechar, irParaRegister }) {
                 onChange={(e) => setEmail(e.target.value)}
                 className={styles.input}
                 required
+                autoComplete="email"
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="password" className={styles.label}>Senha:</label>
+              <label htmlFor="password" className={styles.label}>
+                Senha:
+              </label>
               <div className={styles.passwordWrapper}>
                 <input
                   type={mostrarSenha ? "text" : "password"}
@@ -82,11 +145,13 @@ export default function LoginPopup({ fechar, irParaRegister }) {
                   onChange={(e) => setPassword(e.target.value)}
                   className={styles.input}
                   required
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   className={styles.showPasswordBtn}
-                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                  onClick={() => setMostrarSenha((v) => !v)}
+                  aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                 >
                   <FontAwesomeIcon icon={mostrarSenha ? faEyeSlash : faEye} />
                 </button>
@@ -96,7 +161,7 @@ export default function LoginPopup({ fechar, irParaRegister }) {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={carregando}
+              disabled={carregando || carregandoGoogle}
             >
               {carregando ? "Entrando..." : "Entrar"}
             </button>
@@ -109,15 +174,12 @@ export default function LoginPopup({ fechar, irParaRegister }) {
           </div>
 
           <div className={styles.googleWrapper}>
+            {/* Certifique-se de envolver a app com <GoogleOAuthProvider clientId="..."> */}
             <GoogleLogin
-              onSuccess={(credenciais) => {
-                console.log("LOGIN GOOGLE SUCESSO:", credenciais);
-                alert("Login com Google realizado!");
-              }}
-              onError={() => {
-                console.log("Erro no login com Google");
-                alert("Erro no Google Login.");
-              }}
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap={false}
+              ux_mode="popup"
             />
           </div>
 
@@ -126,6 +188,8 @@ export default function LoginPopup({ fechar, irParaRegister }) {
             <span
               className={styles.registerLink}
               onClick={() => irParaRegister && irParaRegister()}
+              role="button"
+              tabIndex={0}
             >
               Registre-se
             </span>

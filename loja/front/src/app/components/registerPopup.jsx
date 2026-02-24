@@ -49,28 +49,31 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
       // ----------------------------
       // 1) CRIAR CLIENTE NO BANCO
       // ----------------------------
-      const clienteResponse = await fetch("http://191.52.6.89:5000/criar_cliente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: form.nome,
-          tipo: form.tipo,
-          email: form.email,
-          telefone: form.telefone,
-          cep: "00000000",        
-          logradouro: "Não informado",
-          numero: "S/N",
-          bairro: "Não informado",
-          complemento: "",
-          uf: "SP",
-          cidade: "Não informado",
-          cpf: form.tipo === "fisico" ? form.cpf : null,
-          rg: null,
-          sexo: form.sexo,
-          data_nascimento: null,
-          cnpj: form.tipo === "juridico" ? form.cnpj : null,
-        }),
-      });
+      const clienteResponse = await fetch(
+        "http://192.168.18.155:5000/criar_cliente",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: form.nome,
+            tipo: form.tipo,
+            email: form.email,
+            telefone: form.telefone,
+            cep: "00000000",
+            logradouro: "Não informado",
+            numero: "S/N",
+            bairro: "Não informado",
+            complemento: "",
+            uf: "SP",
+            cidade: "Não informado",
+            cpf: form.tipo === "fisico" ? form.cpf : null,
+            rg: null,
+            sexo: form.sexo,
+            data_nascimento: null,
+            cnpj: form.tipo === "juridico" ? form.cnpj : null,
+          }),
+        }
+      );
 
       const clienteData = await clienteResponse.json();
 
@@ -85,15 +88,18 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
       // ----------------------------
       // 2) CRIAR USUARIO_LOJA
       // ----------------------------
-      const userResponse = await fetch("http://191.52.6.89:5000/criar_usuario_loja", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cliente_id,
-          usuario: form.usuario,
-          senha: form.senha,
-        }),
-      });
+      const userResponse = await fetch(
+        "http://192.168.18.155:5000/criar_usuario_loja",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cliente_id,
+            usuario: form.usuario,
+            senha: form.senha,
+          }),
+        }
+      );
 
       const userData = await userResponse.json();
 
@@ -115,7 +121,6 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
   return (
     <div className={styles.overlay} onClick={fechar}>
       <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
-        
         <button className={styles.closeBtn} onClick={fechar}>
           <FontAwesomeIcon icon={faTimes} />
         </button>
@@ -124,7 +129,6 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
           <h2 className={styles.title}>Criar Conta</h2>
 
           <form className={styles.form} onSubmit={handleSubmit}>
-
             <div className={styles.inputGroup}>
               <label className={styles.label}>Nome completo:</label>
               <input
@@ -255,18 +259,6 @@ export default function RegisterPopup({ fechar, irParaLogin }) {
             <hr className={styles.hr} />
             <span className={styles.orText}>ou</span>
             <hr className={styles.hr} />
-          </div>
-
-          <div className={styles.googleWrapper}>
-            <GoogleLogin
-              onSuccess={(credenciais) => {
-                console.log("Registro Google Sucesso:", credenciais);
-                alert("Conta registrada com Google!");
-              }}
-              onError={() => {
-                alert("Erro no registro com Google.");
-              }}
-            />
           </div>
 
           <p className={styles.registerText}>

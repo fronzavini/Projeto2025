@@ -22,12 +22,15 @@ export default function EditarDesconto({
 
   const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
+      const response = await fetch(
+        "http://192.168.18.155:5000/listar_produtos",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) throw new Error("Erro ao carregar produtos.");
       const resultado = await response.json();
@@ -78,7 +81,7 @@ export default function EditarDesconto({
 
     try {
       const response = await fetch(
-        `http://191.52.6.89:5000/editar_cupom/${form.id}`,
+        `http://192.168.18.155:5000/editar_cupom/${form.id}`,
         {
           method: "PUT",
           headers: {
@@ -86,7 +89,7 @@ export default function EditarDesconto({
             Accept: "application/json",
           },
           body: JSON.stringify(descontoAtualizado),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Erro ao editar desconto.");

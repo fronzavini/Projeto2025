@@ -9,7 +9,7 @@ import styles from "../styles/checkout.module.css";
 // BACKEND (use .env NEXT_PUBLIC_BACKEND_URL se tiver)
 const BACKEND_URL =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://191.52.6.89:5000";
+  "http://192.168.18.155:5000";
 
 // Item do pedido
 const ItemResumo = ({ item }) => {

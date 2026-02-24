@@ -51,11 +51,16 @@ export default function CadastrarFinanceiro({ onClose }) {
       }
 
       // se o usuário escolher um tipo, limpar categoria se ela não pertence ao tipo
-      if (name === "tipo"){ 
+      if (name === "tipo") {
         // permitir categorias que sejam mapeadas para esse tipo ou que sejam 'outro'
         const permitidas = opcoesCategoria
           .map((c) => c.value)
-          .filter((cat) => !categoriaParaTipo[cat] || categoriaParaTipo[cat] === value || categoriaParaTipo[cat] === "");
+          .filter(
+            (cat) =>
+              !categoriaParaTipo[cat] ||
+              categoriaParaTipo[cat] === value ||
+              categoriaParaTipo[cat] === "",
+          );
         if (next.categoria && !permitidas.includes(next.categoria)) {
           next.categoria = "";
         }
@@ -80,12 +85,12 @@ export default function CadastrarFinanceiro({ onClose }) {
       };
 
       const response = await fetch(
-        "http://191.52.6.89:5000/criar_transacaofinanceira",
+        "http://192.168.18.155:5000/criar_transacaofinanceira",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dadosParaEnviar),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Erro ao cadastrar transação.");
@@ -220,7 +225,9 @@ export default function CadastrarFinanceiro({ onClose }) {
           />
         </div>
 
-        {errorMsg && <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>}
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "1rem" }}>{errorMsg}</p>
+        )}
 
         <button type="submit" className={styles.botaoEnviar} disabled={loading}>
           {loading ? "Cadastrando..." : "Cadastrar transação"}

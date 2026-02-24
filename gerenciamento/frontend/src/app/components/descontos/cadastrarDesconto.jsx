@@ -20,12 +20,15 @@ export default function CadastrarDesconto({ onClose }) {
 
   const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
+      const response = await fetch(
+        "http://192.168.18.155:5000/listar_produtos",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) throw new Error("Erro ao carregar produtos.");
       const resultado = await response.json();
@@ -93,7 +96,7 @@ export default function CadastrarDesconto({ onClose }) {
     };
 
     try {
-      const response = await fetch("http://191.52.6.89:5000/criar_cupom", {
+      const response = await fetch("http://192.168.18.155:5000/criar_cupom", {
         method: "POST",
         headers: {
           Accept: "application/json",

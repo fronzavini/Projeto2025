@@ -67,7 +67,7 @@ export default function Configuracoes() {
     if (usuario?.id) {
       try {
         await fetch(
-          `http://191.52.6.89:5000/editar_usuario_sistema/${usuario.id}`,
+          `http://192.168.18.155:5000/editar_usuario_sistema/${usuario.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

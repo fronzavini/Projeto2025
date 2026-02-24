@@ -10,7 +10,7 @@ import React, {
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ||
-  "http://191.52.6.89:5000";
+  "http://192.168.18.155:5000";
 
 const CarrinhoContext = createContext(null);
 

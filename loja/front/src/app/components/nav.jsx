@@ -16,7 +16,8 @@ import LoginPopup from "./loginPopup";
 import RegisterPopup from "./registerPopup";
 import { getCartByUser } from "../lib/cartApi";
 
-const BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://191.52.6.89:5000";
+const BASE =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://192.168.18.155:5000";
 
 // Converte tanto tupla (SELECT * sem DictCursor) quanto objeto (DictCursor)
 function mapProduto(row) {
@@ -111,7 +112,7 @@ export default function Nav() {
         const total =
           (carrinho?.produtos || []).reduce(
             (acc, p) => acc + Number(p.quantidade || 0),
-            0
+            0,
           ) || 0;
         setTotalItens(total);
       } catch {

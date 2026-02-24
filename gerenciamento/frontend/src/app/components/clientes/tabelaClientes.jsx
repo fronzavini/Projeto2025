@@ -49,7 +49,7 @@ export default function TabelaClientes() {
   // Carregar clientes
   const carregarClientes = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_clientes", {
+      const response = await fetch("http://192.168.18.155:5000/listar_clientes", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -259,7 +259,7 @@ export default function TabelaClientes() {
 
           try {
             const response = await fetch(
-              `http://191.52.6.89:5000/deletar_cliente/${rowData.id}`,
+              `http://192.168.18.155:5000/deletar_cliente/${rowData.id}`,
               {
                 method: "DELETE",
               }

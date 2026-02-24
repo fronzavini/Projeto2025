@@ -37,7 +37,7 @@ export default function TabelaProduto() {
   // Carregar produtos do backend
   const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
+      const response = await fetch("http://192.168.18.155:5000/listar_produtos", {
         method: "GET",
         headers: { Accept: "application/json" },
       });
@@ -131,7 +131,7 @@ export default function TabelaProduto() {
 
           try {
             const response = await fetch(
-              `http://191.52.6.89:5000/deletar_produto/${rowData.id}`,
+              `http://192.168.18.155:5000/deletar_produto/${rowData.id}`,
               { method: "DELETE" }
             );
 

@@ -57,7 +57,7 @@ export default function CadastrarCliente({ onClose }) {
     };
 
     try {
-      const response = await fetch("http://191.52.6.89:5000/criar_cliente", {
+      const response = await fetch("http://192.168.18.155:5000/criar_cliente", {
         method: "POST",
         headers: {
           Accept: "application/json",

@@ -9,7 +9,7 @@ import VisualizarPedido from "./visualizarPedido";
 import CadastrarOrcamento from "./cadastrarOrcamento";
 import EditarOrcamento from "./editarOrcamento";
 
-const API = "http://191.52.6.89:5000";
+const API = "http://192.168.18.155:5000";
 
 export default function TabelaOrcamentos() {
   const [orcamentos, setOrcamentos] = useState([]);

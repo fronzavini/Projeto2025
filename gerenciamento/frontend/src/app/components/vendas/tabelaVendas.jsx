@@ -15,7 +15,7 @@ export default function TabelaVendas() {
 
   const carregarVendas = async () => {
     try {
-      const res = await fetch("http://191.52.6.89:5000/listar_vendas", {
+      const res = await fetch("http://192.168.18.155:5000/listar_vendas", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -75,9 +75,12 @@ export default function TabelaVendas() {
   const handleDeletar = async (id) => {
     if (!confirm("Deseja realmente deletar esta venda?")) return;
     try {
-      const res = await fetch(`http://191.52.6.89:5000/deletar_venda/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `http://192.168.18.155:5000/deletar_venda/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!res.ok) throw new Error("Erro ao deletar");
       alert("Venda deletada com sucesso!");
       setVendas((prev) => prev.filter((v) => v.id !== id));

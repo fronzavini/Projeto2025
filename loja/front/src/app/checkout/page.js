@@ -10,7 +10,7 @@ import PrincipalCheckout from "../components/principalCheckout";
 
 const BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://191.52.6.89:5000";
+  "http://192.168.18.155:5000";
 
 export default function Checkout() {
   const router = useRouter();
@@ -68,7 +68,7 @@ export default function Checkout() {
                 imagem: p?.imagem_1 || p?.imagem || "/placeholder.png",
                 quantidade: Number(i.quantidade || 0),
                 preco: Number(
-                  i.preco_unitario != null ? i.preco_unitario : p?.preco || 0
+                  i.preco_unitario != null ? i.preco_unitario : p?.preco || 0,
                 ),
               };
             } catch {
@@ -80,7 +80,7 @@ export default function Checkout() {
                 preco: Number(i.preco_unitario || 0),
               };
             }
-          })
+          }),
         );
 
         setItensPedido(enriquecidos);
@@ -97,7 +97,7 @@ export default function Checkout() {
   const valoresTotais = useMemo(() => {
     const subtotal = itensPedido.reduce(
       (acc, i) => acc + Number(i.preco) * Number(i.quantidade),
-      0
+      0,
     );
     // caso o backend já mantenha um total diferente (ex.: descontos), use-o
     const total = totalServer > 0 ? totalServer : subtotal;

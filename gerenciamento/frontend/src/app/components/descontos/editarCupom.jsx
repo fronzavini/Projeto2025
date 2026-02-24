@@ -5,7 +5,7 @@ import styles from "../../styles/cadastrarCliente.module.css";
 
 function toISOFromBRDate(v) {
   if (!v) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;       // já ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; // já ISO
   const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(v);
   if (!m) return v; // deixa como está (browser pode mandar ISO)
   const [, d, mo, y] = m;
@@ -46,14 +46,16 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
   useEffect(() => {
     async function carregarProdutos() {
       try {
-        const res = await fetch("http://191.52.6.89:5000/listar_produtos");
+        const res = await fetch("http://192.168.18.155:5000/listar_produtos");
         if (!res.ok) throw new Error("Erro ao carregar produtos.");
         const data = await res.json();
         const produtosFormatados = Array.isArray(data)
           ? data.map((p) => ({ id: p[0], nome: p[1], categoria: p[2] }))
           : [];
         setProdutos(produtosFormatados);
-        setTiposProduto([...new Set(produtosFormatados.map((p) => p.categoria))]);
+        setTiposProduto([
+          ...new Set(produtosFormatados.map((p) => p.categoria)),
+        ]);
       } catch (err) {
         console.error(err);
       }
@@ -90,11 +92,11 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
       tipoInicial === "frete"
         ? (cupomInicial?.descontoFrete ?? cupomInicial?.descontofrete ?? "")
         : "",
-    validade: (cupomInicial?.validade && toISOFromBRDate(cupomInicial.validade)) || "",
+    validade:
+      (cupomInicial?.validade && toISOFromBRDate(cupomInicial.validade)) || "",
     usos_permitidos:
       cupomInicial?.usosPermitidos ?? cupomInicial?.usos_permitidos ?? "",
-    valor_minimo:
-      cupomInicial?.valorMinimo ?? cupomInicial?.valor_minimo ?? "",
+    valor_minimo: cupomInicial?.valorMinimo ?? cupomInicial?.valor_minimo ?? "",
 
     aplicacao: aplicacaoInicial, // "produto" | "tipo_produto"
     produtoSelecionado: cupomInicial?.produto || "",
@@ -108,7 +110,7 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
       .filter(
         (p) =>
           p.nome.toLowerCase().includes(q) ||
-          (p.categoria || "").toLowerCase().includes(q)
+          (p.categoria || "").toLowerCase().includes(q),
       )
       .slice(0, 10);
   }, [formData.produtoSelecionado, produtos]);
@@ -180,7 +182,8 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
     const descontoFixo = toNumberSafe(formData.descontofixo);
     const descontoPct = toNumberSafe(formData.descontoPorcentagem);
     const descontoFrete = toNumberSafe(formData.descontofrete);
-    const usosPermitidos = parseInt(String(formData.usos_permitidos || "0"), 10) || 0;
+    const usosPermitidos =
+      parseInt(String(formData.usos_permitidos || "0"), 10) || 0;
     const valorMinimo = toNumberSafe(formData.valor_minimo) ?? 0;
 
     // Data ISO
@@ -196,24 +199,28 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
       codigo: String(formData.codigo || "").trim(),
       tipo: formData.tipo, // "valor_fixo" | "percentual" | "frete"
       descontofixo: formData.tipo === "valor_fixo" ? (descontoFixo ?? 0) : null,
-      descontoPorcentagem: formData.tipo === "percentual" ? (descontoPct ?? 0) : null,
+      descontoPorcentagem:
+        formData.tipo === "percentual" ? (descontoPct ?? 0) : null,
       descontofrete: formData.tipo === "frete" ? (descontoFrete ?? 0) : null,
       validade: validadeISO,
       usos_permitidos: usosPermitidos,
       valor_minimo: valorMinimo,
 
-      aplicacao: formData.aplicacao,            // "produto" | "tipo_produto"
+      aplicacao: formData.aplicacao, // "produto" | "tipo_produto"
       tipo_produto: tipoProdutoPayload || null, // nome do produto OU categoria
     };
 
     try {
       const response = await fetch(
-        `http://191.52.6.89:5000/editar_cupom/${cupomInicial?.id}`,
+        `http://192.168.18.155:5000/editar_cupom/${cupomInicial?.id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       // Força leitura do corpo para conseguir mensagem de erro, se houver
@@ -224,14 +231,20 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
       }
 
       let result = {};
-      try { result = JSON.parse(text); } catch { /* ok se vier vazio */ }
+      try {
+        result = JSON.parse(text);
+      } catch {
+        /* ok se vier vazio */
+      }
       alert(result.message || "Cupom atualizado com sucesso!");
 
       onConfirm && onConfirm();
       onClose && onClose();
     } catch (error) {
       console.error("Erro ao atualizar cupom:", error);
-      setErrorMsg("Erro ao salvar alterações. Verifique valores numéricos e a data.");
+      setErrorMsg(
+        "Erro ao salvar alterações. Verifique valores numéricos e a data.",
+      );
     } finally {
       setLoading(false);
     }
@@ -261,7 +274,11 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
             <h2 className={styles.headerTitle}>
               Editar Cupom: {cupomInicial?.id ?? "-"}
             </h2>
-            <button className={styles.botaoCancelar} type="button" onClick={onClose}>
+            <button
+              className={styles.botaoCancelar}
+              type="button"
+              onClick={onClose}
+            >
               Fechar
             </button>
           </div>
@@ -393,7 +410,10 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
 
             {/* Produto com sugestões */}
             {formData.aplicacao === "produto" && (
-              <div className={styles.formGroup} style={{ position: "relative" }}>
+              <div
+                className={styles.formGroup}
+                style={{ position: "relative" }}
+              >
                 <label className={styles.label}>Produto</label>
                 <input
                   className={styles.input}
@@ -405,7 +425,9 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
                     setShowSugestoesProduto(true);
                   }}
                   onFocus={() => setShowSugestoesProduto(true)}
-                  onBlur={() => setTimeout(() => setShowSugestoesProduto(false), 120)}
+                  onBlur={() =>
+                    setTimeout(() => setShowSugestoesProduto(false), 120)
+                  }
                   onKeyDown={handleKeyDown}
                   placeholder="Digite para buscar por nome ou categoria..."
                   autoComplete="off"
@@ -419,13 +441,18 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
                           key={p.id}
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setFormData((prev) => ({ ...prev, produtoSelecionado: p.nome }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              produtoSelecionado: p.nome,
+                            }));
                             setShowSugestoesProduto(false);
                           }}
                           style={itemSugestao}
                         >
                           <div style={{ fontWeight: 600 }}>{p.nome}</div>
-                          <div style={{ fontSize: 12, opacity: 0.7 }}>{p.categoria}</div>
+                          <div style={{ fontSize: 12, opacity: 0.7 }}>
+                            {p.categoria}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -435,7 +462,10 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
 
             {/* Tipo de Produto com sugestões */}
             {formData.aplicacao === "tipo_produto" && (
-              <div className={styles.formGroup} style={{ position: "relative" }}>
+              <div
+                className={styles.formGroup}
+                style={{ position: "relative" }}
+              >
                 <label className={styles.label}>Tipo de Produto</label>
                 <input
                   className={styles.input}
@@ -447,7 +477,9 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
                     setShowSugestoesTipo(true);
                   }}
                   onFocus={() => setShowSugestoesTipo(true)}
-                  onBlur={() => setTimeout(() => setShowSugestoesTipo(false), 120)}
+                  onBlur={() =>
+                    setTimeout(() => setShowSugestoesTipo(false), 120)
+                  }
                   onKeyDown={handleKeyDown}
                   placeholder="Digite para buscar o tipo/categoria..."
                   autoComplete="off"
@@ -461,7 +493,10 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
                           key={`${t}-${i}`}
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setFormData((prev) => ({ ...prev, tipo_produto: t }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              tipo_produto: t,
+                            }));
                             setShowSugestoesTipo(false);
                           }}
                           style={itemSugestao}
@@ -474,7 +509,11 @@ export default function EditarCupom({ cupomInicial, onClose, onConfirm }) {
               </div>
             )}
 
-            <button type="submit" className={styles.botaoEnviar} disabled={loading}>
+            <button
+              type="submit"
+              className={styles.botaoEnviar}
+              disabled={loading}
+            >
               {loading ? "Salvando..." : "Salvar alterações"}
             </button>
 

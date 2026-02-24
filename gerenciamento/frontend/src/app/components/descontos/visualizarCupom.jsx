@@ -24,19 +24,19 @@ export default function VisualizarCupom({ onClose, cupom }) {
       setError(null);
 
       try {
-        const res = await fetch("http://191.52.6.89:5000/listar_cupons");
+        const res = await fetch("http://192.168.18.155:5000/listar_cupons");
         if (!res.ok) throw new Error("Erro ao buscar cupons.");
 
         const lista = await res.json();
 
         const encontrado =
           lista.find((c) =>
-            cupom.id ? Number(c.id) === Number(cupom.id) : false
+            cupom.id ? Number(c.id) === Number(cupom.id) : false,
           ) ||
           lista.find((c) =>
             cupom.codigo && c.codigo
               ? c.codigo.toString() === cupom.codigo.toString()
-              : false
+              : false,
           );
 
         if (!ignore) {
@@ -118,9 +118,7 @@ export default function VisualizarCupom({ onClose, cupom }) {
       <div className={styles.popupContent}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h2 className={styles.headerTitle}>
-              Cupom: {dados?.codigo || ""}
-            </h2>
+            <h2 className={styles.headerTitle}>Cupom: {dados?.codigo || ""}</h2>
 
             <button
               className={styles.botaoCancelar}
@@ -215,9 +213,7 @@ export default function VisualizarCupom({ onClose, cupom }) {
                     CAMPO INTELIGENTE DE DESTINO
                   ---------------------------- */}
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    {destino.label}
-                  </label>
+                  <label className={styles.label}>{destino.label}</label>
 
                   <input
                     className={styles.input}
