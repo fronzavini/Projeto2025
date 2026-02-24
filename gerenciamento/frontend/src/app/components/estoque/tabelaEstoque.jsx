@@ -27,7 +27,7 @@ export default function TabelaEstoque() {
   // carregar produtos do backend
   const carregarProdutos = async () => {
     try {
-      const res = await fetch("http://191.52.6.89:5000/listar_produtos", {
+      const res = await fetch("http://192.168.18.155:5000/listar_produtos", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -79,7 +79,7 @@ export default function TabelaEstoque() {
       (!filterId || item.id.toString().startsWith(filterId)) &&
       (!filterProduto ||
         item.nome.toLowerCase().startsWith(filterProduto.toLowerCase())) &&
-      (!filterStatus || item.status === filterStatus)
+      (!filterStatus || item.status === filterStatus),
   );
 
   const [saidaModal, setSaidaModal] = useState({ open: false, item: null });

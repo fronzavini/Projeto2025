@@ -36,7 +36,7 @@ export default function TabelaDescontos() {
 
   /*const carregarProdutos = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_produtos", {
+      const response = await fetch("http:192.168.18.155:5000/listar_produtos", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -72,7 +72,7 @@ export default function TabelaDescontos() {
   // Carregar descontos
   const carregarDescontos = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_cupons", {
+      const response = await fetch("http://192.168.18.155:5000/listar_cupons", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -136,7 +136,7 @@ export default function TabelaDescontos() {
       (!filtros.validade || item.validade.startsWith(filtros.validade)) &&
       (!filtros.estado || item.estado === filtros.estado) &&
       (!filtros.produto ||
-        item.produto.toLowerCase().startsWith(filtros.produto.toLowerCase()))
+        item.produto.toLowerCase().startsWith(filtros.produto.toLowerCase())),
   );
 
   // Status template
@@ -188,8 +188,8 @@ export default function TabelaDescontos() {
 
           try {
             const response = await fetch(
-              `http://191.52.6.89:5000/deletar_cupom/${rowData.id}`,
-              { method: "DELETE" }
+              `http://192.168.18.155:5000/deletar_cupom/${rowData.id}`,
+              { method: "DELETE" },
             );
 
             if (!response.ok) throw new Error("Erro ao deletar desconto.");

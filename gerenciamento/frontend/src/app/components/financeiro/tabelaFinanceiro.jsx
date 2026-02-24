@@ -13,13 +13,16 @@ export default function TabelaFinanceiro() {
 
   const carregarTransacoes = async () => {
     try {
-      const res = await fetch("http://191.52.6.89:5000/listar_transacaofinanceira", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "http://192.168.18.155:5000/listar_transacaofinanceira",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!res.ok) throw new Error("Erro ao carregar transações");
 
@@ -80,7 +83,7 @@ export default function TabelaFinanceiro() {
   const filteredData = transacoes.filter(
     (item) =>
       (!filters.tipo || item.tipo === filters.tipo) &&
-      (!filters.categoria || item.categoria === filters.categoria)
+      (!filters.categoria || item.categoria === filters.categoria),
   );
 
   const actionTemplate = (rowData) => (
@@ -102,8 +105,8 @@ export default function TabelaFinanceiro() {
           if (!confirm("Deseja realmente deletar esta transação?")) return;
           try {
             const res = await fetch(
-              `http://191.52.6.89:5000/deletar_transacaofinanceira/${rowData.id}`,
-              { method: "DELETE" }
+              `http:192.168.18.155:5000/deletar_transacaofinanceira/${rowData.id}`,
+              { method: "DELETE" },
             );
             if (!res.ok) throw new Error("Erro ao deletar");
             alert("Transação deletada com sucesso!");

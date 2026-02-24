@@ -15,7 +15,9 @@ export default function SaidaEstoque({ onClose, produto }) {
     }
 
     if (parseInt(quantidade) > quantAtual) {
-      setErrorMsg(`Quantidade insuficiente em estoque (disponível: ${quantAtual})`);
+      setErrorMsg(
+        `Quantidade insuficiente em estoque (disponível: ${quantAtual})`,
+      );
       return;
     }
 
@@ -25,19 +27,22 @@ export default function SaidaEstoque({ onClose, produto }) {
     try {
       const novaQuantidade = quantAtual - parseInt(quantidade);
 
-      const res = await fetch(`http://191.52.6.89:5000/editar_produto/${produto.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `http://192.168.18.155:5000/editar_produto/${produto.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome: produto.nome,
+            categoria: produto.categoria,
+            marca: produto.marca,
+            preco: produto.preco,
+            quantidadeEstoque: novaQuantidade,
+          }),
         },
-        body: JSON.stringify({
-          nome: produto.nome,
-          categoria: produto.categoria,
-          marca: produto.marca,
-          preco: produto.preco,
-          quantidadeEstoque: novaQuantidade,
-        }),
-      });
+      );
 
       if (!res.ok) throw new Error("Erro ao registrar saída");
 
@@ -73,13 +78,23 @@ export default function SaidaEstoque({ onClose, produto }) {
           placeholder="Digite a quantidade de saída"
         />
 
-        {errorMsg && <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>}
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
+        )}
 
         <div className={styles.actions}>
-          <button className={styles.cancel} onClick={onClose} disabled={loading}>
+          <button
+            className={styles.cancel}
+            onClick={onClose}
+            disabled={loading}
+          >
             Cancelar
           </button>
-          <button className={styles.confirm} onClick={handleSubmit} disabled={loading}>
+          <button
+            className={styles.confirm}
+            onClick={handleSubmit}
+            disabled={loading}
+          >
             {loading ? "Registrando..." : "Registrar saída"}
           </button>
         </div>

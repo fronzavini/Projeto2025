@@ -25,14 +25,17 @@ export default function CadastrarFornecedor({ onClose }) {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://191.52.6.89:5000/criar_fornecedor", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "http://192.168.18.155:5000/criar_fornecedor",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
         },
-        body: JSON.stringify(form),
-      });
+      );
 
       if (!response.ok) throw new Error("Erro ao cadastrar fornecedor.");
 
@@ -63,7 +66,11 @@ export default function CadastrarFornecedor({ onClose }) {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Novo fornecedor</h2>
-        <button className={styles.botaoCancelar} type="button" onClick={onClose}>
+        <button
+          className={styles.botaoCancelar}
+          type="button"
+          onClick={onClose}
+        >
           Cancelar
         </button>
       </div>
@@ -71,7 +78,9 @@ export default function CadastrarFornecedor({ onClose }) {
       <form onSubmit={handleSubmit}>
         {/* Nome */}
         <div className={styles.formGroup}>
-          <label htmlFor="nome_empresa" className={styles.label}>Nome da empresa</label>
+          <label htmlFor="nome_empresa" className={styles.label}>
+            Nome da empresa
+          </label>
           <input
             className={styles.input}
             id="nome_empresa"
@@ -85,7 +94,9 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* CNPJ */}
         <div className={styles.formGroup}>
-          <label htmlFor="cnpj" className={styles.label}>CNPJ</label>
+          <label htmlFor="cnpj" className={styles.label}>
+            CNPJ
+          </label>
           <input
             className={styles.input}
             id="cnpj"
@@ -99,7 +110,9 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* Telefone */}
         <div className={styles.formGroup}>
-          <label htmlFor="telefone" className={styles.label}>Telefone</label>
+          <label htmlFor="telefone" className={styles.label}>
+            Telefone
+          </label>
           <input
             className={styles.input}
             id="telefone"
@@ -113,7 +126,9 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* Email */}
         <div className={styles.formGroup}>
-          <label htmlFor="email" className={styles.label}>Email</label>
+          <label htmlFor="email" className={styles.label}>
+            Email
+          </label>
           <input
             className={styles.input}
             id="email"
@@ -128,7 +143,9 @@ export default function CadastrarFornecedor({ onClose }) {
         {/* CEP + Número */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="endCep" className={styles.label}>CEP</label>
+            <label htmlFor="endCep" className={styles.label}>
+              CEP
+            </label>
             <input
               className={styles.input}
               id="endCep"
@@ -140,7 +157,9 @@ export default function CadastrarFornecedor({ onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endNumero" className={styles.label}>Número</label>
+            <label htmlFor="endNumero" className={styles.label}>
+              Número
+            </label>
             <input
               className={styles.input}
               id="endNumero"
@@ -154,7 +173,9 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* Rua */}
         <div className={styles.formGroup}>
-          <label htmlFor="endRua" className={styles.label}>Rua</label>
+          <label htmlFor="endRua" className={styles.label}>
+            Rua
+          </label>
           <input
             className={styles.input}
             id="endRua"
@@ -168,7 +189,9 @@ export default function CadastrarFornecedor({ onClose }) {
         {/* Bairro / Complemento / UF */}
         <div className={styles.row}>
           <div className={styles.formGroup}>
-            <label htmlFor="endBairro" className={styles.label}>Bairro</label>
+            <label htmlFor="endBairro" className={styles.label}>
+              Bairro
+            </label>
             <input
               className={styles.input}
               id="endBairro"
@@ -180,7 +203,9 @@ export default function CadastrarFornecedor({ onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endComplemento" className={styles.label}>Complemento</label>
+            <label htmlFor="endComplemento" className={styles.label}>
+              Complemento
+            </label>
             <input
               className={styles.input}
               id="endComplemento"
@@ -192,7 +217,9 @@ export default function CadastrarFornecedor({ onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="endUF" className={styles.label}>UF</label>
+            <label htmlFor="endUF" className={styles.label}>
+              UF
+            </label>
             <input
               className={styles.input}
               id="endUF"
@@ -207,7 +234,9 @@ export default function CadastrarFornecedor({ onClose }) {
 
         {/* Município */}
         <div className={styles.formGroup}>
-          <label htmlFor="endMunicipio" className={styles.label}>Município</label>
+          <label htmlFor="endMunicipio" className={styles.label}>
+            Município
+          </label>
           <input
             className={styles.input}
             id="endMunicipio"

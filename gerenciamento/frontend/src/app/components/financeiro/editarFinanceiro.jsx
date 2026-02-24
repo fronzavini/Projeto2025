@@ -60,12 +60,12 @@ export default function EditarFinanceiro({ onClose, registro }) {
       };
 
       const res = await fetch(
-        `http://191.52.6.89:5000/editar_transacaofinanceira/${registro.id}`,
+        `http://192.168.18.155:5000/editar_transacaofinanceira/${registro.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Erro ao atualizar transação");

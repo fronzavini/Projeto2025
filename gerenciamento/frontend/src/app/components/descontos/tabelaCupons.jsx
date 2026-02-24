@@ -35,7 +35,7 @@ export default function TabelaCupons() {
   // Carregar cupons
   const carregarCupons = async () => {
     try {
-      const response = await fetch("http://191.52.6.89:5000/listar_cupons");
+      const response = await fetch("http://192.168.18.155:5000/listar_cupons");
 
       if (!response.ok) throw new Error("Erro ao carregar cupons.");
 
@@ -98,7 +98,7 @@ export default function TabelaCupons() {
       (!filtros.tipo_produto ||
         item.tipo_produto
           .toLowerCase()
-          .startsWith(filtros.tipo_produto.toLowerCase()))
+          .startsWith(filtros.tipo_produto.toLowerCase())),
   );
 
   // Status visual
@@ -148,8 +148,8 @@ export default function TabelaCupons() {
 
           try {
             const response = await fetch(
-              `http://191.52.6.89:5000/deletar_cupom/${rowData.id}`,
-              { method: "DELETE" }
+              `http://192.168.18.155:5000/deletar_cupom/${rowData.id}`,
+              { method: "DELETE" },
             );
 
             if (!response.ok) throw new Error("Erro ao deletar cupom.");
@@ -241,7 +241,11 @@ export default function TabelaCupons() {
           <Column field="usosPermitidos" header="Usos Permitidos" />
           <Column field="valorMinimo" header="Valor Mínimo" />
           <Column field="estado" header="Estado" body={estadoTemplate} />
-          <Column body={actionTemplate} header="Ações" style={{ width: "150px" }} />
+          <Column
+            body={actionTemplate}
+            header="Ações"
+            style={{ width: "150px" }}
+          />
         </DataTable>
 
         {/* Modais */}

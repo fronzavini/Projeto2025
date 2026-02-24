@@ -34,7 +34,7 @@ export default function EditarFornecedor({ onClose, fornecedor }) {
         endMunicipio: formData.cidade,
       };
 
-      const res = await fetch(`http://191.52.6.89:5000/editar_fornecedor/${fornecedor.id}`, {
+      const res = await fetch(`http:192.168.18.155:5000/editar_fornecedor/${fornecedor.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

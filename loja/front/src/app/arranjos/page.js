@@ -15,11 +15,11 @@ export default function HomeArranjos() {
 
   // Carregar produtos
   useEffect(() => {
-    fetch("http://191.52.6.89:5000/listar_produtos")
+    fetch("http://192.168.18.155:5000/listar_produtos")
       .then((res) => res.json())
       .then((data) => {
         const produtosFormatados = data
-          .filter((produto) => produto[2]?.toLowerCase() === "arranjo")
+          .filter((produto) => produto[2]?.toLowerCase() === "arranjos")
           .map((produto) => ({
             id: produto[0],
             nome: produto[1],

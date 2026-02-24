@@ -102,7 +102,7 @@ export default function EditarCliente({ cliente, onClose, onSalvar }) {
 
     try {
       const resp = await fetch(
-        `http://191.52.6.89:5000/editar_cliente/${cliente.id}`,
+        `http://192.168.18.155:5000/editar_cliente/${cliente.id}`,
         {
           method: "PUT",
           headers: {

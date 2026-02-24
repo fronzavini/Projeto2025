@@ -15,7 +15,7 @@ export default function Home() {
 
   // Carregar produtos
   useEffect(() => {
-    fetch("http://191.52.6.89:5000/listar_produtos")
+    fetch("http://192.168.18.155:5000/listar_produtos")
       .then((res) => res.json())
       .then((data) => {
         const produtosFormatados = data

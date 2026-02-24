@@ -16,25 +16,31 @@ export default function EntradaEstoque({ onClose, produto }) {
     setErrorMsg(null);
 
     try {
-      const novaQuantidade = (produto.quantidade_estoque || 0) + parseInt(quantidade);
+      const novaQuantidade =
+        (produto.quantidade_estoque || 0) + parseInt(quantidade);
 
-      const res = await fetch(`http://191.52.6.89:5000/editar_produto/${produto.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `http://192.168.18.155:5000/editar_produto/${produto.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nome: produto.nome,
+            categoria: produto.categoria,
+            marca: produto.marca,
+            preco: produto.preco,
+            quantidadeEstoque: novaQuantidade,
+          }),
         },
-        body: JSON.stringify({
-          nome: produto.nome,
-          categoria: produto.categoria,
-          marca: produto.marca,
-          preco: produto.preco,
-          quantidadeEstoque: novaQuantidade,
-        }),
-      });
+      );
 
       if (!res.ok) throw new Error("Erro ao registrar entrada");
 
-      alert(`Entrada registrada com sucesso! Quantidade adicionada: ${quantidade}`);
+      alert(
+        `Entrada registrada com sucesso! Quantidade adicionada: ${quantidade}`,
+      );
       onClose();
     } catch (err) {
       console.error("Erro ao registrar entrada:", err);
@@ -65,13 +71,23 @@ export default function EntradaEstoque({ onClose, produto }) {
           placeholder="Digite a quantidade de entrada"
         />
 
-        {errorMsg && <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>}
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
+        )}
 
         <div className={styles.actions}>
-          <button className={styles.cancel} onClick={onClose} disabled={loading}>
+          <button
+            className={styles.cancel}
+            onClick={onClose}
+            disabled={loading}
+          >
             Cancelar
           </button>
-          <button className={styles.confirm} onClick={handleSubmit} disabled={loading}>
+          <button
+            className={styles.confirm}
+            onClick={handleSubmit}
+            disabled={loading}
+          >
             {loading ? "Registrando..." : "Registrar entrada"}
           </button>
         </div>

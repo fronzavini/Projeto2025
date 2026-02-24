@@ -38,7 +38,7 @@ export default function EditarUsuario({ onAtualizado }) {
     if (alterarSenha) {
       if (!novaSenha || !confirmNovaSenha) {
         setErrorMsg(
-          "Para alterar a senha, preencha todos os campos de nova senha."
+          "Para alterar a senha, preencha todos os campos de nova senha.",
         );
         return;
       }
@@ -57,7 +57,7 @@ export default function EditarUsuario({ onAtualizado }) {
 
     try {
       const res = await fetch(
-        `http://191.52.6.89:5000/editar_usuario_sistema/${usuario.id}`,
+        `http://192.168.18.155:5000/editar_usuario_sistema/${usuario.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ export default function EditarUsuario({ onAtualizado }) {
             senhaAtual,
             novaSenha: alterarSenha ? novaSenha : undefined,
           }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -83,7 +83,7 @@ export default function EditarUsuario({ onAtualizado }) {
 
       localStorage.setItem(
         "usuario_sistema",
-        JSON.stringify(usuarioAtualizado)
+        JSON.stringify(usuarioAtualizado),
       );
       setUsuario(usuarioAtualizado);
 

@@ -5,7 +5,7 @@ import styles from "../styles/perfil.module.css";
 
 const BASE =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-  "http://191.52.6.89:5000";
+  "http://192.168.18.155:5000";
 
 function getClienteIdFromStorage() {
   try {

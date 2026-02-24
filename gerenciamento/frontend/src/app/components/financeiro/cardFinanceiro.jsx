@@ -23,7 +23,7 @@ export default function CardFinanceiro() {
   const carregarTotais = async () => {
     try {
       const res = await fetch(
-        "http://191.52.6.89:5000/listar_transacaofinanceira"
+        "http://192.168.18.155:5000/listar_transacaofinanceira",
       );
       if (!res.ok) throw new Error("Erro ao carregar transações");
 
@@ -35,7 +35,8 @@ export default function CardFinanceiro() {
         transacoes = resultado.detalhes;
       else if (resultado && Array.isArray(resultado.transacoes))
         transacoes = resultado.transacoes;
-      else if (resultado && Array.isArray(resultado.data)) transacoes = resultado.data;
+      else if (resultado && Array.isArray(resultado.data))
+        transacoes = resultado.data;
       else transacoes = [];
 
       let entradas = 0;
@@ -52,7 +53,13 @@ export default function CardFinanceiro() {
           valorRaw = t[5];
         } else if (t && typeof t === "object") {
           tipo = t.tipo ?? t[1] ?? t["tipo"];
-          valorRaw = t.valor ?? t[4] ?? t["valor"] ?? Object.values(t).find(v => typeof v === 'number' || typeof v === 'string');
+          valorRaw =
+            t.valor ??
+            t[4] ??
+            t["valor"] ??
+            Object.values(t).find(
+              (v) => typeof v === "number" || typeof v === "string",
+            );
         } else {
           continue;
         }
@@ -60,13 +67,13 @@ export default function CardFinanceiro() {
         // garantir número: lidar com Decimal/number/string com ',' ou '.'
         const parseValor = (raw) => {
           if (raw === null || raw === undefined) return 0;
-          if (typeof raw === 'number') return raw;
+          if (typeof raw === "number") return raw;
           let s = String(raw).trim();
           if (!s) return 0;
           // se contém vírgula, provavelmente formato BR: pontos milhares e vírgula decimal
-          if (s.indexOf(',') !== -1) {
+          if (s.indexOf(",") !== -1) {
             // remover pontos (separador de milhares) e trocar vírgula por ponto decimal
-            s = s.replace(/\./g, '').replace(/,/g, '.');
+            s = s.replace(/\./g, "").replace(/,/g, ".");
           }
           // caso não tenha vírgula, assumimos ponto decimal (ou somente dígitos)
           const n = Number(s);
